@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+ <html lang="zh-CN">
+ <head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <meta name="description" content="KD起始页 - iOS风格简约美观的浏览器主页">
+     <meta name="theme-color" content="#007AFF">
+     <title>KD起始页</title>
+     
+     <!-- 外部资源 -->
+     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
+     <link rel="stylesheet" href="./main/css/main.css">
+     <link rel="stylesheet" href="./main/css/root.css">
+
+ </head>
+ <body class="bg-gradient">
+     <div class="bg-decoration">
+         <div class="bg-bubble bg-bubble-1"></div>
+         <div class="bg-bubble bg-bubble-2"></div>
+         <div class="bg-bubble bg-bubble-3"></div>
+     </div>
+     <div class="container-main">
+         <header class="header-bar">
+             <div class="logo-section">
+                 <div class="logo-icon">KD</div>
+                 <span class="logo-text">起始页</span>
+             </div>
+             
+             <div class="toolbar-actions">
+                 <div class="engine-switcher glass">
+                     <button class="engine-btn" data-engine="baidu" onclick="setSearchEngine('baidu')">
+                         <i class="fa fa-search"></i>
+                         百度
+                     </button>
+                     <button class="engine-btn" data-engine="google" onclick="setSearchEngine('google')">
+                         <i class="fa fa-google"></i>
+                         Google
+                     </button>
+                     <button class="engine-btn active" data-engine="bing" onclick="setSearchEngine('bing')">
+                         <i class="fa fa-edge"></i>
+                         Bing
+                     </button>
+                 </div>
+                 
+                 <button class="tool-btn glass" onclick="toggleDarkMode()">
+                     <i id="theme-icon" class="fa fa-moon-o"></i>
+                 </button>
+                 
+                 <button class="tool-btn glass" onclick="openSettings()">
+                     <i class="fa fa-cog"></i>
+                 </button>
+             </div>
+         </header>
+         <section class="search-section">
+             <div class="search-box glass">
+                 <i class="fa fa-search search-icon"></i>
+                 <input 
+                     type="text" 
+                     id="search-input" 
+                     class="search-input"
+                     placeholder="搜索任何内容..."
+                     autocomplete="off"
+                 >
+                 <button id="search-btn" class="search-btn">搜索</button>
+             </div>
+             <p class="search-hint">
+                 当前搜索引擎: <strong id="current-engine">Bing</strong>
+             </p>
+         </section>
+         <section class="widgets-grid">
+             <div class="widget widget-small glass" data-widget-id="time">
+                 <div class="widget-header">
+                     <i class="fa fa-clock-o widget-icon"></i>
+                     <span class="widget-title">时间</span>
+                 </div>
+                 <div id="time-display" class="time-display">00:00</div>
+                 <div id="date-display" class="date-display">2024年1月1日 星期一</div>
+             </div>
+             <div class="widget widget-small glass" data-widget-id="weather">
+                 <div class="widget-header">
+                     <i class="fa fa-cloud widget-icon"></i>
+                     <span class="widget-title">天气</span>
+                 </div>
+                 <div class="weather-content">
+                     <i class="fa fa-sun-o weather-icon"></i>
+                     <div>
+                         <div class="weather-temp">26°C</div>
+                         <div class="weather-desc">晴朗 · 呼和浩特</div>
+                     </div>
+                 </div>
+             </div>
+             <div class="widget widget-small glass" data-widget-id="shortcuts">
+                 <div class="widget-header">
+                     <i class="fa fa-th widget-icon"></i>
+                     <span class="widget-title">快捷方式</span>
+                 </div>
+                 <div class="shortcuts-grid">
+                     <a href="https://www.baidu.com" target="_blank" class="shortcut-item">
+                         <div class="shortcut-icon" style="background: #4E6EF2;">
+                             <i class="fa fa-search"></i>
+                         </div>
+                         <span class="shortcut-name">百度</span>
+                     </a>
+                     <a href="https://github.com" target="_blank" class="shortcut-item">
+                         <div class="shortcut-icon" style="background: #333;">
+                             <i class="fa fa-github"></i>
+                         </div>
+                         <span class="shortcut-name">GitHub</span>
+                     </a>
+                     <a href="https://www.bilibili.com" target="_blank" class="shortcut-item">
+                         <div class="shortcut-icon" style="background: #FB7299;">
+                             <i class="fa fa-play"></i>
+                         </div>
+                         <span class="shortcut-name">B站</span>
+                     </a>
+                     <a href="https://www.zhihu.com" target="_blank" class="shortcut-item">
+                         <div class="shortcut-icon" style="background: #0084FF;">
+                             <i class="fa fa-question"></i>
+                         </div>
+                         <span class="shortcut-name">知乎</span>
+                     </a>
+                 </div>
+             </div>
+             <div class="widget widget-small glass" data-widget-id="todo">
+                 <div class="todo-header">
+                     <div class="widget-header">
+                         <i class="fa fa-check-square-o widget-icon"></i>
+                         <span class="widget-title">待办事项</span>
+                     </div>
+                     <button class="add-todo-btn" onclick="addTodo()">
+                         <i class="fa fa-plus"></i>
+                     </button>
+                 </div>
+                 <div id="todo-list" class="todo-list">
+                 </div>
+             </div>
+         </section>
+         <section class="large-widgets">
+             <div class="widget glass" data-widget-id="bookmarks">
+                 <div class="widget-header">
+                     <i class="fa fa-bookmark widget-icon"></i>
+                     <span class="widget-title">常用书签</span>
+                 </div>
+                 <div class="bookmarks-grid">
+                     <a href="https://www.youtube.com" target="_blank" class="bookmark-item">
+                         <div class="bookmark-icon" style="background: #FF0000;">
+                             <i class="fa fa-youtube-play"></i>
+                         </div>
+                         <span class="bookmark-name">YouTube</span>
+                     </a>
+                     <a href="https://twitter.com" target="_blank" class="bookmark-item">
+                         <div class="bookmark-icon" style="background: #1DA1F2;">
+                             <i class="fa fa-twitter"></i>
+                         </div>
+                         <span class="bookmark-name">Twitter</span>
+                     </a>
+                     <a href="https://stackoverflow.com" target="_blank" class="bookmark-item">
+                         <div class="bookmark-icon" style="background: #F48024;">
+                             <i class="fa fa-stack-overflow"></i>
+                         </div>
+                         <span class="bookmark-name">StackOverflow</span>
+                     </a>
+                     <a href="https://developer.mozilla.org" target="_blank" class="bookmark-item">
+                         <div class="bookmark-icon" style="background: #000;">
+                             <i class="fa fa-code"></i>
+                         </div>
+                         <span class="bookmark-name">MDN</span>
+                     </a>
+                     <a href="https://dribbble.com" target="_blank" class="bookmark-item">
+                         <div class="bookmark-icon" style="background: #EA4C89;">
+                             <i class="fa fa-dribbble"></i>
+                         </div>
+                         <span class="bookmark-name">Dribbble</span>
+                     </a>
+                     <a href="https://www.notion.so" target="_blank" class="bookmark-item">
+                         <div class="bookmark-icon" style="background: #000;">
+                             <i class="fa fa-sticky-note-o"></i>
+                         </div>
+                         <span class="bookmark-name">Notion</span>
+                     </a>
+                 </div>
+             </div>
+             <div class="widget glass" data-widget-id="ai-tools">
+                 <div class="widget-header">
+                     <i class="fa fa-lightbulb-o widget-icon"></i>
+                     <span class="widget-title">AI 智能助手</span>
+                 </div>
+                 <p class="ai-description">快速访问 AI 工具，提升工作效率</p>
+                 <div class="ai-tools-grid">
+                     <a href="https://chat.openai.com" target="_blank" class="ai-tool-item" style="background: linear-gradient(135deg, rgba(16, 185, 129, 0.1), rgba(6, 182, 212, 0.1));">
+                         <div class="ai-tool-icon" style="background: linear-gradient(135deg, #10B981, #06B6D4);">
+                             <i class="fa fa-comment"></i>
+                         </div>
+                         <span class="ai-tool-name">ChatGPT</span>
+                     </a>
+                     <a href="https://claude.ai" target="_blank" class="ai-tool-item" style="background: linear-gradient(135deg, rgba(249, 115, 22, 0.1), rgba(234, 179, 8, 0.1));">
+                         <div class="ai-tool-icon" style="background: linear-gradient(135deg, #F97316, #EAB308);">
+                             <i class="fa fa-comments"></i>
+                         </div>
+                         <span class="ai-tool-name">Claude</span>
+                     </a>
+                     <a href="https://www.doubao.com" target="_blank" class="ai-tool-item" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(168, 85, 247, 0.1));">
+                         <div class="ai-tool-icon" style="background: linear-gradient(135deg, #3B82F6, #A855F7);">
+                             <i class="fa fa-robot"></i>
+                         </div>
+                         <span class="ai-tool-name">豆包</span>
+                     </a>
+                     <a href="https://copilot.microsoft.com" target="_blank" class="ai-tool-item" style="background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.1));">
+                         <div class="ai-tool-icon" style="background: linear-gradient(135deg, #3B82F6, #06B6D4);">
+                             <i class="fa fa-magic"></i>
+                         </div>
+                         <span class="ai-tool-name">Copilot</span>
+                     </a>
+                 </div>
+             </div>
+         </section>
+     </div>
+     <div id="settings-modal" class="modal-overlay">
+         <div class="modal-content glass">
+             <div class="modal-header">
+                 <h3 class="modal-title">设置</h3>
+                 <button class="modal-close" onclick="closeSettings()">
+                     <i class="fa fa-times"></i>
+                 </button>
+             </div>
+             
+             <div class="setting-section">
+                 <label class="setting-label">主题模式</label>
+                 <div class="theme-buttons">
+                     <button class="theme-btn" data-theme="light" onclick="setTheme('light')">
+                         <i class="fa fa-sun-o"></i>
+                         浅色
+                     </button>
+                     <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">
+                         <i class="fa fa-moon-o"></i>
+                         深色
+                     </button>
+                     <button class="theme-btn active" data-theme="auto" onclick="setTheme('auto')">
+                         <i class="fa fa-desktop"></i>
+                         自动
+                     </button>
+                 </div>
+             </div>
+             
+             <div class="setting-section">
+                 <label class="setting-label">默认搜索引擎</label>
+                 <select id="default-engine" class="setting-select" onchange="saveDefaultEngine()">
+                     <option value="bing">Bing</option>
+                     <option value="baidu">百度</option>
+                     <option value="google">Google</option>
+                 </select>
+             </div>
+             
+             <div class="setting-section">
+                 <label class="setting-label">背景风格</label>
+                 <div class="bg-options">
+                     <div class="bg-option active" onclick="setBackground('gradient')">渐变</div>
+                     <div class="bg-option" onclick="setBackground('pure')">纯色</div>
+                     <div class="bg-option" onclick="setBackground('custom')">自定义</div>
+                 </div>
+             </div>
+         </div>
+     </div>
+     <script src="./main/js/main.js" type="text/javascript" charset="utf-8"></script>
+ </body>
+ </html>
