@@ -57,6 +57,7 @@
      --backdrop-blur: blur(var(--blur-amount));
      --webkit-backdrop-blur: blur(var(--blur-amount));
  }
+ 
  .dark {
      --bg-primary: var(--dark-bg-primary);
      --bg-secondary: var(--dark-bg-secondary);
@@ -71,14 +72,17 @@
      --border-color: var(--dark-border-color);
      --shadow-color: var(--dark-shadow-color);
  }
+ 
  * {
      margin: 0;
      padding: 0;
      box-sizing: border-box;
  }
+ 
  html {
      scroll-behavior: smooth;
  }
+ 
  body {
      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
      -webkit-font-smoothing: antialiased;
@@ -86,34 +90,42 @@
      min-height: 100vh;
      transition: background-color var(--transition-slow);
  }
+ 
  ::-webkit-scrollbar {
      width: 6px;
      height: 6px;
  }
+ 
  ::-webkit-scrollbar-track {
      background: transparent;
  }
+ 
  ::-webkit-scrollbar-thumb {
      background: var(--text-tertiary);
      border-radius: 3px;
  }
+ 
  ::-webkit-scrollbar-thumb:hover {
      background: var(--text-secondary);
  }
+ 
  ::selection {
      background: var(--ios-blue);
      color: white;
  }
+ 
  .widget-dragging {
      opacity: 0.8;
      transform: scale(1.02);
      z-index: 1000 !important;
      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
  }
+ 
  .widget-drag-over {
      border: 2px dashed var(--ios-blue) !important;
      background: rgba(0, 122, 255, 0.1) !important;
  }
+ 
  .widget-placeholder {
      border: 2px dashed var(--ios-blue);
      border-radius: var(--radius-lg);

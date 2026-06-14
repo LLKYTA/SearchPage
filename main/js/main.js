@@ -8,21 +8,21 @@ const CONFIG = {
         google: { name: 'Google', url: 'https://www.google.com/search?q=', icon: 'fa-google' },
         bing: { name: 'Bing', url: 'https://www.bing.com/search?q=', icon: 'fa-edge' }
     },
-    currentEngine: 'bing',    // 当前选中的搜索引擎，默认是必应
-    currentTheme: 'auto'      // 当前主题模式，默认是自动跟随系统
+    currentEngine: 'bing', // 当前选中的搜索引擎，默认是必应
+    currentTheme: 'auto' // 当前主题模式，默认是自动跟随系统
 };
 
 // ========================================
 // 页面加载完成后执行初始化
 // ========================================
 document.addEventListener('DOMContentLoaded', () => {
-    loadSettings();       // 1. 加载本地保存的设置（搜索引擎、主题）
-    initTime();           // 2. 初始化时间显示（最重要！）
-    initSearch();         // 3. 初始化搜索功能
-    initTheme();          // 4. 初始化主题切换
-    initTodo();           // 5. 初始化待办事项
-    initSettingsModal();  // 6. 初始化设置弹窗
-    initDragSystem();     // 7. 初始化小组件拖拽功能
+    loadSettings(); // 1. 加载本地保存的设置（搜索引擎、主题）
+    initTime(); // 2. 初始化时间显示（最重要！）
+    initSearch(); // 3. 初始化搜索功能
+    initTheme(); // 4. 初始化主题切换
+    initTodo(); // 5. 初始化待办事项
+    initSettingsModal(); // 6. 初始化设置弹窗
+    initDragSystem(); // 7. 初始化小组件拖拽功能
 });
 
 // ========================================
@@ -33,16 +33,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // ❌ 第一次定义（会被后面的覆盖掉！这就是为什么时间不更新！）
 function initTime() {
-    updateTime();                  // 调用一次更新时间
+    updateTime(); // 调用一次更新时间
     setInterval(updateTime, 1000); // 设置定时器：每秒调用updateTime
 }
 
 // ✅ 第二次定义（正确的版本，会覆盖上面的）
 function initTime() {
-    updateTime();                  // 页面打开立即显示一次时间
+    updateTime(); // 页面打开立即显示一次时间
     // 使用 window.setInterval 确保定时器在全局作用域运行
     window.setInterval(function() {
-        updateTime();              // 每1000毫秒（1秒）执行一次时间更新
+        updateTime(); // 每1000毫秒（1秒）执行一次时间更新
     }, 1000);
 }
 
@@ -50,7 +50,7 @@ function initTime() {
 // 更新时间显示的核心函数
 // ========================================
 function updateTime() {
-    const now = new Date();                    // 获取当前系统时间
+    const now = new Date(); // 获取当前系统时间
     
     // 获取时、分、秒，并用 padStart 保证两位数（如 9点 → "09"）
     const hours = String(now.getHours()).padStart(2, '0');
@@ -69,9 +69,9 @@ function updateTime() {
     
     // 获取年、月、日、星期
     const year = now.getFullYear();
-    const month = now.getMonth() + 1;  // 月份从0开始，所以要+1
+    const month = now.getMonth() + 1; // 月份从0开始，所以要+1
     const date = now.getDate();
-    const week = weeks[now.getDay()];  // getDay()返回0-6，对应周日到周六
+    const week = weeks[now.getDay()]; // getDay()返回0-6，对应周日到周六
     
     // 更新日期显示
     const dateEl = document.getElementById('date-display');
@@ -114,7 +114,7 @@ function performSearch() {
 
 // 切换搜索引擎
 function setSearchEngine(engine) {
-    CONFIG.currentEngine = engine;  // 更新配置
+    CONFIG.currentEngine = engine; // 更新配置
     
     // 移除所有按钮的active样式
     document.querySelectorAll('.engine-btn').forEach(btn => btn.classList.remove('active'));
@@ -160,8 +160,8 @@ function setTheme(theme) {
     const activeBtn = document.querySelector(`[data-theme="${theme}"]`);
     if (activeBtn) activeBtn.classList.add('active');
     
-    applyTheme();    // 应用主题
-    saveSettings();  // 保存设置
+    applyTheme(); // 应用主题
+    saveSettings(); // 保存设置
 }
 
 // 实际应用主题：给html加/删 dark 类
@@ -170,15 +170,16 @@ function applyTheme() {
     const themeIcon = document.getElementById('theme-icon');
     
     // 判断是否应该用深色模式
-    let isDark = CONFIG.currentTheme === 'auto' 
-        ? window.matchMedia('(prefers-color-scheme: dark)').matches  // 自动：跟随系统
-        : CONFIG.currentTheme === 'dark';                           // 手动：用户选择
+    let isDark = CONFIG.currentTheme === 'auto' ?
+        window.matchMedia('(prefers-color-scheme: dark)').matches // 自动：跟随系统
+        :
+        CONFIG.currentTheme === 'dark'; // 手动：用户选择
     
     if (isDark) {
-        html.classList.add('dark');              // 加dark类，CSS自动变深色
-        if (themeIcon) themeIcon.className = 'fa fa-sun-o';  // 图标变成太阳
+        html.classList.add('dark'); // 加dark类，CSS自动变深色
+        if (themeIcon) themeIcon.className = 'fa fa-sun-o'; // 图标变成太阳
     } else {
-        html.classList.remove('dark');           // 移除dark类
+        html.classList.remove('dark'); // 移除dark类
         if (themeIcon) themeIcon.className = 'fa fa-moon-o'; // 图标变成月亮
     }
 }
@@ -195,7 +196,7 @@ function addTodo() {
     const text = prompt('请输入待办事项:');
     if (text && text.trim()) {
         createTodoItem(text.trim(), false); // 创建DOM元素
-        saveTodos();                        // 保存到本地
+        saveTodos(); // 保存到本地
     }
 }
 
@@ -265,7 +266,7 @@ function initSettingsModal() {
 function openSettings() {
     const modal = document.getElementById('settings-modal');
     if (modal) {
-        modal.classList.add('active');      // 显示弹窗
+        modal.classList.add('active'); // 显示弹窗
         document.body.style.overflow = 'hidden'; // 禁止背景滚动
     }
 }
@@ -273,8 +274,8 @@ function openSettings() {
 function closeSettings() {
     const modal = document.getElementById('settings-modal');
     if (modal) {
-        modal.classList.remove('active');   // 隐藏弹窗
-        document.body.style.overflow = '';  // 恢复滚动
+        modal.classList.remove('active'); // 隐藏弹窗
+        document.body.style.overflow = ''; // 恢复滚动
     }
 }
 
@@ -332,8 +333,8 @@ function initDragSystem() {
         const container = document.querySelector('.' + containerId);
         if (!container) return;
         
-        let draggedWidget = null;  // 当前正在拖拽的元素
-        let draggedIndex = null;   // 拖拽元素的原始位置
+        let draggedWidget = null; // 当前正在拖拽的元素
+        let draggedIndex = null; // 拖拽元素的原始位置
         
         // 给每个小组件加上可拖拽属性
         const widgets = container.querySelectorAll('.widget');
