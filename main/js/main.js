@@ -65,7 +65,7 @@ function updateTime() {
     }
     
     // 星期数组，用于把数字转成中文
-    const weeks = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+    const weeks = ['周日', '周一', '周二', '周三', '周四', '周五', '周六'];
     
     // 获取年、月、日、星期
     const year = now.getFullYear();

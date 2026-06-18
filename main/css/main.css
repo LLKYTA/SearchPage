@@ -127,7 +127,7 @@
  }
  
  .logo-icon {
-     width: 44px;
+     width: 30vw;
      height: 44px;
      background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
      border-radius: var(--radius-lg);
