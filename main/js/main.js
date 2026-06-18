@@ -532,7 +532,7 @@ async function renderAiTools() {
 
 // ========== 添加书签 ==========
 function addBookmark() {
-    const url = prompt('请输入网站地址（例如 https://example.com）:');
+    const url = prompt('请输入网站地址（例如 example.com）:');
     if (!url || !url.trim()) return;
     
     let cleanUrl = url.trim();
@@ -562,7 +562,7 @@ function deleteBookmark(index) {
 
 // ========== 添加 AI 工具 ==========
 function addAiTool() {
-    const url = prompt('请输入 AI 工具地址（例如 https://chat.example.com）:');
+    const url = prompt('请输入 AI 工具地址（例如 chat.example.com）:');
     if (!url || !url.trim()) return;
     
     let cleanUrl = url.trim();
