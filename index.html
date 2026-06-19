@@ -160,6 +160,27 @@
                     <!-- AI工具通过 JS 动态渲染 -->
                 </div>
             </div>
+            <!-- 热榜 -->
+            <div class="widget glass" data-widget-id="hotboard">
+                <div class="widget-header">
+                    <i class="fa fa-fire widget-icon"></i>
+                    <span class="widget-title">实时热榜</span>
+                    <button class="widget-add-btn" onclick="refreshHotboard()" title="刷新热榜">
+                        <i class="fa fa-refresh"></i>
+                    </button>
+                </div>
+                <div class="hotboard-meta">
+                    <span class="hotboard-source-tag" id="hotboard-source-name">微博热搜</span>
+                    <span class="hotboard-time" id="hotboard-update-time"></span>
+                </div>
+                <div id="hotboard-list" class="hotboard-list">
+                    <div class="hotboard-loading">
+                        <i class="fa fa-spinner fa-spin"></i>
+                        <span>加载中...</span>
+                    </div>
+                </div>
+            </div>
+            
             
         </section>
     </div>
@@ -202,11 +223,25 @@
             <div class="setting-section">
                 <label class="setting-label">背景风格</label>
                 <div class="bg-options">
-                    <div class="bg-option active" onclick="setBackground('gradient')">渐变</div>
-                    <div class="bg-option" onclick="setBackground('pure')">纯色</div>
-                    <div class="bg-option" onclick="setBackground('custom')">自定义</div>
+                    <div class="bg-option active" onclick="setBackground('gradient', this)">渐变</div>
+                    <div class="bg-option" onclick="setBackground('pure', this)">纯色</div>
+                    <div class="bg-option" onclick="setBackground('custom', this)">自定义</div>
                 </div>
             </div>
+            <div class="setting-section">
+                <label class="setting-label">热榜来源</label>
+                <select id="hotboard-source-select" class="setting-select" onchange="saveHotboardSource()">
+                    <option value="weibo">微博热搜</option>
+                    <option value="zhihu">知乎热榜</option>
+                    <option value="bilibili">B站热门</option>
+                    <option value="baidu">百度热搜</option>
+                    <option value="douyin">抖音热榜</option>
+                    <option value="toutiao">今日头条</option>
+                    <option value="36kr">36氪</option>
+                    <option value="hupu">虎扑</option>
+                </select>
+            </div>
+            
             <div class="setting-section">
                 <label class="setting-label">快捷方式管理</label>
                 <div class="setting-buttons">
@@ -222,7 +257,7 @@
         </div>
     </div>
     <script src="./main/js/main.js" type="text/javascript" charset="utf-8"></script>
-    <script src="./main/js/uapi.js" type="text/javascript" charset="uft-8"></script>
+    <script src="./main/js/uapi.js" type="text/javascript" charset="utf-8"></script>
 </body>
 
 </html>

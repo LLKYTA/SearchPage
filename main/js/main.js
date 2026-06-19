@@ -29,7 +29,18 @@ const MAX_RETRY = 3; // 最多重新获取2次
 let bookmarks = [];
 let aiTools = [];
 
-
+// ========== 热榜配置 ==========
+ const HOTBOARD_SOURCES = {
+     weibo: { name: '微博热搜', icon: 'fa-weibo' },
+     zhihu: { name: '知乎热榜', icon: 'fa-question-circle' },
+     bilibili: { name: 'B站热门', icon: 'fa-play-circle' },
+     baidu: { name: '百度热搜', icon: 'fa-search' },
+     douyin: { name: '抖音热榜', icon: 'fa-music' },
+     toutiao: { name: '今日头条', icon: 'fa-newspaper-o' },
+     '36kr': { name: '36氪', icon: 'fa-lightbulb-o' },
+     hupu: { name: '虎扑', icon: 'fa-futbol-o' }
+ };
+ let currentHotboardSource = 'weibo'; // 默认微博热搜
 
 
 // ========================================
@@ -43,6 +54,8 @@ document.addEventListener('DOMContentLoaded', () => {
     initSearch();
     initTheme();
     initTodo();
+    loadHotboardSource();
+    loadHotboard();
     initSettingsModal();
     renderBookmarks();
     renderAiTools();
@@ -641,12 +654,17 @@ function openAiToolManager() {
     }
 }
 
-// 设置背景风格
-function setBackground(type) {
+// 设置背景风格（修复 event 未传参问题）
+function setBackground(type, el) {
     document.querySelectorAll('.bg-option').forEach(btn => btn.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    if (el) {
+        el.classList.add('active');
+    } else if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+    }
     localStorage.setItem('background', type);
 }
+
 
 // ========================================
 // 小组件拖拽系统（HTML5原生拖拽API）
@@ -739,4 +757,185 @@ function saveWidgetOrder(container) {
         order.push(widget.dataset.widgetId || widget.id);
     });
     localStorage.setItem('widgetOrder_' + container.className, JSON.stringify(order));
+}
+// ========================================
+// 热榜功能
+// ========================================
+
+// 加载保存的热榜源
+function loadHotboardSource() {
+    const saved = localStorage.getItem('hotboard-source');
+    if (saved && HOTBOARD_SOURCES[saved]) {
+        currentHotboardSource = saved;
+    }
+    // 同步设置弹窗中的下拉框
+    const select = document.getElementById('hotboard-source-select');
+    if (select) {
+        select.value = currentHotboardSource;
+    }
+    // 更新热榜源名称显示
+    updateHotboardSourceName();
+}
+
+// 保存热榜源
+function saveHotboardSource() {
+    const select = document.getElementById('hotboard-source-select');
+    if (!select) return;
+    
+    const source = select.value;
+    if (HOTBOARD_SOURCES[source]) {
+        currentHotboardSource = source;
+        localStorage.setItem('hotboard-source', source);
+        updateHotboardSourceName();
+        loadHotboard(); // 切换后立即刷新
+    }
+}
+
+// 更新热榜源名称显示
+function updateHotboardSourceName() {
+    const nameEl = document.getElementById('hotboard-source-name');
+    if (nameEl && HOTBOARD_SOURCES[currentHotboardSource]) {
+        nameEl.textContent = HOTBOARD_SOURCES[currentHotboardSource].name;
+    }
+}
+
+
+// 加载热榜数据
+// 加载热榜数据
+async function loadHotboard() {
+    const listEl = document.getElementById('hotboard-list');
+    const timeEl = document.getElementById('hotboard-update-time');
+    const refreshBtn = document.querySelector('[data-widget-id="hotboard"] .widget-add-btn .fa-refresh');
+    
+    if (!listEl) return;
+    
+    // 显示加载状态
+    listEl.innerHTML = `
+        <div class="hotboard-loading">
+            <i class="fa fa-spinner fa-spin"></i>
+            <span>加载中...</span>
+        </div>
+    `;
+    
+    if (refreshBtn) refreshBtn.classList.add('spinning');
+    
+    // 等待 uapi.js 加载完成（最多等3秒）
+    if (typeof GetHotboard !== 'function') {
+        await new Promise(resolve => {
+            let waited = 0;
+            const check = setInterval(() => {
+                if (typeof GetHotboard === 'function') {
+                    clearInterval(check);
+                    resolve();
+                } else if (waited >= 3000) {
+                    clearInterval(check);
+                    resolve();
+                }
+                waited += 100;
+            }, 100);
+        });
+    }
+    
+    if (typeof GetHotboard !== 'function') {
+        listEl.innerHTML = `
+            <div class="hotboard-error">
+                <i class="fa fa-exclamation-circle"></i>
+                <span>热榜模块加载失败，请刷新页面</span>
+            </div>
+        `;
+        if (refreshBtn) refreshBtn.classList.remove('spinning');
+        return;
+    }
+    
+    const data = await GetHotboard(currentHotboardSource);
+    
+    if (refreshBtn) refreshBtn.classList.remove('spinning');
+    
+    if (!data || !data.list || data.list.length === 0) {
+        listEl.innerHTML = `
+            <div class="hotboard-error">
+                <i class="fa fa-exclamation-circle"></i>
+                <span>暂无热榜数据，请稍后重试</span>
+            </div>
+        `;
+        return;
+    }
+    
+    // 更新时间
+    if (timeEl && data.update_time) {
+        const timeStr = data.update_time;
+        const parts = timeStr.split(' ');
+        if (parts.length >= 2) {
+            timeEl.textContent = '更新于 ' + parts[1].substring(0, 5);
+        }
+    }
+    
+    // 渲染热榜列表
+    renderHotboardList(data.list);
+}
+
+
+
+// SDK 就绪回调（由 uapi.js 在 load 时调用）
+function onUapiReady() {
+    // 如果热榜还没加载成功，重新加载一次
+    const listEl = document.getElementById('hotboard-list');
+    if (listEl && listEl.querySelector('.hotboard-error')) {
+        loadHotboard();
+    }
+}
+
+
+// 渲染热榜列表
+function renderHotboardList(list) {
+    const listEl = document.getElementById('hotboard-list');
+    if (!listEl) return;
+    
+    listEl.innerHTML = '';
+    
+    // 只显示前15条
+    const displayList = list.slice(0, 15);
+    
+    displayList.forEach((item, index) => {
+        const div = document.createElement('a');
+        div.className = 'hotboard-item';
+        div.href = item.url || '#';
+        div.target = '_blank';
+        
+        // 处理热度值格式化
+        let hotValue = '';
+        if (item.hot_value) {
+            const hot = parseInt(item.hot_value);
+            if (hot >= 10000) {
+                hotValue = (hot / 10000).toFixed(1) + '万';
+            } else {
+                hotValue = hot.toString();
+            }
+        }
+        
+        // 处理标签（微博的"爆""新""热"等）
+        let tagHtml = '';
+        if (item.extra && item.extra.tag) {
+            const tag = item.extra.tag;
+            let tagClass = 'hotboard-tag';
+            if (tag === '爆' || tag === '爆点') tagClass += ' boom';
+            else if (tag === '新' || tag === 'NEW') tagClass += ' new';
+            else if (tag === '热' || tag === 'HOT') tagClass += ' hot';
+            tagHtml = `<span class="${tagClass}">${tag}</span>`;
+        }
+        
+        div.innerHTML = `
+            <div class="hotboard-rank">${index + 1}</div>
+            <span class="hotboard-title">${escapeHtml(item.title || '')}</span>
+            ${tagHtml}
+            ${hotValue ? `<span class="hotboard-hot"><i class="fa fa-fire"></i>${hotValue}</span>` : ''}
+        `;
+        
+        listEl.appendChild(div);
+    });
+}
+
+// 刷新热榜
+function refreshHotboard() {
+    loadHotboard();
 }

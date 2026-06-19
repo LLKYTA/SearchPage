@@ -913,3 +913,166 @@
 .dark .setting-btn:hover {
     background: rgba(0, 122, 255, 0.25);
 }
+/* ========== 热榜小组件 ========== */
+/* ========== 热榜小组件 ========== */
+.hotboard-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.hotboard-source-tag {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ios-blue);
+}
+
+.hotboard-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+}
+
+.hotboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    max-height: 260px;
+    overflow-y: auto;
+    margin: 0 -8px;
+    padding: 0 8px;
+}
+
+.hotboard-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 50px 0;
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+.hotboard-loading .fa-spinner {
+    font-size: 16px;
+}
+
+.hotboard-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: var(--radius-md);
+    text-decoration: none;
+    transition: background var(--transition-fast);
+    cursor: pointer;
+}
+
+.hotboard-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.hotboard-rank {
+    width: 22px;
+    height: 22px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 700;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    flex-shrink: 0;
+    font-variant-numeric: tabular-nums;
+}
+
+.hotboard-item:nth-child(1) .hotboard-rank {
+    background: linear-gradient(135deg, #FF3B30, #FF9500);
+    color: white;
+    box-shadow: 0 2px 6px rgba(255, 59, 48, 0.3);
+}
+
+.hotboard-item:nth-child(2) .hotboard-rank {
+    background: linear-gradient(135deg, #FF9500, #FFCC00);
+    color: white;
+    box-shadow: 0 2px 6px rgba(255, 149, 0, 0.3);
+}
+
+.hotboard-item:nth-child(3) .hotboard-rank {
+    background: linear-gradient(135deg, #FFCC00, #FFD60A);
+    color: white;
+    box-shadow: 0 2px 6px rgba(255, 204, 0, 0.3);
+}
+
+.hotboard-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    line-height: 1.4;
+}
+
+.hotboard-hot {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-variant-numeric: tabular-nums;
+}
+
+.hotboard-hot .fa-fire {
+    color: #FF3B30;
+    font-size: 10px;
+}
+
+.hotboard-tag {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255, 59, 48, 0.1);
+    color: #FF3B30;
+    flex-shrink: 0;
+    font-weight: 600;
+}
+
+.hotboard-tag.new {
+    background: rgba(52, 199, 89, 0.12);
+    color: #34C759;
+}
+
+.hotboard-tag.boom {
+    background: rgba(255, 149, 0, 0.12);
+    color: #FF9500;
+}
+
+.hotboard-error {
+    text-align: center;
+    padding: 40px 0;
+    color: var(--text-tertiary);
+    font-size: 13px;
+}
+
+.hotboard-error i {
+    font-size: 28px;
+    margin-bottom: 10px;
+    display: block;
+    opacity: 0.5;
+}
+
+/* 刷新按钮旋转动画 */
+.widget-add-btn .fa-refresh.spinning {
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
