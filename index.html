@@ -195,6 +195,19 @@
               <i class="fa fa-chevron-right setting-row-arrow"></i>
             </button>
           </div>
+          <!-- 关于 -->
+          <div class="settings-group">
+            <div class="settings-group-title">其他</div>
+            <div class="settings-card">
+              <button class="setting-row setting-row-btn" onclick="openAboutModal()">
+                <div class="setting-row-left">
+                  <i class="fa fa-info-circle setting-row-icon"></i>
+                  <span class="setting-row-label">关于搜索页</span>
+                </div>
+                <i class="fa fa-chevron-right setting-row-arrow"></i>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
@@ -216,7 +229,36 @@
         </div>
       </div>
     </div>
-
+    <!-- 关于弹窗 -->
+    <!-- 关于弹窗 -->
+    <div id="about-modal" class="modal-overlay">
+      <div class="modal-content glass" style="max-width: 360px; text-align: center;">
+        <div class="modal-header">
+          <h3 class="modal-title">关于</h3>
+          <button class="modal-close" onclick="closeAboutModal()">
+            <i class="fa fa-times"></i>
+          </button>
+        </div>
+        <div style="padding: 8px 0 20px;">
+          <div class="logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px;">KD</div>
+          <h4 style="margin: 0 0 4px; font-size: 18px; color: var(--text-primary);">KD起始页</h4>
+          <p style="margin: 0 0 20px; font-size: 13px; color: var(--text-secondary);">版本 0.8.0</p>
+          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+            iOS 风格浏览器起始页<br>
+            小组件框架 · 拖拽排序 · 多引擎搜索<br>
+            毛玻璃设计 · 深色模式 · 热榜聚合<br>
+            可扩展 · 响应式布局 · 数据本地存储
+          </p>
+          <p style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px;">
+            本软件为开源项目，遵循 MIT 协议
+          </p>
+          <div style="font-size: 12px; color: var(--text-tertiary);">
+            Made with ❤️ by KD<br>
+            © 2026 KD起始页
+          </div>
+        </div>
+      </div>
+    </div>
     <!-- JavaScript 引入顺序：依赖 -> 框架 -> 组件 -> 主逻辑 -> API -->
     <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
     <script src="./main/js/widget-framework.js"></script>

@@ -141,7 +141,23 @@
 }
 /* 默认手机2列 */
 .widgets-grid { grid-template-columns: repeat(2, 1fr); }
-@media (min-width: 768px) { .widgets-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (max-width: 768px) {
+    .widgets-area {
+        grid-template-columns: repeat(2, 1fr); /* 改为两列 */
+        gap: 12px; /* 适当缩小间距，让两列更紧凑 */
+    }
+
+    /* 尺寸适配：中、大尺寸组件在手机端占满两列 */
+    .widget-md,
+    .widget-lg {
+        grid-column: span 2;
+    }
+
+    /* 保持小尺寸组件占一列 */
+    .widget-sm {
+        grid-column: span 1;
+    }
+}
 @media (min-width: 1024px) { .widgets-grid { grid-template-columns: repeat(4, 1fr); } }
 @media (min-width: 1280px) { .widgets-grid { grid-template-columns: repeat(5, 1fr); } }
 
@@ -565,4 +581,34 @@
 /* Sortable 拖拽时的占位样式 */
 .sortable-drag {
     opacity: 0.5;
+}
+/* ========== 拖拽动画优化 ========== */
+
+/* 被拖拽的组件：放大 + 增强阴影 + 轻微旋转（可选） */
+.widget-drag {
+  transform: scale(1.05);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25) !important;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  opacity: 0.95;
+  z-index: 1000 !important;
+}
+
+/* 原位置的占位符：虚线边框 + 半透明 */
+.widget-ghost {
+  opacity: 0.4;
+  border: 2px dashed var(--ios-blue);
+  background: rgba(0, 122, 255, 0.05) !important;
+  transition: all 0.2s ease;
+}
+
+/* 被选中的组件（抬起时）：轻微放大 */
+.widget-chosen {
+  transform: scale(1.02);
+  box-shadow: 0 15px 45px rgba(0, 0, 0, 0.2) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 让位动画更平滑（SortableJS 会自动添加，但可自定义） */
+.widget {
+  transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }

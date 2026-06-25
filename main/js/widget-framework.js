@@ -220,11 +220,15 @@ class WidgetArea {
     return;
   }
   new Sortable(this.container, {
-    animation: 150,
+    animation: 200, // 动画时长延长，更平滑
+    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)', // 缓动函数
     handle: '.widget-header',
     draggable: '.widget',
-    filter: '.widget-size-btn, .widget-delete-btn', // ← 关键修复
-    preventOnFilter: false, // 保证按钮能正常点击
+    filter: '.widget-size-btn, .widget-delete-btn',
+    preventOnFilter: false,
+    ghostClass: 'widget-ghost', // 原位置占位样式
+    chosenClass: 'widget-chosen', // 选中拖动中的样式
+    dragClass: 'widget-drag', // 正在拖拽的样式
     onEnd: (evt) => {
       if (evt.oldIndex !== evt.newIndex) {
         this.moveWidget(evt.oldIndex, evt.newIndex);

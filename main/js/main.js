@@ -27,7 +27,16 @@ document.addEventListener('DOMContentLoaded', () => {
   initSearch();
   loadSettings();
   applyTheme();
-
+  // 关于弹窗 - 点击遮罩关闭
+  document.getElementById('about-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeAboutModal();
+  });
+  // ESC 关闭
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeAboutModal();
+    }
+  });
   // 热榜来源下拉框回显
   const hotboardSelect = document.getElementById('hotboard-source-select');
   if (hotboardSelect) {
@@ -191,4 +200,15 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+
+function openAboutModal() {
+  closeSettings();
+  document.getElementById('about-modal').classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeAboutModal() {
+  document.getElementById('about-modal').classList.remove('active');
+  document.body.style.overflow = '';
 }
