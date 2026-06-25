@@ -493,3 +493,76 @@
     .bookmarks-grid { grid-template-columns: repeat(2, 1fr); }
     .ai-tools-grid { grid-template-columns: repeat(2, 1fr); }
 }
+/* ========== 小组件框架补充样式 ========== */
+
+.widgets-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--widget-gap);
+    margin-bottom: var(--widget-gap);
+    min-height: 80px;
+}
+
+/* 尺寸定义（可在媒体查询中进一步调整） */
+.widget-sm { grid-column: span 1; grid-row: span 1; }
+.widget-md { grid-column: span 2; grid-row: span 1; }
+.widget-lg { grid-column: span 3; grid-row: span 2; }
+
+@media (max-width: 768px) {
+    .widgets-area {
+        grid-template-columns: 1fr;
+    }
+    .widget-sm, .widget-md, .widget-lg {
+        grid-column: span 1;
+    }
+}
+
+/* 头部操作按钮 */
+.widget-header-actions {
+    display: flex;
+    gap: 6px;
+}
+.widget-size-btn,
+.widget-delete-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 12px;
+    padding: 4px;
+    transition: color 0.2s;
+}
+.widget-size-btn:hover { color: var(--ios-blue); }
+.widget-delete-btn:hover { color: var(--ios-red); }
+
+/* 小组件库卡片 */
+.gallery-card {
+    width: 90px;
+    height: 90px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+.gallery-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+.gallery-card-icon {
+    font-size: 24px;
+    color: var(--ios-blue);
+    margin-bottom: 6px;
+}
+.gallery-card-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+/* Sortable 拖拽时的占位样式 */
+.sortable-drag {
+    opacity: 0.5;
+}
