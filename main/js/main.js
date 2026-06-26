@@ -1,7 +1,7 @@
 /* ==========================================
-   main.js - 全局逻辑
+   main.js - KD起始页全局逻辑（含启动动画）
    ========================================== */
-let currentManageWidget = null; // 当前正在管理的 Widget 实例
+let currentManageWidget = null;
 
 const CONFIG = {
   searchEngines: {
@@ -13,7 +13,7 @@ const CONFIG = {
   currentTheme: 'auto'
 };
 
-// 注册所有 Widget
+// 注册所有小组件
 WidgetFramework.register('clock', ClockWidget);
 WidgetFramework.register('weather', WeatherWidget);
 WidgetFramework.register('shortcuts', ShortcutsWidget);
@@ -21,27 +21,29 @@ WidgetFramework.register('todo', TodoWidget);
 WidgetFramework.register('bookmarks', BookmarksWidget);
 WidgetFramework.register('ai-tools', AiToolsWidget);
 WidgetFramework.register('hotboard', HotboardWidget);
+WidgetFramework.register('time-progress', TimeProgressWidget); // 时间进度条
 
 document.addEventListener('DOMContentLoaded', () => {
   WidgetFramework.init();
   initSearch();
   loadSettings();
   applyTheme();
-  // 关于弹窗 - 点击遮罩关闭
-  document.getElementById('about-modal').addEventListener('click', function(e) {
-    if (e.target === this) closeAboutModal();
-  });
-  // ESC 关闭
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      closeAboutModal();
-    }
-  });
-  // 热榜来源下拉框回显
+
   const hotboardSelect = document.getElementById('hotboard-source-select');
   if (hotboardSelect) {
     const savedSource = localStorage.getItem('hotboard-source') || 'weibo';
     hotboardSelect.value = savedSource;
+  }
+
+  // --- iOS 风格启动动画 ---
+  const splash = document.getElementById('splash-screen');
+  if (splash) {
+    setTimeout(() => {
+      splash.classList.add('hide');
+      splash.addEventListener('transitionend', () => {
+        splash.remove();
+      }, { once: true });
+    }, 1900);
   }
 });
 
@@ -96,7 +98,6 @@ function applyTheme() {
   if (icon) icon.className = isDark ? 'fa fa-sun-o' : 'fa fa-moon-o';
 }
 
-// 监听系统主题变化（auto模式）
 window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
   if (CONFIG.currentTheme === 'auto') applyTheme();
 });
@@ -117,7 +118,7 @@ function loadSettings() {
   setSearchEngine(CONFIG.currentEngine);
 }
 
-// ========== 热榜来源选择 ==========
+// ========== 热榜来源 ==========
 function saveHotboardSource() {
   const select = document.getElementById('hotboard-source-select');
   if (select) {
@@ -131,7 +132,7 @@ function saveHotboardSource() {
   }
 }
 
-// ========== 背景风格（占位） ==========
+// ========== 背景（占位） ==========
 function setBackground(type, el) {
   document.querySelectorAll('.bg-option').forEach(b => b.classList.remove('active'));
   if (el) el.classList.add('active');
@@ -140,7 +141,6 @@ function setBackground(type, el) {
 
 // ========== 管理弹窗桥接 ==========
 function openWidgetManager(type) {
-  // 只在 main-area 中查找匹配的 Widget 实例
   const area = WidgetFramework.areas.get('main-area');
   if (area) {
     const widget = area.widgets.find(w => w.constructor.type === type);
@@ -157,7 +157,7 @@ function closeManageModal() {
   document.getElementById('manage-modal').classList.remove('active');
   document.body.style.overflow = '';
   if (currentManageWidget) {
-    currentManageWidget.render(); // 刷新小组件
+    currentManageWidget.render();
     currentManageWidget = null;
   }
 }
@@ -181,7 +181,7 @@ function manageAddItem() {
     shortcuts.push({ name: '新快捷', url: 'https://', icon: 'fa-external-link', color: '#999' });
     localStorage.setItem('custom-shortcuts', JSON.stringify(shortcuts));
   }
-  currentManageWidget.openManager(); // 刷新管理列表
+  currentManageWidget.openManager();
 }
 
 // ========== 设置弹窗 ==========
@@ -195,13 +195,7 @@ function closeSettings() {
   document.body.style.overflow = '';
 }
 
-// ========== 工具函数 ==========
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
-
+// ========== 关于弹窗 ==========
 function openAboutModal() {
   closeSettings();
   document.getElementById('about-modal').classList.add('active');
@@ -211,4 +205,25 @@ function openAboutModal() {
 function closeAboutModal() {
   document.getElementById('about-modal').classList.remove('active');
   document.body.style.overflow = '';
+}
+
+// 绑定遮罩关闭
+document.addEventListener('click', function(e) {
+  if (e.target.id === 'about-modal') closeAboutModal();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') {
+    closeAboutModal();
+    closeManageModal();
+    closeSettings();
+    document.getElementById('widget-gallery-modal')?.classList.remove('active');
+  }
+});
+
+// ========== 工具函数 ==========
+function escapeHtml(text) {
+  const div = document.createElement('div');
+  div.textContent = text;
+  return div.innerHTML;
 }

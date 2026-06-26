@@ -612,3 +612,131 @@
 .widget {
   transition: transform 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
+/* 时间进度条小组件样式 */
+.progress-container {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+.progress-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+.progress-bar {
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-tertiary);
+    overflow: hidden;
+}
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+.today-fill { background: var(--ios-blue); }
+.week-fill { background: var(--ios-purple); }
+.year-fill { background: var(--ios-green); }
+/* ========== 启动动画 ========== */
+.splash-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #E0EAFF, #F5E6FF, #FFE6F0);
+    opacity: 1;
+    transition: opacity 0.4s ease;
+    pointer-events: all;
+}
+
+.dark .splash-screen {
+    background: linear-gradient(135deg, #0F172A, #1E1B4B, #312E81);
+}
+
+.splash-screen.hide {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.splash-logo {
+    text-align: center;
+    animation: splashPulse 1.8s ease-in-out forwards;
+}
+
+.splash-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
+    border-radius: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 32px;
+    font-weight: bold;
+    margin: 0 auto 16px;
+    box-shadow: 0 8px 30px rgba(0, 122, 255, 0.3);
+}
+
+.splash-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 1px;
+}
+
+@keyframes splashPulse {
+    0% {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    20% {
+        transform: scale(1.05);
+        opacity: 1;
+    }
+    70% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.1);
+        opacity: 0;
+    }
+}
+/* ========== 暗色模式文字修复 ========== */
+.widget,
+.widget-content {
+    color: var(--text-primary);
+}
+
+/* 小组件内的链接颜色 */
+.widget a {
+    color: var(--ios-blue);
+    text-decoration: none;
+}
+.dark .widget a {
+    color: #60a5fa;  /* 浅蓝色，暗色下更清晰 */
+}
+
+/* 小组件内次要文字（如果有自定义类未使用变量） */
+.widget .text-secondary {
+    color: var(--text-secondary);
+}
+
+/* 进度条小组件文字 */
+.progress-label {
+    color: var(--text-secondary);
+}
+
+/* 确保热榜标题等继承正确 */
+.hotboard-title {
+    color: var(--text-primary);
+}

@@ -1,77 +1,8 @@
 /* ==========================================
-   所有小组件实现
-   每个组件都是一个 Widget 子类，管理自己的数据
+   所有小组件实现（含尺寸差异化适配）
    ========================================== */
 
-// ---------- 时间 ----------
-class ClockWidget extends Widget {
-    static type = 'clock';
-    static displayName = '时间';
-    static defaultSize = 'sm';
-    static icon = 'fa-clock-o';
-
-    render() {
-        const content = this.element.querySelector('.widget-content');
-        content.innerHTML = `
-            <div class="time-display">00:00</div>
-            <div class="date-display">----年--月--日 星期-</div>
-        `;
-        this._update();
-        this.timer = setInterval(() => this._update(), 1000);
-    }
-
-    _update() {
-        if (!this.element) return;
-        const now = new Date();
-        const h = String(now.getHours()).padStart(2, '0');
-        const m = String(now.getMinutes()).padStart(2, '0');
-        this.element.querySelector('.time-display').textContent = `${h}:${m}`;
-        const weeks = ['周日','周一','周二','周三','周四','周五','周六'];
-        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weeks[now.getDay()]}`;
-        this.element.querySelector('.date-display').textContent = dateStr;
-    }
-
-    destroy() {
-        clearInterval(this.timer);
-        super.destroy();
-    }
-}
-
-// ---------- 天气 ----------
-class WeatherWidget extends Widget {
-    static type = 'weather';
-    static displayName = '天气';
-    static defaultSize = 'sm';
-    static icon = 'fa-cloud';
-
-    render() {
-        const content = this.element.querySelector('.widget-content');
-        content.innerHTML = `
-            <div class="weather-content">
-                <i class="weather-icon" style="font-style:normal">--</i>
-                <div>
-                    <div class="weather-temp">加载中</div>
-                    <div class="weather-desc">--</div>
-                </div>
-            </div>
-        `;
-        this.fetchWeather();
-    }
-
-    async fetchWeather() {
-        if (typeof GetWeather !== 'function') return;
-        const data = await GetWeather();
-        if (!data || !this.element) return;
-        const emoji = String.fromCodePoint(getWeatherEmoji(data.weather_icon));
-        this.element.querySelector('.weather-icon').textContent = emoji;
-        this.element.querySelector('.weather-temp').textContent = data.temperature + '℃';
-        this.element.querySelector('.weather-desc').textContent = data.weather + '·' + data.city;
-    }
-
-    onUpdate() { this.fetchWeather(); }
-}
-
-// 天气 emoji 映射
+// ---------- 辅助：天气 emoji 映射 ----------
 function getWeatherEmoji(code) {
     const map = {
         100: 0x2600, 101: 0x26C5, 102: 0x1F324, 103: 0x26C5, 104: 0x2601,
@@ -98,7 +29,137 @@ function getWeatherEmoji(code) {
     return emoji;
 }
 
-// ---------- 待办 ----------
+// ========== 时间（尺寸统一，无变化） ==========
+class ClockWidget extends Widget {
+    static type = 'clock';
+    static displayName = '时间';
+    static defaultSize = 'sm';
+    static icon = 'fa-clock-o';
+
+    render() {
+        const content = this.element.querySelector('.widget-content');
+        content.innerHTML = `
+            <div class="time-display">00:00</div>
+            <div class="date-display">----年--月--日 星期-</div>
+        `;
+        if (this.timer) clearInterval(this.timer);
+        this._update();
+        this.timer = setInterval(() => this._update(), 1000);
+    }
+
+    _update() {
+        if (!this.element) return;
+        const now = new Date();
+        const h = String(now.getHours()).padStart(2, '0');
+        const m = String(now.getMinutes()).padStart(2, '0');
+        this.element.querySelector('.time-display').textContent = `${h}:${m}`;
+        const weeks = ['周日','周一','周二','周三','周四','周五','周六'];
+        const dateStr = `${now.getFullYear()}年${now.getMonth()+1}月${now.getDate()}日 ${weeks[now.getDay()]}`;
+        this.element.querySelector('.date-display').textContent = dateStr;
+    }
+
+    destroy() {
+        clearInterval(this.timer);
+        super.destroy();
+    }
+}
+
+// ========== 天气（已适配，保持不变） ==========
+class WeatherWidget extends Widget {
+    static type = 'weather';
+    static displayName = '天气';
+    static defaultSize = 'sm';
+    static icon = 'fa-cloud';
+
+    constructor(container, index) {
+        super(container, index);
+        this.weatherData = null;
+    }
+
+    render() {
+        if (this.weatherData) {
+            this._renderBySize(this.currentSize);
+        } else {
+            const content = this.element.querySelector('.widget-content');
+            content.innerHTML = `<div class="weather-content">
+                <i class="weather-icon" style="font-style:normal">--</i>
+                <div>
+                    <div class="weather-temp">加载中</div>
+                    <div class="weather-desc">--</div>
+                </div>
+            </div>`;
+            this.fetchWeather();
+        }
+    }
+
+    onResize(newSize) {
+        if (this.weatherData) this._renderBySize(newSize);
+    }
+
+    async fetchWeather() {
+        if (typeof GetWeather !== 'function') return;
+        const data = await GetWeather();
+        if (!data || !this.element) return;
+        this.weatherData = data;
+        this._renderBySize(this.currentSize);
+    }
+
+    _renderBySize(size) {
+        const data = this.weatherData;
+        const content = this.element.querySelector('.widget-content');
+        if (!content) return;
+        const emoji = String.fromCodePoint(getWeatherEmoji(data.weather_icon));
+        const temp = data.temperature;
+        const desc = data.weather;
+        const city = data.city || '';
+        const feel = data.feels_like;
+        const humidity = data.humidity;
+        const wind = `${data.wind_direction || ''} ${data.wind_power || ''}`.trim();
+        const aqi = data.aqi;
+        const aqiLevel = data.aqi_category || '';
+        const uv = data.uv;
+
+        if (size === 'sm') {
+            content.innerHTML = `<div class="weather-content">
+                <i class="weather-icon" style="font-style:normal">${emoji}</i>
+                <div>
+                    <div class="weather-temp">${temp}℃</div>
+                    <div class="weather-desc">${desc}</div>
+                </div>
+            </div>`;
+        } else if (size === 'md') {
+            content.innerHTML = `<div class="weather-content">
+                <i class="weather-icon" style="font-style:normal; font-size:40px">${emoji}</i>
+                <div>
+                    <div class="weather-temp" style="font-size:32px">${temp}℃</div>
+                    <div class="weather-desc">${desc} · ${city}</div>
+                    <div style="font-size:12px; margin-top:4px;">体感 ${feel}℃</div>
+                    ${aqi ? `<div style="font-size:12px;">AQI ${aqi} ${aqiLevel}</div>` : ''}
+                </div>
+            </div>`;
+        } else {
+            content.innerHTML = `<div style="text-align:center;">
+                <i class="weather-icon" style="font-size:48px; display:block;">${emoji}</i>
+                <div class="weather-temp" style="font-size:48px;">${temp}℃</div>
+                <div class="weather-desc" style="font-size:16px;">${desc}</div>
+                <div style="font-size:13px; margin-top:8px;">
+                    <span>📍 ${city}</span>
+                    ${feel ? `<span style="margin-left:12px;">🌡️ 体感 ${feel}℃</span>` : ''}
+                </div>
+                <div style="font-size:12px; margin-top:6px;">
+                    ${wind ? `<span>🌬 ${wind}</span>` : ''}
+                    ${humidity ? `<span style="margin-left:12px;">💧 ${humidity}%</span>` : ''}
+                    ${uv ? `<span style="margin-left:12px;">☀️ UV ${uv}</span>` : ''}
+                </div>
+                ${aqi ? `<div style="font-size:12px; margin-top:6px;">空气质量：${aqi} ${aqiLevel}</div>` : ''}
+            </div>`;
+        }
+    }
+
+    onUpdate() { this.fetchWeather(); }
+}
+
+// ========== 待办（尺寸差异化） ==========
 class TodoWidget extends Widget {
     static type = 'todo';
     static displayName = '待办事项';
@@ -115,7 +176,11 @@ class TodoWidget extends Widget {
         const todos = JSON.parse(localStorage.getItem('todos') || '[]');
         const list = this.element.querySelector('.todo-list');
         list.innerHTML = '';
-        todos.forEach((todo, idx) => {
+        const max = this.currentSize === 'sm' ? 3 : this.currentSize === 'md' ? 5 : todos.length;
+        const displayed = todos.slice(0, max);
+
+        displayed.forEach((todo, idx) => {
+            const actualIdx = idx; // 原始索引
             const div = document.createElement('div');
             div.className = 'todo-item' + (todo.completed ? ' completed' : '');
             div.innerHTML = `
@@ -123,10 +188,21 @@ class TodoWidget extends Widget {
                 <span class="todo-text">${escapeHtml(todo.text)}</span>
             `;
             div.querySelector('.todo-checkbox').addEventListener('change', (e) => {
-                this.toggleTodo(idx, e.target.checked);
+                this.toggleTodo(actualIdx, e.target.checked);
             });
             list.appendChild(div);
         });
+
+        // 大尺寸显示添加按钮
+        if (this.currentSize === 'lg') {
+            const addBtn = document.createElement('button');
+            addBtn.className = 'widget-add-btn';
+            addBtn.style.position = 'relative';
+            addBtn.style.marginTop = '8px';
+            addBtn.innerHTML = '<i class="fa fa-plus"></i> 添加待办';
+            addBtn.addEventListener('click', () => this.openManager());
+            list.appendChild(addBtn);
+        }
     }
 
     toggleTodo(index, checked) {
@@ -134,7 +210,7 @@ class TodoWidget extends Widget {
         if (todos[index]) {
             todos[index].completed = checked;
             localStorage.setItem('todos', JSON.stringify(todos));
-            this._loadTodos();
+            this._loadTodos(); // 刷新视图
         }
     }
 
@@ -159,7 +235,7 @@ class TodoWidget extends Widget {
             row.querySelector('.manage-delete-btn').addEventListener('click', () => {
                 todos.splice(idx, 1);
                 localStorage.setItem('todos', JSON.stringify(todos));
-                this.openManager(); // 刷新
+                this.openManager();
             });
             container.appendChild(row);
         });
@@ -167,7 +243,7 @@ class TodoWidget extends Widget {
     }
 }
 
-// ---------- 书签 ----------
+// ========== 书签（尺寸差异化） ==========
 class BookmarksWidget extends Widget {
     static type = 'bookmarks';
     static displayName = '常用书签';
@@ -184,7 +260,13 @@ class BookmarksWidget extends Widget {
         const bookmarks = JSON.parse(localStorage.getItem('custom-bookmarks') || '[]');
         const grid = this.element.querySelector('.bookmarks-grid');
         grid.innerHTML = '';
-        bookmarks.forEach((bm, idx) => {
+        const size = this.currentSize;
+        const cols = size === 'sm' ? 2 : size === 'md' ? 3 : 4;
+        const max = size === 'sm' ? 4 : size === 'md' ? 6 : 8;
+        const displayed = bookmarks.slice(0, max);
+        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        displayed.forEach((bm, idx) => {
             const a = document.createElement('a');
             a.href = bm.url;
             a.target = '_blank';
@@ -237,7 +319,7 @@ class BookmarksWidget extends Widget {
     }
 }
 
-// ---------- AI 工具 ----------
+// ========== AI 工具（尺寸差异化） ==========
 class AiToolsWidget extends Widget {
     static type = 'ai-tools';
     static displayName = 'AI 助手';
@@ -254,7 +336,13 @@ class AiToolsWidget extends Widget {
         const tools = JSON.parse(localStorage.getItem('custom-ai-tools') || '[]');
         const grid = this.element.querySelector('.ai-tools-grid');
         grid.innerHTML = '';
-        tools.forEach((t, idx) => {
+        const size = this.currentSize;
+        const cols = size === 'sm' ? 2 : size === 'md' ? 2 : 3;
+        const max = size === 'sm' ? 4 : size === 'md' ? 6 : 9;
+        const displayed = tools.slice(0, max);
+        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        displayed.forEach((t, idx) => {
             const a = document.createElement('a');
             a.href = t.url;
             a.target = '_blank';
@@ -307,7 +395,7 @@ class AiToolsWidget extends Widget {
     }
 }
 
-// ---------- 快捷方式 ----------
+// ========== 快捷方式（尺寸差异化） ==========
 class ShortcutsWidget extends Widget {
     static type = 'shortcuts';
     static displayName = '快捷方式';
@@ -324,7 +412,13 @@ class ShortcutsWidget extends Widget {
         const shortcuts = JSON.parse(localStorage.getItem('custom-shortcuts') || '[]');
         const grid = this.element.querySelector('.shortcuts-grid');
         grid.innerHTML = '';
-        shortcuts.forEach((s, idx) => {
+        const size = this.currentSize;
+        const cols = size === 'sm' ? 2 : size === 'md' ? 3 : 4;
+        const max = size === 'sm' ? 4 : size === 'md' ? 6 : 8;
+        const displayed = shortcuts.slice(0, max);
+        grid.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+
+        displayed.forEach((s, idx) => {
             const a = document.createElement('a');
             a.href = s.url;
             a.target = '_blank';
@@ -377,7 +471,7 @@ class ShortcutsWidget extends Widget {
     }
 }
 
-// ---------- 热榜 ----------
+// ========== 热榜（尺寸差异化） ==========
 class HotboardWidget extends Widget {
     static type = 'hotboard';
     static displayName = '热榜';
@@ -408,7 +502,11 @@ class HotboardWidget extends Widget {
         if (!data || !data.list || !this.element) return;
         const listEl = this.element.querySelector('.hotboard-list');
         listEl.innerHTML = '';
-        data.list.slice(0, 15).forEach((item, idx) => {
+        const size = this.currentSize;
+        const max = size === 'sm' ? 5 : size === 'md' ? 10 : 15;
+        const displayed = data.list.slice(0, max);
+
+        displayed.forEach((item, idx) => {
             const a = document.createElement('a');
             a.href = item.url || '#';
             a.target = '_blank';
@@ -421,11 +519,110 @@ class HotboardWidget extends Widget {
             a.innerHTML = `
                 <div class="hotboard-rank">${idx+1}</div>
                 <span class="hotboard-title">${escapeHtml(item.title)}</span>
-                ${hotValue ? `<span class="hotboard-hot"><i class="fa fa-fire"></i>${hotValue}</span>` : ''}
+                ${hotValue && size !== 'sm' ? `<span class="hotboard-hot"><i class="fa fa-fire"></i>${hotValue}</span>` : ''}
             `;
             listEl.appendChild(a);
         });
     }
 
     onUpdate() { this.loadHotboard(); }
+}
+
+// ========== 时间进度条（尺寸差异化） ==========
+class TimeProgressWidget extends Widget {
+    static type = 'time-progress';
+    static displayName = '时间进度条';
+    static defaultSize = 'sm';
+    static icon = 'fa-hourglass-half';
+
+    render() {
+        const content = this.element.querySelector('.widget-content');
+        content.innerHTML = '';
+        this.updateProgress();
+        if (this.todayTimer) clearInterval(this.todayTimer);
+        if (this.otherTimer) clearInterval(this.otherTimer);
+        this.todayTimer = setInterval(() => this.updateTodayProgress(), 1000);
+        this.otherTimer = setInterval(() => this.updateWeekYearProgress(), 60000);
+    }
+
+    updateProgress() {
+        this.updateTodayProgress();
+        this.updateWeekYearProgress();
+    }
+
+    updateTodayProgress() {
+        const now = new Date();
+        const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        const elapsed = (now - startOfDay) / 1000;
+        const total = 24 * 60 * 60;
+        const percent = Math.min(100, Math.floor((elapsed / total) * 100));
+        this.setProgress('today', percent);
+    }
+
+    updateWeekYearProgress() {
+        const now = new Date();
+        const dayOfWeek = now.getDay() || 7;
+        const startOfWeek = new Date(now);
+        startOfWeek.setDate(now.getDate() - dayOfWeek + 1);
+        startOfWeek.setHours(0,0,0,0);
+        const weekElapsed = (now - startOfWeek) / 1000;
+        const weekTotal = 7 * 24 * 60 * 60;
+        const weekPercent = Math.min(100, Math.floor((weekElapsed / weekTotal) * 100));
+        this.setProgress('week', weekPercent);
+
+        const startOfYear = new Date(now.getFullYear(), 0, 1);
+        const yearElapsed = (now - startOfYear) / 1000;
+        const isLeap = (now.getFullYear() % 4 === 0 && now.getFullYear() % 100 !== 0) || now.getFullYear() % 400 === 0;
+        const yearTotal = (isLeap ? 366 : 365) * 24 * 60 * 60;
+        const yearPercent = Math.min(100, Math.floor((yearElapsed / yearTotal) * 100));
+        this.setProgress('year', yearPercent);
+    }
+
+    setProgress(type, percent) {
+        const content = this.element.querySelector('.widget-content');
+        if (!content) return;
+
+        // 根据尺寸动态生成进度条
+        let types = [];
+        if (this.currentSize === 'sm') {
+            types = ['today'];
+        } else if (this.currentSize === 'md') {
+            types = ['today', 'week'];
+        } else {
+            types = ['today', 'week', 'year'];
+        }
+
+        // 只在首次或尺寸变化时重建结构
+        if (!content.dataset.initialized || content.dataset.size !== this.currentSize) {
+            content.innerHTML = '';
+            types.forEach(t => {
+                const item = document.createElement('div');
+                item.className = 'progress-item';
+                item.innerHTML = `
+                    <div class="progress-label">
+                        <span>${t === 'today' ? '今日' : t === 'week' ? '本周' : '今年'}</span>
+                        <span class="progress-percent" id="${t}-percent">0%</span>
+                    </div>
+                    <div class="progress-bar">
+                        <div class="progress-fill ${t}-fill" id="${t}-fill" style="width: 0%"></div>
+                    </div>
+                `;
+                content.appendChild(item);
+            });
+            content.dataset.initialized = 'true';
+            content.dataset.size = this.currentSize;
+        }
+
+        // 更新对应进度条
+        const percentEl = content.querySelector(`#${type}-percent`);
+        const fillEl = content.querySelector(`#${type}-fill`);
+        if (percentEl) percentEl.textContent = percent + '%';
+        if (fillEl) fillEl.style.width = percent + '%';
+    }
+
+    destroy() {
+        clearInterval(this.todayTimer);
+        clearInterval(this.otherTimer);
+        super.destroy();
+    }
 }
