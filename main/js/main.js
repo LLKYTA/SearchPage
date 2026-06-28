@@ -14,6 +14,7 @@ const CONFIG = {
 };
 
 // 注册所有小组件
+// 注册所有小组件
 WidgetFramework.register('clock', ClockWidget);
 WidgetFramework.register('weather', WeatherWidget);
 WidgetFramework.register('shortcuts', ShortcutsWidget);
@@ -21,13 +22,14 @@ WidgetFramework.register('todo', TodoWidget);
 WidgetFramework.register('bookmarks', BookmarksWidget);
 WidgetFramework.register('ai-tools', AiToolsWidget);
 WidgetFramework.register('hotboard', HotboardWidget);
-WidgetFramework.register('time-progress', TimeProgressWidget); // 时间进度条
-
+WidgetFramework.register('time-progress', TimeProgressWidget);
+WidgetFramework.register('daily-word', DailyWordWidget); // 👈 新增
 document.addEventListener('DOMContentLoaded', () => {
   WidgetFramework.init();
   initSearch();
   loadSettings();
   applyTheme();
+  loadDailyWordCategory();
 
   const hotboardSelect = document.getElementById('hotboard-source-select');
   if (hotboardSelect) {
@@ -226,4 +228,29 @@ function escapeHtml(text) {
   const div = document.createElement('div');
   div.textContent = text;
   return div.innerHTML;
+}
+// ========== 每日单词词库 ==========
+function saveDailyWordCategory() {
+  const select = document.getElementById('dailyword-category-select');
+  if (!select) return;
+  localStorage.setItem('dailyword-category', select.value);
+  // 刷新所有每日单词小组件
+  const area = WidgetFramework.areas.get('main-area');
+  if (area) {
+    area.widgets.forEach(w => {
+      if (w instanceof DailyWordWidget) {
+        w.onUpdate();
+      }
+    });
+  }
+}
+
+function loadDailyWordCategory() {
+  const saved = localStorage.getItem('dailyword-category') || 'all';
+  const select = document.getElementById('dailyword-category-select');
+  if (select) select.value = saved;
+}
+function closeWidgetGallery() {
+  document.getElementById('widget-gallery-modal').classList.remove('active');
+  document.body.style.overflow = '';
 }

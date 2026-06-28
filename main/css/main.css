@@ -141,20 +141,69 @@
 }
 /* 默认手机2列 */
 .widgets-grid { grid-template-columns: repeat(2, 1fr); }
+/* ===== 手机端：双列布局 ===== */
 @media (max-width: 768px) {
     .widgets-area {
-        grid-template-columns: repeat(2, 1fr); /* 改为两列 */
-        gap: 12px; /* 适当缩小间距，让两列更紧凑 */
+        grid-template-columns: repeat(2, 1fr);  /* 改为两列 */
+        gap: 12px;  /* 适当缩小间距 */
     }
 
-    /* 尺寸适配：中、大尺寸组件在手机端占满两列 */
+    /* 小尺寸占1列，中/大尺寸占2列 */
+    .widget-sm {
+        grid-column: span 1;
+    }
     .widget-md,
     .widget-lg {
         grid-column: span 2;
     }
 
-    /* 保持小尺寸组件占一列 */
-    .widget-sm {
+    /* 内边距减小，让内容更紧凑 */
+    .widget {
+        padding: 14px;
+    }
+
+    /* 时钟字号调小 */
+    .time-display {
+        font-size: 28px;
+    }
+    .date-display {
+        font-size: 12px;
+    }
+
+    /* 天气字号调小 */
+    .weather-temp {
+        font-size: 24px;
+    }
+    .weather-icon {
+        font-size: 28px;
+    }
+
+    /* 热榜列表高度减少 */
+    .hotboard-list {
+        max-height: 180px;
+    }
+
+    /* 书签、快捷方式、AI工具网格列数在手机端自适应 */
+    .bookmarks-grid,
+    .shortcuts-grid,
+    .ai-tools-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+
+    /* 待办列表最大高度减少 */
+    .todo-list {
+        max-height: 80px;
+    }
+}
+
+/* 超小屏（<480px）保持单列，避免内容太拥挤 */
+@media (max-width: 480px) {
+    .widgets-area {
+        grid-template-columns: 1fr;
+    }
+    .widget-sm,
+    .widget-md,
+    .widget-lg {
         grid-column: span 1;
     }
 }
@@ -739,4 +788,368 @@
 /* 确保热榜标题等继承正确 */
 .hotboard-title {
     color: var(--text-primary);
+}
+/* 头部添加按钮美化 */
+.widget-header-add-btn {
+    background: none !important;
+    border: none !important;
+    color: var(--text-secondary);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 4px 6px;
+    transition: color 0.2s, transform 0.15s;
+    border-radius: 6px;
+}
+.widget-header-add-btn:hover {
+    color: var(--ios-blue) !important;
+    transform: scale(1.1);
+}
+.widget-header-add-btn:active {
+    transform: scale(0.9);
+}
+/* ========================================
+   iOS 负一屏风格 - 底部编辑按钮 & 半屏弹窗
+   ======================================== */
+
+/* ----- 底部“编辑小组件”按钮 ----- */
+.add-widget-container {
+    display: flex;
+    justify-content: center;
+    padding: 16px 0 8px 0;
+}
+
+.add-widget-btn {
+    background: var(--bg-secondary);
+    border: 1px solid var(--glass-border);
+    border-radius: 25px;
+    padding: 10px 28px;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-primary);
+    box-shadow: 0 2px 12px var(--shadow-color);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.add-widget-btn i {
+    font-size: 16px;
+    color: var(--ios-blue);
+}
+
+.add-widget-btn:hover {
+    background: var(--bg-tertiary);
+    transform: scale(1.03);
+    box-shadow: 0 4px 20px var(--shadow-color);
+}
+
+.add-widget-btn:active {
+    transform: scale(0.95);
+}
+
+/* ----- 半屏底部弹出弹窗（仅针对小组件库） ----- */
+#widget-gallery-modal {
+    align-items: flex-end;          /* 底部对齐 */
+    justify-content: center;
+    background: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px;
+    transition: opacity 0.3s ease;
+}
+
+#widget-gallery-modal.active {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-bottom-sheet {
+    background: var(--bg-secondary);
+    border-radius: 24px 24px 0 0;
+    width: 100%;
+    max-width: 500px;               /* 桌面端限制宽度 */
+    max-height: 70vh;               /* 半屏高度 */
+    padding: 20px 20px 30px 20px;
+    box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.15);
+    animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+/* 滑入动画 */
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 弹窗头部 */
+#widget-gallery-modal .modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border-color);
+    margin-bottom: 16px;
+    flex-shrink: 0;
+}
+
+#widget-gallery-modal .modal-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.modal-close-btn {
+    background: var(--bg-tertiary);
+    border: none;
+    border-radius: 20px;
+    padding: 6px 18px;
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--ios-blue);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.modal-close-btn:hover {
+    background: var(--border-color);
+}
+
+/* 小组件网格（在弹窗内） */
+#widget-gallery-modal .gallery-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(85px, 1fr));
+    gap: 14px;
+    padding: 4px 0 12px 0;
+}
+
+#widget-gallery-modal .gallery-card {
+    background: var(--bg-tertiary);
+    border-radius: 16px;
+    padding: 16px 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid transparent;
+    min-height: 85px;
+}
+
+#widget-gallery-modal .gallery-card:hover {
+    background: var(--border-color);
+    transform: scale(1.04);
+}
+
+#widget-gallery-modal .gallery-card:active {
+    transform: scale(0.93);
+}
+
+#widget-gallery-modal .gallery-card-icon {
+    font-size: 26px;
+    color: var(--ios-blue);
+}
+
+#widget-gallery-modal .gallery-card-name {
+    font-size: 12px;
+    color: var(--text-secondary);
+    text-align: center;
+    font-weight: 500;
+}
+
+/* 暗色模式适配 */
+.dark .add-widget-btn {
+    background: rgba(30, 30, 32, 0.85);
+    border-color: rgba(255, 255, 255, 0.12);
+}
+.dark .modal-bottom-sheet {
+    background: var(--dark-bg-secondary);
+}
+.dark .modal-close-btn {
+    background: var(--dark-bg-tertiary);
+    color: #60a5fa;
+}
+.dark #widget-gallery-modal .gallery-card {
+    background: var(--dark-bg-tertiary);
+}
+/* ========================================
+   长按拖拽视觉反馈
+   ======================================== */
+
+/* 长按等待状态（按住时还未开始拖拽） */
+.widget-waiting {
+    transform: scale(1.03);
+    box-shadow: 0 8px 30px rgba(0, 122, 255, 0.25) !important;
+    border-color: var(--ios-blue);
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    cursor: grabbing;
+    z-index: 999;
+}
+
+/* 长按时的脉动动画（可选） */
+.widget-waiting .widget-header {
+    animation: pulse-border 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+}
+
+/* 正式拖拽状态 */
+.widget-dragging {
+    transform: scale(1.08) rotate(1deg);
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.3) !important;
+    opacity: 0.92;
+    z-index: 1000 !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+/* 占位符样式 */
+.widget-ghost {
+    opacity: 0.35;
+    border: 2px dashed var(--ios-blue);
+    background: rgba(0, 122, 255, 0.06) !important;
+    transform: scale(0.98);
+}
+
+/* 被选中的组件（抬起时） */
+.widget-chosen {
+    transform: scale(1.04);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2) !important;
+}
+/* ========================================
+   每日单词小组件
+   ======================================== */
+
+/* ---- 小尺寸 ---- */
+.dailyword-sm .dailyword-word {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--text-primary);
+    font-variant-numeric: tabular-nums;
+}
+.dailyword-sm .dailyword-def {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+/* ---- 中尺寸 ---- */
+.dailyword-md .dailyword-word {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+.dailyword-md .dailyword-phonetic {
+    font-size: 14px;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+.dailyword-md .dailyword-def {
+    font-size: 14px;
+    color: var(--text-secondary);
+    line-height: 1.4;
+}
+.dailyword-md .dailyword-example {
+    font-size: 13px;
+    color: var(--text-secondary);
+    margin-top: 10px;
+    padding: 8px 12px;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    font-style: italic;
+    border-left: 3px solid var(--ios-blue);
+}
+
+/* ---- 大尺寸 ---- */
+.dailyword-lg .dailyword-word {
+    font-size: 36px;
+    font-weight: 700;
+    color: var(--text-primary);
+    line-height: 1.2;
+}
+.dailyword-lg .dailyword-phonetic {
+    font-size: 16px;
+    color: var(--text-secondary);
+    margin-bottom: 6px;
+}
+.dailyword-lg .dailyword-def {
+    font-size: 16px;
+    color: var(--text-secondary);
+    line-height: 1.5;
+    margin-bottom: 14px;
+}
+.dailyword-lg .dailyword-examples {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+.dailyword-lg .dailyword-example-item {
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-sm);
+    padding: 10px 14px;
+    border-left: 3px solid var(--ios-blue);
+}
+.dailyword-lg .dailyword-example-text {
+    font-size: 14px;
+    color: var(--text-primary);
+    line-height: 1.4;
+    font-style: italic;
+}
+.dailyword-lg .dailyword-example-trans {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 4px;
+}
+.dailyword-lg .dailyword-source {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    margin-top: 12px;
+    text-align: right;
+    border-top: 1px solid var(--border-color);
+    padding-top: 8px;
+}
+
+/* ---- 加载状态 ---- */
+.dailyword-loading {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 20px 0;
+    font-size: 14px;
+}
+.dailyword-loading .fa-spinner {
+    margin-right: 8px;
+}
+
+/* ---- 错误状态 ---- */
+.dailyword-error {
+    text-align: center;
+    color: var(--text-secondary);
+    padding: 16px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+}
+.dailyword-error:hover {
+    opacity: 0.7;
+}
+.dailyword-error .fa-refresh {
+    display: block;
+    font-size: 20px;
+    margin-bottom: 6px;
 }

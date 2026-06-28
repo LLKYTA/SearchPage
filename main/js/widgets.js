@@ -159,7 +159,7 @@ class WeatherWidget extends Widget {
     onUpdate() { this.fetchWeather(); }
 }
 
-// ========== 待办（尺寸差异化） ==========
+// ========== 待办（尺寸差异化 + 头部添加按钮） ==========
 class TodoWidget extends Widget {
     static type = 'todo';
     static displayName = '待办事项';
@@ -167,20 +167,48 @@ class TodoWidget extends Widget {
     static icon = 'fa-check-square-o';
 
     render() {
+        // 添加头部“+”按钮
+        this._addHeaderAddBtn();
+
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="todo-list"></div>';
         this._loadTodos();
     }
 
+    _addHeaderAddBtn() {
+        const header = this.element.querySelector('.widget-header');
+        if (!header) return;
+        let actions = header.querySelector('.widget-header-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.className = 'widget-header-actions';
+            header.appendChild(actions);
+        }
+        // 避免重复添加
+        if (actions.querySelector('.widget-header-add-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'widget-header-add-btn';
+        btn.title = '添加待办';
+        btn.innerHTML = '<i class="fa fa-plus"></i>';
+        btn.style.cssText = 'background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px;transition:color 0.2s;';
+        btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
+        btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openManager();
+        });
+        actions.prepend(btn);
+    }
+
     _loadTodos() {
         const todos = JSON.parse(localStorage.getItem('todos') || '[]');
         const list = this.element.querySelector('.todo-list');
+        if (!list) return;
         list.innerHTML = '';
         const max = this.currentSize === 'sm' ? 3 : this.currentSize === 'md' ? 5 : todos.length;
         const displayed = todos.slice(0, max);
 
         displayed.forEach((todo, idx) => {
-            const actualIdx = idx; // 原始索引
             const div = document.createElement('div');
             div.className = 'todo-item' + (todo.completed ? ' completed' : '');
             div.innerHTML = `
@@ -188,21 +216,10 @@ class TodoWidget extends Widget {
                 <span class="todo-text">${escapeHtml(todo.text)}</span>
             `;
             div.querySelector('.todo-checkbox').addEventListener('change', (e) => {
-                this.toggleTodo(actualIdx, e.target.checked);
+                this.toggleTodo(idx, e.target.checked);
             });
             list.appendChild(div);
         });
-
-        // 大尺寸显示添加按钮
-        if (this.currentSize === 'lg') {
-            const addBtn = document.createElement('button');
-            addBtn.className = 'widget-add-btn';
-            addBtn.style.position = 'relative';
-            addBtn.style.marginTop = '8px';
-            addBtn.innerHTML = '<i class="fa fa-plus"></i> 添加待办';
-            addBtn.addEventListener('click', () => this.openManager());
-            list.appendChild(addBtn);
-        }
     }
 
     toggleTodo(index, checked) {
@@ -210,7 +227,7 @@ class TodoWidget extends Widget {
         if (todos[index]) {
             todos[index].completed = checked;
             localStorage.setItem('todos', JSON.stringify(todos));
-            this._loadTodos(); // 刷新视图
+            this._loadTodos();
         }
     }
 
@@ -243,7 +260,7 @@ class TodoWidget extends Widget {
     }
 }
 
-// ========== 书签（尺寸差异化） ==========
+// ========== 书签（尺寸差异化 + 头部添加按钮） ==========
 class BookmarksWidget extends Widget {
     static type = 'bookmarks';
     static displayName = '常用书签';
@@ -251,14 +268,40 @@ class BookmarksWidget extends Widget {
     static icon = 'fa-bookmark';
 
     render() {
+        this._addHeaderAddBtn();
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="bookmarks-grid"></div>';
         this._renderBookmarks();
     }
 
+    _addHeaderAddBtn() {
+        const header = this.element.querySelector('.widget-header');
+        if (!header) return;
+        let actions = header.querySelector('.widget-header-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.className = 'widget-header-actions';
+            header.appendChild(actions);
+        }
+        if (actions.querySelector('.widget-header-add-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'widget-header-add-btn';
+        btn.title = '添加书签';
+        btn.innerHTML = '<i class="fa fa-plus"></i>';
+        btn.style.cssText = 'background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px;transition:color 0.2s;';
+        btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
+        btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openManager();
+        });
+        actions.prepend(btn);
+    }
+
     _renderBookmarks() {
         const bookmarks = JSON.parse(localStorage.getItem('custom-bookmarks') || '[]');
         const grid = this.element.querySelector('.bookmarks-grid');
+        if (!grid) return;
         grid.innerHTML = '';
         const size = this.currentSize;
         const cols = size === 'sm' ? 2 : size === 'md' ? 3 : 4;
@@ -319,7 +362,7 @@ class BookmarksWidget extends Widget {
     }
 }
 
-// ========== AI 工具（尺寸差异化） ==========
+// ========== AI 工具（尺寸差异化 + 头部添加按钮） ==========
 class AiToolsWidget extends Widget {
     static type = 'ai-tools';
     static displayName = 'AI 助手';
@@ -327,14 +370,40 @@ class AiToolsWidget extends Widget {
     static icon = 'fa-lightbulb-o';
 
     render() {
+        this._addHeaderAddBtn();
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="ai-tools-grid"></div>';
         this._render();
     }
 
+    _addHeaderAddBtn() {
+        const header = this.element.querySelector('.widget-header');
+        if (!header) return;
+        let actions = header.querySelector('.widget-header-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.className = 'widget-header-actions';
+            header.appendChild(actions);
+        }
+        if (actions.querySelector('.widget-header-add-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'widget-header-add-btn';
+        btn.title = '添加AI工具';
+        btn.innerHTML = '<i class="fa fa-plus"></i>';
+        btn.style.cssText = 'background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px;transition:color 0.2s;';
+        btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
+        btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openManager();
+        });
+        actions.prepend(btn);
+    }
+
     _render() {
         const tools = JSON.parse(localStorage.getItem('custom-ai-tools') || '[]');
         const grid = this.element.querySelector('.ai-tools-grid');
+        if (!grid) return;
         grid.innerHTML = '';
         const size = this.currentSize;
         const cols = size === 'sm' ? 2 : size === 'md' ? 2 : 3;
@@ -395,7 +464,7 @@ class AiToolsWidget extends Widget {
     }
 }
 
-// ========== 快捷方式（尺寸差异化） ==========
+// ========== 快捷方式（尺寸差异化 + 头部添加按钮） ==========
 class ShortcutsWidget extends Widget {
     static type = 'shortcuts';
     static displayName = '快捷方式';
@@ -403,14 +472,40 @@ class ShortcutsWidget extends Widget {
     static icon = 'fa-th';
 
     render() {
+        this._addHeaderAddBtn();
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="shortcuts-grid"></div>';
         this._render();
     }
 
+    _addHeaderAddBtn() {
+        const header = this.element.querySelector('.widget-header');
+        if (!header) return;
+        let actions = header.querySelector('.widget-header-actions');
+        if (!actions) {
+            actions = document.createElement('div');
+            actions.className = 'widget-header-actions';
+            header.appendChild(actions);
+        }
+        if (actions.querySelector('.widget-header-add-btn')) return;
+        const btn = document.createElement('button');
+        btn.className = 'widget-header-add-btn';
+        btn.title = '添加快捷方式';
+        btn.innerHTML = '<i class="fa fa-plus"></i>';
+        btn.style.cssText = 'background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px;transition:color 0.2s;';
+        btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
+        btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            this.openManager();
+        });
+        actions.prepend(btn);
+    }
+
     _render() {
         const shortcuts = JSON.parse(localStorage.getItem('custom-shortcuts') || '[]');
         const grid = this.element.querySelector('.shortcuts-grid');
+        if (!grid) return;
         grid.innerHTML = '';
         const size = this.currentSize;
         const cols = size === 'sm' ? 2 : size === 'md' ? 3 : 4;
@@ -582,7 +677,6 @@ class TimeProgressWidget extends Widget {
         const content = this.element.querySelector('.widget-content');
         if (!content) return;
 
-        // 根据尺寸动态生成进度条
         let types = [];
         if (this.currentSize === 'sm') {
             types = ['today'];
@@ -592,7 +686,6 @@ class TimeProgressWidget extends Widget {
             types = ['today', 'week', 'year'];
         }
 
-        // 只在首次或尺寸变化时重建结构
         if (!content.dataset.initialized || content.dataset.size !== this.currentSize) {
             content.innerHTML = '';
             types.forEach(t => {
@@ -613,7 +706,6 @@ class TimeProgressWidget extends Widget {
             content.dataset.size = this.currentSize;
         }
 
-        // 更新对应进度条
         const percentEl = content.querySelector(`#${type}-percent`);
         const fillEl = content.querySelector(`#${type}-fill`);
         if (percentEl) percentEl.textContent = percent + '%';
@@ -624,5 +716,112 @@ class TimeProgressWidget extends Widget {
         clearInterval(this.todayTimer);
         clearInterval(this.otherTimer);
         super.destroy();
+    }
+}
+// ========== 每日单词（尺寸差异化） ==========
+class DailyWordWidget extends Widget {
+    static type = 'daily-word';
+    static displayName = '每日单词';
+    static defaultSize = 'sm';
+    static icon = 'fa-book';
+    static maxPerArea = 1; // 每个区域最多1个
+
+    constructor(container, index) {
+        super(container, index);
+        this.data = null;
+        this.isLoading = false;
+    }
+
+    render() {
+        const content = this.element.querySelector('.widget-content');
+        content.innerHTML = `<div class="dailyword-loading"><i class="fa fa-spinner fa-spin"></i> 加载中...</div>`;
+        this.fetchWord();
+    }
+
+    onResize(newSize) {
+        if (this.data) {
+            this._renderBySize(newSize);
+        } else {
+            this.render();
+        }
+    }
+
+    async fetchWord() {
+        if (this.isLoading) return;
+        this.isLoading = true;
+        const category = localStorage.getItem('dailyword-category') || 'all';
+        const data = await GetDailyWord(category);
+        this.isLoading = false;
+
+        if (!data || !data.words || data.words.length === 0) {
+            this._renderError();
+            return;
+        }
+        this.data = data.words[0];
+        this._renderBySize(this.currentSize);
+    }
+
+    _renderError() {
+        const content = this.element.querySelector('.widget-content');
+        content.innerHTML = `
+            <div class="dailyword-error" style="text-align:center;color:var(--text-secondary);padding:16px;cursor:pointer;">
+                <i class="fa fa-refresh" style="display:block;font-size:20px;margin-bottom:6px;"></i>
+                点击重试
+            </div>
+        `;
+        content.querySelector('.dailyword-error')?.addEventListener('click', () => this.fetchWord());
+    }
+
+    _renderBySize(size) {
+        if (!this.data) return;
+        const content = this.element.querySelector('.widget-content');
+        const word = this.data;
+        const phonetic = word.phonetic || '';
+        const definition = word.definition || '';
+        const examples = word.examples || [];
+
+        if (size === 'sm') {
+            content.innerHTML = `
+                <div class="dailyword-sm">
+                    <div class="dailyword-word">${escapeHtml(word.word)}</div>
+                    <div class="dailyword-def">${escapeHtml(definition)}</div>
+                </div>
+            `;
+        } else if (size === 'md') {
+            content.innerHTML = `
+                <div class="dailyword-md">
+                    <div class="dailyword-word">${escapeHtml(word.word)}</div>
+                    <div class="dailyword-phonetic">${escapeHtml(phonetic)}</div>
+                    <div class="dailyword-def">${escapeHtml(definition)}</div>
+                    ${examples.length > 0 ? `<div class="dailyword-example">“${escapeHtml(examples[0].text)}”</div>` : ''}
+                </div>
+            `;
+        } else {
+            // lg
+            let examplesHtml = '';
+            if (examples.length > 0) {
+                examplesHtml = examples.map(ex => `
+                    <div class="dailyword-example-item">
+                        <div class="dailyword-example-text">“${escapeHtml(ex.text)}”</div>
+                        ${ex.translation ? `<div class="dailyword-example-trans">${escapeHtml(ex.translation)}</div>` : ''}
+                    </div>
+                `).join('');
+            }
+            content.innerHTML = `
+                <div class="dailyword-lg">
+                    <div class="dailyword-word">${escapeHtml(word.word)}</div>
+                    <div class="dailyword-phonetic">${escapeHtml(phonetic)}</div>
+                    <div class="dailyword-def">${escapeHtml(definition)}</div>
+                    ${examplesHtml ? `<div class="dailyword-examples">${examplesHtml}</div>` : ''}
+                    <div class="dailyword-source" style="font-size:11px;color:var(--text-tertiary);margin-top:10px;text-align:right;">
+                        词库: ${localStorage.getItem('dailyword-category') || 'all'}
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    onUpdate() {
+        this.fetchWord();
     }
 }

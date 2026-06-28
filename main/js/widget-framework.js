@@ -1,6 +1,7 @@
 /* ==========================================
    iOS 风格小组件框架 - WidgetFramework
    支持：注册、多区域、拖拽排序(SortableJS)、尺寸切换、持久化、尺寸回调
+   长按延迟：触屏设备按住 1 秒后进入拖拽状态
    ========================================== */
 const WidgetFramework = {
   registry: new Map(),
@@ -33,23 +34,30 @@ const WidgetFramework = {
     const modal = document.getElementById('widget-gallery-modal');
     const listContainer = modal.querySelector('.gallery-list');
     listContainer.innerHTML = '';
-    this.registry.forEach((WidgetClass, type) => {
+
+    const sortedEntries = Array.from(this.registry.entries()).sort((a, b) => {
+      return a[1].displayName.localeCompare(b[1].displayName);
+    });
+
+    sortedEntries.forEach(([type, WidgetClass]) => {
       const card = document.createElement('div');
-      card.className = 'gallery-card glass';
+      card.className = 'gallery-card';
       card.innerHTML = `
-                <i class="fa ${WidgetClass.icon || 'fa-puzzle-piece'} gallery-card-icon"></i>
-                <div class="gallery-card-name">${WidgetClass.displayName}</div>
-            `;
+        <i class="fa ${WidgetClass.icon || 'fa-puzzle-piece'} gallery-card-icon"></i>
+        <div class="gallery-card-name">${WidgetClass.displayName}</div>
+      `;
       card.addEventListener('click', () => {
         const area = WidgetFramework.areas.get(areaId);
         if (area) {
-          area.addWidget(type);
-          modal.classList.remove('active');
-          document.body.style.overflow = '';
+          const added = area.addWidget(type);
+          if (added) {
+            // 添加成功，弹窗保持打开
+          }
         }
       });
       listContainer.appendChild(card);
     });
+
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
   }
@@ -61,7 +69,7 @@ class Widget {
     this.container = container;
     this.index = index;
     this.element = null;
-    this.currentSize = this.constructor.defaultSize; // 记录当前尺寸
+    this.currentSize = this.constructor.defaultSize;
   }
 
   createDOM() {
@@ -69,16 +77,16 @@ class Widget {
     div.className = `widget glass widget-${this.currentSize}`;
     div.dataset.widgetType = this.constructor.type;
     div.innerHTML = `
-            <div class="widget-header">
-                <i class="fa ${this.constructor.icon} widget-icon"></i>
-                <span class="widget-title">${this.constructor.displayName}</span>
-                <div class="widget-header-actions">
-                    <button class="widget-size-btn" title="切换尺寸"><i class="fa fa-arrows-alt"></i></button>
-                    <button class="widget-delete-btn" title="移除"><i class="fa fa-times"></i></button>
-                </div>
-            </div>
-            <div class="widget-content"></div>
-        `;
+      <div class="widget-header">
+        <i class="fa ${this.constructor.icon} widget-icon"></i>
+        <span class="widget-title">${this.constructor.displayName}</span>
+        <div class="widget-header-actions">
+          <button class="widget-size-btn" title="切换尺寸"><i class="fa fa-arrows-alt"></i></button>
+          <button class="widget-delete-btn" title="移除"><i class="fa fa-times"></i></button>
+        </div>
+      </div>
+      <div class="widget-content"></div>
+    `;
     this.element = div;
     this._bindHeaderActions();
     return div;
@@ -116,13 +124,10 @@ class Widget {
       area.saveLayout();
     }
 
-    // 触发尺寸变化钩子（子类可覆盖）
     this.onResize(newSize);
   }
 
-  // 尺寸变化回调，子类可覆盖
   onResize(newSize) {
-    // 默认重新渲染整个组件
     this.render();
   }
 
@@ -139,6 +144,7 @@ class WidgetArea {
     this.id = id;
     this.widgets = [];
     this.layout = [];
+    this.sortableInstance = null; // 保存 Sortable 实例引用
   }
 
   init() {
@@ -213,10 +219,26 @@ class WidgetArea {
 
   moveWidget(fromIdx, toIdx) {
     if (fromIdx === toIdx) return;
-    const moved = this.layout.splice(fromIdx, 1)[0];
-    this.layout.splice(toIdx, 0, moved);
+
+    const children = this.container.children;
+    const fromNode = children[fromIdx];
+    const toNode = children[toIdx];
+    if (fromNode && toNode) {
+      if (fromIdx < toIdx) {
+        this.container.insertBefore(fromNode, toNode.nextSibling);
+      } else {
+        this.container.insertBefore(fromNode, toNode);
+      }
+    }
+
+    const movedWidget = this.widgets.splice(fromIdx, 1)[0];
+    this.widgets.splice(toIdx, 0, movedWidget);
+    this.widgets.forEach((w, idx) => w.index = idx);
+
+    const movedLayout = this.layout.splice(fromIdx, 1)[0];
+    this.layout.splice(toIdx, 0, movedLayout);
+
     this.saveLayout();
-    this.render();
   }
 
   _enableDragDrop() {
@@ -224,17 +246,61 @@ class WidgetArea {
       console.warn('SortableJS 未加载，拖拽排序不可用');
       return;
     }
-    new Sortable(this.container, {
+
+    // 如果已有实例，先销毁
+    if (this.sortableInstance) {
+      this.sortableInstance.destroy();
+      this.sortableInstance = null;
+    }
+
+    this.sortableInstance = new Sortable(this.container, {
       animation: 200,
       easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       handle: '.widget-header',
       draggable: '.widget',
-      filter: '.widget-size-btn, .widget-delete-btn',
+
+      // ===== 长按延迟配置（优化移动端体验） =====
+      delay: 500,                    // 按住 1000ms 后才触发拖拽
+      delayOnTouchOnly: true,         // 仅在触屏设备生效（鼠标拖拽无延迟）
+      touchStartThreshold: 3,         // 手指移动 3px 内算长按，防止轻微滑动误触
+
+      // 过滤按钮，不触发拖拽
+      filter: '.widget-size-btn, .widget-delete-btn, .widget-header-add-btn',
       preventOnFilter: false,
+
       ghostClass: 'widget-ghost',
       chosenClass: 'widget-chosen',
       dragClass: 'widget-drag',
+
+      // ===== 长按视觉反馈 =====
+      onChoose: (evt) => {
+        // 开始长按/选择时，添加等待状态类
+        const el = evt.item;
+        el.classList.add('widget-waiting');
+        // 可选：触觉反馈（移动端振动）
+        if (navigator.vibrate) {
+          navigator.vibrate(15); // 轻微振动提示
+        }
+      },
+
+      onUnchoose: (evt) => {
+        // 取消选择时移除等待状态
+        const el = evt.item;
+        el.classList.remove('widget-waiting');
+      },
+
+      onStart: (evt) => {
+        // 真正开始拖拽时，移除等待状态并添加拖拽类
+        const el = evt.item;
+        el.classList.remove('widget-waiting');
+        el.classList.add('widget-dragging');
+      },
+
       onEnd: (evt) => {
+        // 拖拽结束清理状态
+        const el = evt.item;
+        el.classList.remove('widget-dragging', 'widget-waiting');
+
         if (evt.oldIndex !== evt.newIndex) {
           this.moveWidget(evt.oldIndex, evt.newIndex);
         }

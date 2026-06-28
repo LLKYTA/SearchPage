@@ -7,7 +7,7 @@
   <meta name="description" content="KD起始页 - iOS风格小组件主页">
   <meta name="theme-color" content="#007AFF">
   <title>KD起始页</title>
-
+  
   <!-- 外部资源 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="./main/css/root.css">
@@ -27,7 +27,7 @@
     <div class="bg-bubble bg-bubble-2"></div>
     <div class="bg-bubble bg-bubble-3"></div>
   </div>
-
+  
   <div class="container-main">
     <!-- 头部 -->
     <header class="header-bar">
@@ -55,7 +55,7 @@
         </button>
       </div>
     </header>
-
+    
     <!-- 搜索区 -->
     <section class="search-section">
       <div class="search-box glass">
@@ -67,30 +67,29 @@
         当前搜索引擎: <strong id="current-engine">Bing</strong>
       </p>
     </section>
-    <!-- 单一小组件区域 -->
+    <!-- 小组件区域 -->
     <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
-        {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
-        {"type":"bookmarks"},{"type":"ai-tools"},{"type":"hotboard"}]'>
+    {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
+    {"type":"bookmarks"},{"type":"ai-tools"},{"type":"hotboard"}]'>
     </div>
-    <div style="text-align:right; margin-bottom:16px;">
-      <button class="tool-btn glass" onclick="WidgetFramework.openGallery('main-area')" title="添加小组件">
-        <i class="fa fa-plus-square"></i>
+    
+    <!-- 底部“编辑小组件”按钮（iOS 负一屏风格） -->
+    <div class="add-widget-container">
+      <button class="add-widget-btn" onclick="WidgetFramework.openGallery('main-area')">
+        <i class="fa fa-plus-circle"></i> 编辑小组件
       </button>
     </div>
-
-    <!-- 小组件库弹窗 -->
+    
+    <!-- 小组件库弹窗（半屏底部弹出） -->
     <div id="widget-gallery-modal" class="modal-overlay">
-      <div class="modal-content glass" style="max-width: 400px;">
+      <div class="modal-bottom-sheet">
         <div class="modal-header">
-          <h3 class="modal-title">小组件库</h3>
-          <button class="modal-close" onclick="document.getElementById('widget-gallery-modal').classList.remove('active'); document.body.style.overflow='';">
-            <i class="fa fa-times"></i>
-          </button>
+          <h3 class="modal-title">添加小组件</h3>
+          <button class="modal-close-btn" onclick="closeWidgetGallery()">完成</button>
         </div>
-        <div class="gallery-list" style="display:flex; flex-wrap:wrap; gap:12px; padding:12px 0;"></div>
+        <div class="gallery-list"></div>
       </div>
     </div>
-
     <!-- 设置弹窗 -->
     <div id="settings-modal" class="modal-overlay">
       <div class="modal-content glass">
@@ -100,7 +99,7 @@
             <i class="fa fa-times"></i>
           </button>
         </div>
-
+        
         <!-- 显示与偏好 -->
         <div class="settings-group">
           <div class="settings-group-title">显示与偏好</div>
@@ -122,7 +121,7 @@
                 </button>
               </div>
             </div>
-
+            
             <div class="setting-row">
               <div class="setting-row-left">
                 <i class="fa fa-search setting-row-icon"></i>
@@ -134,7 +133,7 @@
                 <option value="google">Google</option>
               </select>
             </div>
-
+            
             <div class="setting-row">
               <div class="setting-row-left">
                 <i class="fa fa-image setting-row-icon"></i>
@@ -146,26 +145,43 @@
                 <div class="bg-option" onclick="setBackground('custom', this)">自定义</div>
               </div>
             </div>
+            
+            <!-- 热榜来源 -->
+<div class="setting-row">
+  <div class="setting-row-left">
+    <i class="fa fa-fire setting-row-icon"></i>
+    <span class="setting-row-label">热榜来源</span>
+  </div>
+  <select id="hotboard-source-select" class="setting-select-inline" onchange="saveHotboardSource()">
+    <option value="weibo">微博热搜</option>
+    <option value="zhihu">知乎热榜</option>
+    <option value="bilibili">B站热门</option>
+    <option value="baidu">百度热搜</option>
+    <option value="douyin">抖音热榜</option>
+    <option value="toutiao">今日头条</option>
+    <option value="36kr">36氪</option>
+    <option value="hupu">虎扑</option>
+  </select>
+</div>
 
-            <div class="setting-row">
-              <div class="setting-row-left">
-                <i class="fa fa-fire setting-row-icon"></i>
-                <span class="setting-row-label">热榜来源</span>
-              </div>
-              <select id="hotboard-source-select" class="setting-select-inline" onchange="saveHotboardSource()">
-                <option value="weibo">微博热搜</option>
-                <option value="zhihu">知乎热榜</option>
-                <option value="bilibili">B站热门</option>
-                <option value="baidu">百度热搜</option>
-                <option value="douyin">抖音热榜</option>
-                <option value="toutiao">今日头条</option>
-                <option value="36kr">36氪</option>
-                <option value="hupu">虎扑</option>
-              </select>
-            </div>
+<!-- 👇 新增：单词词库 -->
+<div class="setting-row">
+  <div class="setting-row-left">
+    <i class="fa fa-book setting-row-icon"></i>
+    <span class="setting-row-label">单词词库</span>
+  </div>
+  <select id="dailyword-category-select" class="setting-select-inline" onchange="saveDailyWordCategory()">
+    <option value="all">全部词汇</option>
+    <option value="cet4">四级词汇 (CET-4)</option>
+    <option value="cet6">六级词汇 (CET-6)</option>
+    <option value="ielts">雅思词汇 (IELTS)</option>
+    <option value="toefl">托福词汇 (TOEFL)</option>
+    <option value="gre">GRE 词汇</option>
+  </select>
+</div>
           </div>
         </div>
-
+        
         <!-- 内容管理 -->
         <div class="settings-group">
           <div class="settings-group-title">内容管理</div>
@@ -177,7 +193,7 @@
               </div>
               <i class="fa fa-chevron-right setting-row-arrow"></i>
             </button>
-
+            
             <button class="setting-row setting-row-btn" onclick="openWidgetManager('ai-tools')">
               <div class="setting-row-left">
                 <i class="fa fa-lightbulb-o setting-row-icon"></i>
@@ -185,7 +201,7 @@
               </div>
               <i class="fa fa-chevron-right setting-row-arrow"></i>
             </button>
-
+            
             <button class="setting-row setting-row-btn" onclick="openWidgetManager('shortcuts')">
               <div class="setting-row-left">
                 <i class="fa fa-th setting-row-icon"></i>
@@ -193,7 +209,7 @@
               </div>
               <i class="fa fa-chevron-right setting-row-arrow"></i>
             </button>
-
+            
             <button class="setting-row setting-row-btn" onclick="openWidgetManager('todo')">
               <div class="setting-row-left">
                 <i class="fa fa-check-square-o setting-row-icon"></i>
@@ -218,7 +234,7 @@
         </div>
       </div>
     </div>
-
+    
     <!-- 统一管理弹窗 -->
     <div id="manage-modal" class="modal-overlay">
       <div class="modal-content glass manage-modal-content">
