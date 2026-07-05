@@ -9,7 +9,7 @@ KD起始页的小组件系统是一个**轻量、可扩展的桌面组件框架*
 ## 项目文件结构
 
 ```
-main/
+src/
 ├── css/
 │   ├── variables.css       ← 设计变量（颜色、圆角、阴影…）
 │   ├── layout.css          ← 页面骨架（顶栏、搜索区、响应式）
@@ -41,12 +41,12 @@ main/
 **新增/修改一个功能时，你知道去哪找：**
 | 想做什么 | 打开哪个文件 |
 |----------|-------------|
-| 新加一个小组件 | `widgets/` 新建文件 + `app/app.js` 加一行注册 |
-| 改某个小组件的逻辑 | `widgets/` 下对应的文件 |
-| 改小组件的外观 | `css/widgets.css` |
-| 改搜索/主题行为 | `app/app.js` |
-| 改设置面板 | `app/preferences.js` |
-| 改数据管理弹窗 | `app/admin.js` |
+| 新加一个小组件 | `src/js/widgets/` 新建文件 + `src/js/app/app.js` 加一行注册 |
+| 改某个小组件的逻辑 | `src/js/widgets/` 下对应的文件 |
+| 改小组件的外观 | `src/css/widgets.css` |
+| 改搜索/主题行为 | `src/js/app/app.js` |
+| 改设置面板 | `src/js/app/preferences.js` |
+| 改数据管理弹窗 | `src/js/app/admin.js` |
 
 ---
 
@@ -155,7 +155,7 @@ WidgetFramework.register('hello', HelloWidget);
 
 ```html
 <!-- 小组件 -->
-<script src="./main/js/widgets/hello.js"></script>
+<script src="./src/js/widgets/hello.js"></script>
 ```
 
 ---

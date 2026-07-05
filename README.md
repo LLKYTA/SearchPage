@@ -78,7 +78,7 @@ python3 -m http.server 8080
 kd-startpage/
 ├── index.html                      # 主页面入口
 ├── README.md                       # 项目说明
-├── main/
+├── src/
 │   ├── css/
 │   │   ├── variables.css           # 设计变量（颜色、圆角、阴影…）
 │   │   ├── layout.css              # 页面骨架（顶栏、搜索区、响应式）
@@ -125,21 +125,21 @@ kd-startpage/
 ## ⚙️ 配置与自定义
 
 ### 新增小组件
-1. 在 `main/js/widgets/` 中创建类文件，继承 `Widget`，实现 `render()` 方法
-2. 在 `main/js/app/app.js` 中注册：`WidgetFramework.register('my-type', MyWidget);`
+1. 在 `src/js/widgets/` 中创建类文件，继承 `Widget`，实现 `render()` 方法
+2. 在 `src/js/app/app.js` 中注册：`WidgetFramework.register('my-type', MyWidget);`
 3. 通过页面上的 `+` 按钮即可添加到桌面
 
 ### 修改默认布局
 编辑 `index.html` 中 `data-default-widgets` 属性，调整初始小组件类型和顺序。
 
 ### 更换默认搜索引擎
-在 `main/js/app/app.js` 的 `CONFIG.searchEngines` 中添加或修改。
+在 `src/js/app/app.js` 的 `CONFIG.searchEngines` 中添加或修改。
 
 ### 自定义主题色
-编辑 `main/css/variables.css` 中的 CSS 变量，例如 `--ios-blue`。
+编辑 `src/css/variables.css` 中的 CSS 变量，例如 `--ios-blue`。
 
 ### 修改小组件样式
-每个小组件的样式都在 `main/css/widgets.css` 中，按类名查找修改。
+每个小组件的样式都在 `src/css/widgets.css` 中，按类名查找修改。
 
 ---
 

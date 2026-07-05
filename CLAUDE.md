@@ -31,16 +31,16 @@ WidgetFramework (global registry, layout persistence, widget gallery)
 
 | Layer | Files | Purpose |
 |-------|-------|---------|
-| **Infrastructure** | `lib/widget-framework.js` | Framework core: `WidgetFramework` singleton, `Widget` base class, `WidgetArea` |
-| **Infrastructure** | `lib/uapi.js` | External APIs: weather, hotboard, daily word (via uapis.cn) |
-| **Widgets** | `widgets/*.js` | 9 standalone widget classes, one file each, no cross-dependencies |
-| **App logic** | `app/app.js` | Entry point: init, search, theme toggle, widget registration |
-| **App logic** | `app/preferences.js` | Settings dialog: background, hotboard source, word category |
-| **App logic** | `app/admin.js` | Management modals (CRUD for bookmarks/todos/etc), about dialog, global shortcuts |
-| **Styles** | `css/variables.css` | Design tokens: colors, radius, shadows, transitions, dark mode vars |
-| **Styles** | `css/layout.css` | Page skeleton: header, search bar, background gradient & bubbles, responsive |
-| **Styles** | `css/widgets.css` | All widget card styles + drag-and-drop states + grid layout |
-| **Styles** | `css/dialogs.css` | Modal, settings panel, bottom sheet, splash animation |
+| **Infrastructure** | `src/js/lib/widget-framework.js` | Framework core: `WidgetFramework` singleton, `Widget` base class, `WidgetArea` |
+| **Infrastructure** | `src/js/lib/uapi.js` | External APIs: weather, hotboard, daily word (via uapis.cn) |
+| **Widgets** | `src/js/widgets/*.js` | 9 standalone widget classes, one file each, no cross-dependencies |
+| **App logic** | `src/js/app/app.js` | Entry point: init, search, theme toggle, widget registration |
+| **App logic** | `src/js/app/preferences.js` | Settings dialog: background, hotboard source, word category |
+| **App logic** | `src/js/app/admin.js` | Management modals (CRUD for bookmarks/todos/etc), about dialog, global shortcuts |
+| **Styles** | `src/css/variables.css` | Design tokens: colors, radius, shadows, transitions, dark mode vars |
+| **Styles** | `src/css/layout.css` | Page skeleton: header, search bar, background gradient & bubbles, responsive |
+| **Styles** | `src/css/widgets.css` | All widget card styles + drag-and-drop states + grid layout |
+| **Styles** | `src/css/dialogs.css` | Modal, settings panel, bottom sheet, splash animation |
 
 ### Data Flow
 
@@ -63,7 +63,7 @@ WidgetFramework (global registry, layout persistence, widget gallery)
 
 ## How to Develop a New Widget
 
-1. Create `widgets/<name>.js`:
+1. Create `src/js/widgets/<name>.js`:
 
 ```javascript
 class MyWidget extends Widget {
@@ -81,12 +81,12 @@ class MyWidget extends Widget {
 }
 ```
 
-2. Register in `app/app.js`:
+2. Register in `src/js/app/app.js`:
 ```javascript
 WidgetFramework.register('my-widget', MyWidget);
 ```
 
-3. Add style in `css/widgets.css` using `.my-widget-` prefix.
+3. Add style in `src/css/widgets.css` using `.my-widget-` prefix.
 
 4. Add `<script>` tag in `index.html` (in the widgets section, before `app.js`).
 
