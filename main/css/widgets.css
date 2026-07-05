@@ -1,0 +1,397 @@
+/* ========================================
+   widgets.css - 所有小组件与拖拽相关样式
+   扁平现代化设计风格
+   ======================================== */
+
+/* ========== 小组件网格 ========== */
+.widgets-area {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: var(--widget-gap);
+    margin-bottom: var(--widget-gap);
+    min-height: 80px;
+}
+
+.widgets-grid {
+    display: grid; gap: var(--widget-gap); margin-bottom: var(--widget-gap);
+}
+.widgets-grid { grid-template-columns: repeat(2, 1fr); }
+
+@media (min-width: 1024px) { .widgets-grid { grid-template-columns: repeat(4, 1fr); } }
+@media (min-width: 1280px) { .widgets-grid { grid-template-columns: repeat(5, 1fr); } }
+
+/* 尺寸定义 */
+.widget-sm { grid-column: span 1; grid-row: span 1; }
+.widget-md { grid-column: span 2; grid-row: span 1; }
+.widget-lg { grid-column: span 3; grid-row: span 2; }
+
+/* ========== 小组件通用 - 扁平现代 ========== */
+.widget {
+    background: var(--card-bg);
+    border-radius: var(--card-radius);
+    padding: var(--widget-padding);
+    cursor: grab;
+    user-select: none;
+    position: relative;
+    border: 1px solid var(--card-border);
+    transition: all 0.25s ease;
+    transform: translateY(0);
+    animation: widgetAppear 0.4s ease both;
+}
+@keyframes widgetAppear {
+    0% {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.widget:active { cursor: grabbing; }
+
+.widget:hover {
+    box-shadow: 0 8px 24px var(--shadow-color);
+    transform: translateY(-2px);
+    border-color: transparent;
+}
+
+.dark .widget:hover {
+    border-color: var(--ios-blue);
+}
+
+/* ---------- 标题栏 ---------- */
+.widget-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+}
+.widget-icon {
+    color: var(--ios-blue);
+    font-size: 12px;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: var(--accent-bg);
+}
+.widget-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-secondary);
+}
+
+.widget, .widget-content { color: var(--text-primary); }
+.widget a { color: var(--ios-blue); text-decoration: none; }
+.dark .widget a { color: #60a5fa; }
+.widget .text-secondary { color: var(--text-secondary); }
+
+/* ---------- 头部操作按钮 ---------- */
+.widget-header-actions {
+    display: flex;
+    gap: 2px;
+    margin-left: auto;
+}
+.widget-size-btn,
+.widget-delete-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 11px;
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    padding: 0;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+}
+.widget:hover .widget-size-btn,
+.widget:hover .widget-delete-btn {
+    opacity: 1;
+}
+.widget-size-btn:hover {
+    color: var(--ios-blue);
+    background: var(--accent-bg);
+}
+.widget-delete-btn:hover {
+    color: var(--ios-red);
+    background: rgba(255, 59, 48, 0.08);
+}
+
+/* 头部添加按钮 */
+.widget-header-add-btn {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-tertiary);
+    cursor: pointer;
+    font-size: 12px;
+    width: 28px;
+    height: 28px;
+    padding: 0;
+    transition: all 0.15s ease;
+    border-radius: 6px;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    opacity: 0 !important;
+}
+.widget:hover .widget-header-add-btn {
+    opacity: 1 !important;
+}
+.widget-header-add-btn:hover {
+    color: var(--ios-blue) !important;
+    background: var(--accent-bg) !important;
+}
+
+/* ========== 时间小组件 ========== */
+.time-display {
+    font-size: 42px;
+    font-weight: 600;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 8px;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.5px;
+}
+.date-display {
+    font-size: 14px;
+    color: var(--text-secondary);
+}
+
+/* ========== 天气小组件 ========== */
+.weather-content { display: flex; align-items: center; gap: 12px; }
+.weather-icon { font-size: 32px; color: var(--ios-yellow); }
+.weather-temp { font-size: 32px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.weather-desc { font-size: 13px; color: var(--text-secondary); }
+
+/* ========== 快捷方式 ========== */
+.shortcuts-grid { display: grid; gap: 12px; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 480px) { .shortcuts-grid { grid-template-columns: repeat(3, 1fr); } }
+@media (min-width: 768px) { .shortcuts-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.shortcut-item {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+    text-decoration: none; transition: transform var(--transition-fast);
+    position: relative;
+}
+.shortcut-item:hover { transform: scale(1.08); }
+.shortcut-icon {
+    width: 40px; height: 40px; border-radius: var(--radius-md);
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-size: 16px;
+}
+@media (max-width: 480px) { .shortcut-icon { width: 36px; height: 36px; } }
+.shortcut-name { font-size: 11px; color: var(--text-secondary); text-align: center; }
+
+/* ========== 待办 ========== */
+.todo-list { display: flex; flex-direction: column; gap: 8px; max-height: 100px; overflow-y: auto; }
+.todo-item { display: flex; align-items: center; gap: 8px; }
+.todo-checkbox { width: 16px; height: 16px; border-radius: 4px; cursor: pointer; accent-color: var(--ios-blue); }
+.todo-text { font-size: 13px; color: var(--text-primary); transition: all var(--transition-fast); }
+.todo-item.completed .todo-text { text-decoration: line-through; color: var(--text-tertiary); }
+
+/* ========== 书签 ========== */
+.bookmarks-grid { display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 480px) { .bookmarks-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.bookmark-item {
+    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
+    border-radius: var(--radius-md); text-decoration: none; transition: background var(--transition-fast);
+    position: relative;
+}
+.bookmark-item:hover { background: rgba(0,0,0,0.04); }
+.dark .bookmark-item:hover { background: rgba(255,255,255,0.06); }
+.bookmark-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
+.bookmark-name { font-size: 13px; font-weight: 500; color: var(--text-primary); }
+
+/* ========== AI 工具 ========== */
+.ai-description { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.ai-tools-grid { display: grid; gap: 10px; grid-template-columns: repeat(2, 1fr); }
+@media (min-width: 480px) { .ai-tools-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 640px) { .ai-tools-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.ai-tool-item {
+    display: flex; align-items: center; gap: 10px; padding: 12px;
+    border-radius: var(--radius-md); text-decoration: none; transition: all var(--transition-fast);
+    position: relative;
+}
+.ai-tool-item:hover { background: rgba(0,0,0,0.04); }
+.dark .ai-tool-item:hover { background: rgba(255,255,255,0.06); }
+.ai-tool-icon { width: 32px; height: 32px; border-radius: var(--radius-md); display: flex; align-items: center; justify-content: center; color: white; font-size: 14px; }
+.ai-tool-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+
+/* ========== 删除按钮（书签/AI/快捷方式） ========== */
+.bookmark-delete-btn, .ai-tool-delete-btn, .shortcut-delete-btn {
+    position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
+    border-radius: 50%; background: #ff3b30; color: white; border: none;
+    font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center;
+    z-index: 10; box-shadow: 0 2px 8px rgba(255,59,48,0.4);
+}
+.bookmark-item:hover .bookmark-delete-btn,
+.ai-tool-item:hover .ai-tool-delete-btn,
+.shortcut-item:hover .shortcut-delete-btn { display: flex; }
+
+.bookmark-icon img, .ai-tool-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+.bookmark-icon-loading, .ai-tool-icon-loading { display: flex; align-items: center; justify-content: center; color: #999; font-size: 20px; }
+
+/* ========== 热榜 ========== */
+.hotboard-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
+.hotboard-source-tag { font-size: 13px; font-weight: 600; color: var(--ios-blue); }
+.hotboard-time { font-size: 11px; color: var(--text-tertiary); }
+.hotboard-list { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow-y: auto; margin: 0 -8px; padding: 0 8px; }
+.hotboard-loading { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 50px 0; color: var(--text-tertiary); font-size: 13px; }
+.hotboard-loading .fa-spinner { font-size: 16px; }
+.hotboard-item { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--radius-md); text-decoration: none; transition: background var(--transition-fast); cursor: pointer; }
+.hotboard-item:hover { background: var(--bg-tertiary); }
+.hotboard-rank {
+    width: 22px; height: 22px; border-radius: 6px; display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; background: var(--bg-tertiary); color: var(--text-secondary); flex-shrink: 0; font-variant-numeric: tabular-nums;
+}
+.hotboard-item:nth-child(1) .hotboard-rank { background: linear-gradient(135deg, #FF3B30, #FF9500); color: white; }
+.hotboard-item:nth-child(2) .hotboard-rank { background: linear-gradient(135deg, #FF9500, #FFCC00); color: white; }
+.hotboard-item:nth-child(3) .hotboard-rank { background: linear-gradient(135deg, #FFCC00, #FFD60A); color: white; }
+.hotboard-title { flex: 1; font-size: 13px; font-weight: 500; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.4; }
+.hotboard-hot { font-size: 11px; color: var(--text-tertiary); flex-shrink: 0; display: flex; align-items: center; gap: 4px; font-variant-numeric: tabular-nums; }
+.hotboard-hot .fa-fire { color: #FF3B30; font-size: 10px; }
+.hotboard-tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: rgba(255,59,48,0.1); color: #FF3B30; flex-shrink: 0; font-weight: 600; }
+.hotboard-tag.new { background: rgba(52,199,89,0.12); color: #34C759; }
+.hotboard-tag.boom { background: rgba(255,149,0,0.12); color: #FF9500; }
+.hotboard-error { text-align: center; padding: 40px 0; color: var(--text-tertiary); font-size: 13px; }
+.hotboard-error i { font-size: 28px; margin-bottom: 10px; display: block; opacity: 0.5; }
+
+/* ========== 时间进度条 ========== */
+.progress-container { display: flex; flex-direction: column; gap: 14px; }
+.progress-item { display: flex; flex-direction: column; gap: 4px; }
+.progress-label {
+    display: flex; justify-content: space-between;
+    font-size: 12px; color: var(--text-secondary);
+}
+.progress-bar {
+    height: 8px; border-radius: 4px;
+    background: var(--bg-tertiary); overflow: hidden;
+}
+.progress-fill {
+    height: 100%; border-radius: 4px; transition: width 0.3s ease;
+}
+.today-fill { background: var(--ios-blue); }
+.week-fill { background: var(--ios-purple); }
+.year-fill { background: var(--ios-green); }
+
+/* ========== 每日单词 ========== */
+.dailyword-sm .dailyword-word { font-size: 20px; font-weight: 700; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.dailyword-sm .dailyword-def { font-size: 12px; color: var(--text-secondary); margin-top: 4px; line-height: 1.4; }
+.dailyword-md .dailyword-word { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.dailyword-md .dailyword-phonetic { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
+.dailyword-md .dailyword-def { font-size: 14px; color: var(--text-secondary); line-height: 1.4; }
+.dailyword-md .dailyword-example { font-size: 13px; color: var(--text-secondary); margin-top: 10px; padding: 8px 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-style: italic; border-left: 3px solid var(--ios-blue); }
+.dailyword-lg .dailyword-word { font-size: 36px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
+.dailyword-lg .dailyword-phonetic { font-size: 16px; color: var(--text-secondary); margin-bottom: 6px; }
+.dailyword-lg .dailyword-def { font-size: 16px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
+.dailyword-lg .dailyword-examples { display: flex; flex-direction: column; gap: 8px; }
+.dailyword-lg .dailyword-example-item { background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 10px 14px; border-left: 3px solid var(--ios-blue); }
+.dailyword-lg .dailyword-example-text { font-size: 14px; color: var(--text-primary); line-height: 1.4; font-style: italic; }
+.dailyword-lg .dailyword-example-trans { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
+.dailyword-lg .dailyword-source { font-size: 11px; color: var(--text-tertiary); margin-top: 12px; text-align: right; border-top: 1px solid var(--border-color); padding-top: 8px; }
+.dailyword-loading { text-align: center; color: var(--text-secondary); padding: 20px 0; font-size: 14px; }
+.dailyword-loading .fa-spinner { margin-right: 8px; }
+.dailyword-error { text-align: center; color: var(--text-secondary); padding: 16px; cursor: pointer; transition: opacity 0.2s; }
+.dailyword-error:hover { opacity: 0.7; }
+.dailyword-error .fa-refresh { display: block; font-size: 20px; margin-bottom: 6px; }
+
+/* ========== 拖拽与排序动画 ========== */
+.sortable-drag { opacity: 0.5; }
+
+.widget-drag {
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.18) !important;
+    opacity: 0.95;
+    z-index: 1000 !important;
+}
+
+.widget-ghost {
+    opacity: 0.35;
+    border: 2px dashed var(--ios-blue);
+    background: var(--accent-bg) !important;
+    transform: scale(0.97);
+}
+
+.widget-chosen {
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* 长按等待状态 */
+.widget-waiting {
+    box-shadow: 0 8px 30px rgba(0, 122, 255, 0.25) !important;
+    border-color: var(--ios-blue);
+    cursor: grabbing;
+    z-index: 999;
+}
+
+.widget-waiting .widget-header {
+    animation: pulse-border 0.8s ease-in-out infinite;
+}
+
+@keyframes pulse-border {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.widget-dragging {
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.22) !important;
+    opacity: 0.92;
+    z-index: 1000 !important;
+}
+
+/* ========== 小组件移除动画 ========== */
+.widget-removing {
+    animation: widgetRemove 0.3s ease forwards !important;
+    pointer-events: none !important;
+}
+@keyframes widgetRemove {
+    0% {
+        opacity: 1;
+        transform: scale(1);
+    }
+    100% {
+        opacity: 0;
+        transform: scale(0.92);
+        height: 0;
+        padding: 0;
+        margin: 0;
+        overflow: hidden;
+    }
+}
+
+/* ========== 响应式 ========== */
+@media (max-width: 768px) {
+    .widgets-area {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    .widget-sm { grid-column: span 1; }
+    .widget-md, .widget-lg { grid-column: span 2; }
+    .widget { padding: 14px; }
+    .time-display { font-size: 28px; }
+    .date-display { font-size: 12px; }
+    .weather-temp { font-size: 24px; }
+    .weather-icon { font-size: 28px; }
+    .hotboard-list { max-height: 180px; }
+    .bookmarks-grid, .shortcuts-grid, .ai-tools-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .todo-list { max-height: 80px; }
+    .widget-header { margin-bottom: 12px; }
+}
+
+@media (max-width: 480px) {
+    .widgets-area { grid-template-columns: 1fr; }
+    .widget-sm, .widget-md, .widget-lg { grid-column: span 1; }
+    .shortcuts-grid, .bookmarks-grid, .ai-tools-grid { grid-template-columns: repeat(2, 1fr); }
+    .widget { padding: 12px; }
+    .widget-header { margin-bottom: 10px; }
+}

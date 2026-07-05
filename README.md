@@ -53,11 +53,11 @@
 
 ### 方式一：开箱即用
 1. 下载或克隆本项目
-2. 直接用浏览器打开 \`index.html\`
+2. 直接用浏览器打开 `index.html`
 3. 设为浏览器主页即可
 
 ### 方式二：本地服务器预览
-\`\`\`bash
+```bash
 # 克隆项目
 git clone https://github.com/yourname/kd-startpage.git
 
@@ -68,26 +68,41 @@ cd kd-startpage
 python3 -m http.server 8080
 
 # 然后访问 http://localhost:8080
-\`\`\`
+```
 
 ---
 
 ## 📁 项目结构
 
-\`\`\`
+```
 kd-startpage/
-├── index.html              # 主页面入口
-├── README.md               # 项目说明
+├── index.html                      # 主页面入口
+├── README.md                       # 项目说明
 ├── main/
 │   ├── css/
-│   │   ├── root.css        # CSS变量（设计系统）
-│   │   └── main.css        # 主样式（组件、布局、动画）
+│   │   ├── variables.css           # 设计变量（颜色、圆角、阴影…）
+│   │   ├── layout.css              # 页面骨架（顶栏、搜索区、响应式）
+│   │   ├── widgets.css             # 所有小组件卡片与拖拽样式
+│   │   └── dialogs.css             # 弹窗、设置面板、启动动画
 │   └── js/
-│       ├── widget-framework.js  # 小组件框架核心（注册、区域管理、拖拽）
-│       ├── widgets.js           # 所有小组件实现（时间/天气/待办/书签等）
-│       ├── main.js              # 全局逻辑与初始化
-│       └── uapi.js              # 天气/热榜API调用
-\`\`\`
+│       ├── lib/
+│       │   ├── widget-framework.js # 小组件框架核心（注册、区域、拖拽）
+│       │   └── uapi.js             # 天气 / 热榜 / 每日单词 API
+│       ├── widgets/                # 每个小组件独立文件，互不干扰
+│       │   ├── clock.js            #   实时数字时钟
+│       │   ├── weather.js          #   天气显示
+│       │   ├── todo.js             #   待办事项
+│       │   ├── bookmarks.js        #   常用书签
+│       │   ├── shortcuts.js        #   快捷方式
+│       │   ├── ai-tools.js         #   AI 工具入口
+│       │   ├── hotboard.js         #   多源热榜
+│       │   ├── time-progress.js    #   时间进度条
+│       │   └── daily-word.js       #   每日单词
+│       └── app/                    # 按职责拆分的应用逻辑
+│           ├── app.js              #   应用入口（初始化、搜索、主题、组件注册）
+│           ├── preferences.js      #   设置面板（偏好、热榜来源、词库）
+│           └── admin.js            #   管理弹窗（CRUD、关于、全局快捷键）
+```
 
 ---
 
@@ -96,7 +111,7 @@ kd-startpage/
 | 技术 | 说明 |
 |------|------|
 | **HTML5** | 语义化结构，原生属性 |
-| **CSS3** | CSS变量、Grid布局、\`backdrop-filter\` 毛玻璃、动画 |
+| **CSS3** | CSS变量、Grid布局、`backdrop-filter` 毛玻璃、动画 |
 | **JavaScript (ES6+)** | 面向对象设计，框架无依赖 |
 | **SortableJS** | 拖拽排序库（轻量、触摸友好） |
 | **UAPI** | 提供天气、热榜数据 |
@@ -110,18 +125,21 @@ kd-startpage/
 ## ⚙️ 配置与自定义
 
 ### 新增小组件
-1. 在 \`widgets.js\` 中创建类，继承 \`Widget\`，实现 \`render()\` 方法
-2. 在 \`main.js\` 中注册：\`WidgetFramework.register('my-type', MyWidget);\`
-3. 通过页面上的 \`+\` 按钮即可添加到桌面
+1. 在 `main/js/widgets/` 中创建类文件，继承 `Widget`，实现 `render()` 方法
+2. 在 `main/js/app/app.js` 中注册：`WidgetFramework.register('my-type', MyWidget);`
+3. 通过页面上的 `+` 按钮即可添加到桌面
 
 ### 修改默认布局
-编辑 \`index.html\` 中 \`data-default-widgets\` 属性，调整初始小组件类型和顺序。
+编辑 `index.html` 中 `data-default-widgets` 属性，调整初始小组件类型和顺序。
 
 ### 更换默认搜索引擎
-在 \`main.js\` 的 \`CONFIG.searchEngines\` 中添加或修改。
+在 `main/js/app/app.js` 的 `CONFIG.searchEngines` 中添加或修改。
 
 ### 自定义主题色
-编辑 \`root.css\` 中的 CSS 变量，例如 \`--ios-blue\`。
+编辑 `main/css/variables.css` 中的 CSS 变量，例如 `--ios-blue`。
+
+### 修改小组件样式
+每个小组件的样式都在 `main/css/widgets.css` 中，按类名查找修改。
 
 ---
 
@@ -131,7 +149,7 @@ kd-startpage/
 | :---: | :---: | :---: | :---: |
 | ✅ 最新版 | ✅ 最新版 | ✅ 最新版 | ✅ 最新版 |
 
-> ⚠️ 毛玻璃效果需要浏览器支持 \`backdrop-filter\`，不支持的浏览器会降级为半透明背景。
+> ⚠️ 毛玻璃效果需要浏览器支持 `backdrop-filter`，不支持的浏览器会降级为半透明背景。
 
 ---
 
@@ -154,9 +172,9 @@ kd-startpage/
 欢迎提交 Issue 和 Pull Request！
 
 1. Fork 本项目
-2. 创建特性分支 (\`git checkout -b feature/AmazingFeature\`)
-3. 提交更改 (\`git commit -m 'Add some AmazingFeature'\`)
-4. 推送到分支 (\`git push origin feature/AmazingFeature\`)
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
 5. 开启 Pull Request
 
 ---

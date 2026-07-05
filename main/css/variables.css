@@ -23,6 +23,12 @@
      
      --border-color: #E5E7EB;
      --shadow-color: rgba(0, 0, 0, 0.08);
+
+     /* 统一卡片体系（扁平现代） */
+     --card-bg: #FFFFFF;
+     --card-border: #E8EAED;
+     --card-radius: 14px;
+     --accent-bg: rgba(0, 122, 255, 0.08);
      
      --dark-bg-primary: #000000;
      --dark-bg-secondary: #1C1C1E;
@@ -71,6 +77,11 @@
      
      --border-color: var(--dark-border-color);
      --shadow-color: var(--dark-shadow-color);
+
+     /* 统一卡片体系（暗色） */
+     --card-bg: var(--dark-bg-secondary);
+     --card-border: var(--dark-border-color);
+     --accent-bg: rgba(0, 122, 255, 0.12);
  }
  
  * {
@@ -114,18 +125,11 @@
      color: white;
  }
  
- .widget-dragging {
-     opacity: 0.8;
-     transform: scale(1.02);
-     z-index: 1000 !important;
-     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2) !important;
- }
- 
  .widget-drag-over {
      border: 2px dashed var(--ios-blue) !important;
      background: rgba(0, 122, 255, 0.1) !important;
  }
- 
+
  .widget-placeholder {
      border: 2px dashed var(--ios-blue);
      border-radius: var(--radius-lg);

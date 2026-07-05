@@ -8,6 +8,37 @@ const WidgetFramework = {
   areas: new Map(),
   storageKey: 'widgets-layout',
 
+  // ===== 各小组件预览内容 (展示实际效果) =====
+  _previews: {
+    clock: '<div class="preview-widget"><div class="time-display" style="font-size:22px;text-align:center;margin:4px 0 2px;">12:00</div><div class="date-display" style="font-size:10px;text-align:center;">2026年7月5日 周日</div></div>',
+    weather: '<div class="preview-widget"><div style="display:flex;align-items:center;gap:10px;justify-content:center;padding:4px 0;"><span style="font-size:26px;">☀️</span><div><div style="font-size:22px;font-weight:700;">28°</div><div style="font-size:11px;color:var(--text-secondary);">晴 · 北京</div></div></div></div>',
+    shortcuts: '<div class="preview-widget"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;padding:2px;">' +
+      [ '#007AFF', '#34C759', '#FF9500', '#AF52DE' ].map(c =>
+        `<div style="width:32px;height:32px;border-radius:8px;background:${c};margin:0 auto;display:flex;align-items:center;justify-content:center;"><i class="fa fa-link" style="color:white;font-size:12px;"></i></div>`
+      ).join('') + '</div><div style="display:grid;grid-template-columns:repeat(2,1fr);font-size:9px;color:var(--text-secondary);text-align:center;margin-top:2px;"><span>Chat</span><span>Mail</span><span>Map</span><span>Cal</span></div></div>',
+    todo: '<div class="preview-widget"><div style="display:flex;flex-direction:column;gap:4px;">' +
+      [ '完成报告', '回复邮件', '运动30分' ].map(t =>
+        `<div style="display:flex;align-items:center;gap:6px;"><div style="width:14px;height:14px;border-radius:4px;border:2px solid var(--text-tertiary);flex-shrink:0;"></div><span style="font-size:11px;color:var(--text-primary);">${t}</span></div>`
+      ).join('') + '</div></div>',
+    bookmarks: '<div class="preview-widget"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;">' +
+      [ ['Github','#333'], ['知乎','#056DE8'], ['B站','#FB7299'], ['掘金','#1E80FF'] ].map(([n,c]) =>
+        `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;"><div style="width:20px;height:20px;border-radius:5px;background:${c};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-globe" style="color:white;font-size:10px;"></i></div><span style="font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span></div>`
+      ).join('') + '</div></div>',
+    'ai-tools': '<div class="preview-widget"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">' +
+      [ ['ChatGPT','#10A37F'], ['Claude','#6B4FBB'], ['Midjourney','#1B1B1B'], ['Copilot','#0078D4'] ].map(([n,c]) =>
+        `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;"><div style="width:20px;height:20px;border-radius:5px;background:${c};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-robot" style="color:white;font-size:10px;"></i></div><span style="font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span></div>`
+      ).join('') + '</div></div>',
+    hotboard: '<div class="preview-widget" style="padding:0 4px;">' +
+      [ ['微博热搜','128万'], ['热榜第一','95万'], ['热门话题','76万'], ['热搜趋势','52万'] ].map(([t,h],i) =>
+        `<div style="display:flex;align-items:center;gap:6px;padding:5px 2px;"><span style="width:18px;height:18px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;${i<3?'background:linear-gradient(135deg,#FF3B30,#FF9500);color:white;':'background:var(--bg-tertiary);color:var(--text-secondary);'}flex-shrink:0;">${i+1}</span><span style="font-size:10px;color:var(--text-primary);flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${t}</span><span style="font-size:9px;color:var(--text-tertiary);">${h}</span></div>`
+      ).join('') + '</div>',
+    'time-progress': '<div class="preview-widget"><div style="display:flex;flex-direction:column;gap:6px;">' +
+      [ ['今日','60%','var(--ios-blue)'], ['本周','45%','var(--ios-purple)'], ['今年','52%','var(--ios-green)'] ].map(([l,p,c]) =>
+        `<div><div style="display:flex;justify-content:space-between;font-size:9px;color:var(--text-secondary);margin-bottom:2px;"><span>${l}</span><span>${p}</span></div><div style="height:6px;border-radius:3px;background:var(--bg-tertiary);overflow:hidden;"><div style="height:100%;width:${p};border-radius:3px;background:${c};"></div></div></div>`
+      ).join('') + '</div></div>',
+    'daily-word': '<div class="preview-widget"><div class="dailyword-sm"><div class="dailyword-word" style="font-size:18px;font-weight:700;text-align:center;">Serendipity</div><div class="dailyword-def" style="font-size:11px;text-align:center;color:var(--text-secondary);margin-top:2px;">意外发现美好事物的能力</div></div></div>'
+  },
+
   register(type, widgetClass) {
     this.registry.set(type, widgetClass);
   },
@@ -30,6 +61,41 @@ const WidgetFramework = {
     localStorage.setItem(this.storageKey, JSON.stringify(layout));
   },
 
+  // ===== 3D 倾斜效果 =====
+  _initTilt(card) {
+    let isTilting = false;
+    let rafId = null;
+
+    const onMove = (e) => {
+      if (!isTilting) return;
+      if (rafId) cancelAnimationFrame(rafId);
+      rafId = requestAnimationFrame(() => {
+        const rect = card.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const centerX = rect.width / 2;
+        const centerY = rect.height / 2;
+        const rotateX = ((y - centerY) / centerY) * -8;
+        const rotateY = ((x - centerX) / centerX) * 8;
+        card.style.setProperty('--tilt-x', `${rotateX}deg`);
+        card.style.setProperty('--tilt-y', `${rotateY}deg`);
+      });
+    };
+
+    const onEnter = () => { isTilting = true; };
+    const onLeave = () => {
+      isTilting = false;
+      if (rafId) cancelAnimationFrame(rafId);
+      card.style.setProperty('--tilt-x', '0deg');
+      card.style.setProperty('--tilt-y', '0deg');
+    };
+
+    card.addEventListener('mouseenter', onEnter);
+    card.addEventListener('mousemove', onMove);
+    card.addEventListener('mouseleave', onLeave);
+  },
+
+  // ===== 打开小组件库（预览式） =====
   openGallery(areaId) {
     const modal = document.getElementById('widget-gallery-modal');
     const listContainer = modal.querySelector('.gallery-list');
@@ -41,25 +107,75 @@ const WidgetFramework = {
 
     sortedEntries.forEach(([type, WidgetClass]) => {
       const card = document.createElement('div');
-      card.className = 'gallery-card';
+      card.className = 'gallery-card gallery-card-preview';
+      const previewHtml = this._previews[type] || '';
+
       card.innerHTML = `
-        <i class="fa ${WidgetClass.icon || 'fa-puzzle-piece'} gallery-card-icon"></i>
-        <div class="gallery-card-name">${WidgetClass.displayName}</div>
+        <div class="gallery-card-preview-wrap">
+          <div class="gallery-card-preview-inner">
+            ${previewHtml}
+          </div>
+        </div>
+        <div class="gallery-card-footer">
+          <div class="gallery-card-info">
+            <i class="fa ${WidgetClass.icon || 'fa-puzzle-piece'} gallery-card-icon"></i>
+            <span class="gallery-card-name">${WidgetClass.displayName}</span>
+          </div>
+          <button class="gallery-card-add-btn" title="添加此小组件">
+            <i class="fa fa-plus"></i>
+          </button>
+        </div>
       `;
+
+      // 3D 倾斜
+      this._initTilt(card);
+
+      // 添加按钮点击
+      card.querySelector('.gallery-card-add-btn').addEventListener('click', (e) => {
+        e.stopPropagation();
+        const area = WidgetFramework.areas.get(areaId);
+        if (area) {
+          const added = area.addWidget(type);
+          if (added) {
+            // 添加成功动效
+            card.classList.add('gallery-card-added');
+            setTimeout(() => card.classList.remove('gallery-card-added'), 600);
+          }
+        }
+      });
+
+      // 点击卡片整体也可添加
       card.addEventListener('click', () => {
         const area = WidgetFramework.areas.get(areaId);
         if (area) {
           const added = area.addWidget(type);
           if (added) {
-            // 添加成功，弹窗保持打开
+            card.classList.add('gallery-card-added');
+            setTimeout(() => card.classList.remove('gallery-card-added'), 600);
           }
         }
       });
+
       listContainer.appendChild(card);
     });
 
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
+
+    // 触发入场动画
+    requestAnimationFrame(() => {
+      listContainer.querySelectorAll('.gallery-card-preview').forEach((c, i) => {
+        c.style.setProperty('--card-delay', `${i * 0.04}s`);
+        c.classList.add('gallery-card-visible');
+      });
+    });
+
+    // 入场动画结束后移除 delay，使 3D 倾斜响应无延迟
+    setTimeout(() => {
+      listContainer.querySelectorAll('.gallery-card-preview').forEach(c => {
+        c.style.removeProperty('--card-delay');
+      });
+    }, sortedEntries.length * 40 + 500);
   }
 };
 
@@ -207,14 +323,35 @@ class WidgetArea {
   }
 
   removeWidget(widgetInstance) {
+    if (this._pendingRemove) return; // 已有移除操作在进行中
     const idx = this.widgets.indexOf(widgetInstance);
     if (idx > -1) {
-      this.layout.splice(idx, 1);
-      this.widgets.splice(idx, 1);
-      widgetInstance.destroy();
-      this.saveLayout();
-      this.render();
+      const el = widgetInstance.element;
+      if (el) {
+        this._pendingRemove = true;
+        el.classList.add('widget-removing');
+        el.addEventListener('animationend', () => {
+          this._doRemove(idx);
+        }, { once: true });
+        // 安全兜底：动画超时后强制执行
+        setTimeout(() => this._doRemove(idx), 400);
+      } else {
+        this._doRemove(idx);
+      }
     }
+  }
+
+  _doRemove(idx) {
+    if (!this._pendingRemove) return;
+    this._pendingRemove = false;
+
+    if (idx < 0 || idx >= this.layout.length) return;
+    const widgetInstance = this.widgets[idx];
+    this.layout.splice(idx, 1);
+    this.widgets.splice(idx, 1);
+    if (widgetInstance) widgetInstance.destroy();
+    this.saveLayout();
+    this.render();
   }
 
   moveWidget(fromIdx, toIdx) {
