@@ -4,10 +4,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="KD起始页 - iOS风格小组件主页">
+  <meta name="description" content="KD起始页 - iOS 18 风格小组件主页">
   <meta name="theme-color" content="#007AFF">
   <title>KD起始页</title>
-  
+
   <!-- 外部资源 -->
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css">
   <link rel="stylesheet" href="./src/css/variables.css">
@@ -17,294 +17,300 @@
 </head>
 
 <body class="bg-gradient">
-  <!-- iOS 风格启动动画 -->
+  <!-- iOS 18 风格启动动画 -->
   <div id="splash-screen" class="splash-screen">
     <div class="splash-logo">
       <div class="splash-icon">KD</div>
-      <div class="splash-title">KD起始页</div>
     </div>
   </div>
+
+  <!-- 背景装饰 -->
   <div class="bg-decoration">
     <div class="bg-bubble bg-bubble-1"></div>
     <div class="bg-bubble bg-bubble-2"></div>
     <div class="bg-bubble bg-bubble-3"></div>
   </div>
-  
+
+  <!-- 主容器（无头部，搜索框为视觉焦点） -->
   <div class="container-main">
-    <!-- 头部 -->
-    <header class="header-bar">
-      <div class="logo-section">
-        <div class="logo-icon">KD</div>
-        <span class="logo-text">起始页</span>
-      </div>
-      <div class="toolbar-actions">
-        <div class="engine-switcher glass">
-          <button class="engine-btn" data-engine="baidu" onclick="setSearchEngine('baidu')">
-            <i class="fa fa-search"></i> 百度
-          </button>
-          <button class="engine-btn" data-engine="google" onclick="setSearchEngine('google')">
-            <i class="fa fa-google"></i> Google
-          </button>
-          <button class="engine-btn active" data-engine="bing" onclick="setSearchEngine('bing')">
-            <i class="fa fa-edge"></i> Bing
-          </button>
-        </div>
-        <button class="tool-btn glass" onclick="toggleDarkMode()">
-          <i id="theme-icon" class="fa fa-moon-o"></i>
-        </button>
-        <button class="tool-btn glass" onclick="openSettings()">
-          <i class="fa fa-cog"></i>
-        </button>
-      </div>
-    </header>
-    
     <!-- 搜索区 -->
     <section class="search-section">
       <div class="search-box glass">
+        <button class="engine-inline" id="engine-switch" onclick="toggleEngineDropdown()">
+          <i class="fa fa-edge" id="engine-inline-icon"></i>
+          <span class="engine-name" id="engine-inline-name">Bing</span>
+          <i class="fa fa-chevron-down engine-chevron"></i>
+        </button>
+        <div class="engine-dropdown" id="engine-dropdown">
+          <button class="engine-dropdown-item" data-engine="baidu" onclick="setSearchEngine('baidu');closeEngineDropdown()">
+            <i class="fa fa-search"></i> 百度
+          </button>
+          <button class="engine-dropdown-item" data-engine="google" onclick="setSearchEngine('google');closeEngineDropdown()">
+            <i class="fa fa-google"></i> Google
+          </button>
+          <button class="engine-dropdown-item active" data-engine="bing" onclick="setSearchEngine('bing');closeEngineDropdown()">
+            <i class="fa fa-edge"></i> Bing
+          </button>
+        </div>
+        <div style="width:1px;height:24px;background:var(--glass-border);flex-shrink:0;"></div>
         <i class="fa fa-search search-icon"></i>
         <input type="text" id="search-input" class="search-input" placeholder="搜索任何内容..." autocomplete="off">
-        <button id="search-btn" class="search-btn">搜索</button>
+        <button id="search-btn" class="search-btn">
+          <i class="fa fa-arrow-right"></i>
+        </button>
       </div>
-      <p class="search-hint">
-        当前搜索引擎: <strong id="current-engine">Bing</strong>
-      </p>
     </section>
+
     <!-- 小组件区域 -->
     <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
     {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
     {"type":"bookmarks"},{"type":"ai-tools"},{"type":"hotboard"}]'>
     </div>
-    
-    <!-- 底部“编辑小组件”按钮（iOS 负一屏风格） -->
-    <div class="add-widget-container">
-      <button class="add-widget-btn" onclick="WidgetFramework.openGallery('main-area')">
-        <i class="fa fa-plus-circle"></i> 编辑小组件
-      </button>
-    </div>
-    
-    <!-- 小组件库弹窗（底部弹出，预览式卡片） -->
-    <div id="widget-gallery-modal" class="modal-overlay">
-      <div class="modal-bottom-sheet">
-        <div class="modal-header">
-          <div class="modal-title-area">
-            <h3 class="modal-title">添加小组件</h3>
-            <button class="modal-close-btn" onclick="closeWidgetGallery()">完成</button>
-          </div>
+  </div>
+
+  <!-- 底部浮动操作栏（iOS 18 风格） -->
+  <div class="floating-bar">
+    <button class="floating-bar-btn" onclick="toggleDarkMode()" title="切换主题">
+      <i id="theme-icon-floating" class="fa fa-moon-o"></i>
+    </button>
+    <div class="floating-bar-separator"></div>
+    <button class="floating-bar-btn primary" onclick="WidgetFramework.openGallery('main-area')" title="编辑小组件">
+      <i class="fa fa-plus-circle"></i> 编辑
+    </button>
+    <div class="floating-bar-separator"></div>
+    <button class="floating-bar-btn" onclick="openSettings()" title="设置">
+      <i class="fa fa-cog"></i>
+    </button>
+  </div>
+
+  <!-- 小组件库弹窗（底部弹出，预览式卡片） -->
+  <div id="widget-gallery-modal" class="modal-overlay">
+    <div class="modal-bottom-sheet">
+      <div class="modal-header">
+        <div class="modal-title-area">
+          <h3 class="modal-title">添加小组件</h3>
+          <button class="modal-close-btn" onclick="closeWidgetGallery()">完成</button>
         </div>
-        <div class="gallery-list"></div>
       </div>
+      <div class="gallery-list"></div>
     </div>
-    <!-- 设置弹窗 -->
-    <div id="settings-modal" class="modal-overlay">
-      <div class="modal-content glass">
-        <div class="modal-header">
-          <h3 class="modal-title">设置</h3>
-          <button class="modal-close" onclick="closeSettings()">
-            <i class="fa fa-times"></i>
-          </button>
-        </div>
-        
-        <!-- 显示与偏好 -->
-        <div class="settings-group">
-          <div class="settings-group-title">显示与偏好</div>
-          <div class="settings-card">
-            <div class="setting-row">
-              <div class="setting-row-left">
-                <i class="fa fa-paint-brush setting-row-icon"></i>
-                <span class="setting-row-label">主题模式</span>
-              </div>
-              <div class="theme-buttons-inline">
-                <button class="theme-btn" data-theme="light" onclick="setTheme('light')">
-                  <i class="fa fa-sun-o"></i>
-                </button>
-                <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">
-                  <i class="fa fa-moon-o"></i>
-                </button>
-                <button class="theme-btn active" data-theme="auto" onclick="setTheme('auto')">
-                  <i class="fa fa-desktop"></i>
-                </button>
-              </div>
+  </div>
+
+  <!-- 设置弹窗 -->
+  <div id="settings-modal" class="modal-overlay">
+    <div class="modal-content glass">
+      <div class="modal-header">
+        <h3 class="modal-title">设置</h3>
+        <button class="modal-close" onclick="closeSettings()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+
+      <div class="settings-group">
+        <div class="settings-group-title">显示与偏好</div>
+        <div class="settings-card">
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <i class="fa fa-paint-brush setting-row-icon"></i>
+              <span class="setting-row-label">主题模式</span>
             </div>
-            
-            <div class="setting-row">
-              <div class="setting-row-left">
-                <i class="fa fa-search setting-row-icon"></i>
-                <span class="setting-row-label">默认搜索引擎</span>
-              </div>
-              <select id="default-engine" class="setting-select-inline" onchange="saveDefaultEngine()">
+            <div class="theme-buttons-inline">
+              <button class="theme-btn" data-theme="light" onclick="setTheme('light')">
+                <i class="fa fa-sun-o"></i>
+              </button>
+              <button class="theme-btn" data-theme="dark" onclick="setTheme('dark')">
+                <i class="fa fa-moon-o"></i>
+              </button>
+              <button class="theme-btn active" data-theme="auto" onclick="setTheme('auto')">
+                <i class="fa fa-desktop"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <i class="fa fa-search setting-row-icon"></i>
+              <span class="setting-row-label">默认搜索引擎</span>
+            </div>
+            <div class="ios-select">
+              <select id="default-engine" onchange="saveDefaultEngine()">
                 <option value="bing">Bing</option>
                 <option value="baidu">百度</option>
                 <option value="google">Google</option>
               </select>
             </div>
-            
-            <div class="setting-row">
-              <div class="setting-row-left">
-                <i class="fa fa-image setting-row-icon"></i>
-                <span class="setting-row-label">背景风格</span>
-              </div>
-              <div class="bg-options-inline">
-                <div class="bg-option active" onclick="setBackground('gradient', this)">渐变</div>
-                <div class="bg-option" onclick="setBackground('pure', this)">纯色</div>
-                <div class="bg-option" onclick="setBackground('custom', this)">自定义</div>
-              </div>
-            </div>
-            
-            <!-- 热榜来源 -->
-<div class="setting-row">
-  <div class="setting-row-left">
-    <i class="fa fa-fire setting-row-icon"></i>
-    <span class="setting-row-label">热榜来源</span>
-  </div>
-  <select id="hotboard-source-select" class="setting-select-inline" onchange="saveHotboardSource()">
-    <option value="weibo">微博热搜</option>
-    <option value="zhihu">知乎热榜</option>
-    <option value="bilibili">B站热门</option>
-    <option value="baidu">百度热搜</option>
-    <option value="douyin">抖音热榜</option>
-    <option value="toutiao">今日头条</option>
-    <option value="36kr">36氪</option>
-    <option value="hupu">虎扑</option>
-  </select>
-</div>
+          </div>
 
-<!-- 👇 新增：单词词库 -->
-<div class="setting-row">
-  <div class="setting-row-left">
-    <i class="fa fa-book setting-row-icon"></i>
-    <span class="setting-row-label">单词词库</span>
-  </div>
-  <select id="dailyword-category-select" class="setting-select-inline" onchange="saveDailyWordCategory()">
-    <option value="all">全部词汇</option>
-    <option value="cet4">四级词汇 (CET-4)</option>
-    <option value="cet6">六级词汇 (CET-6)</option>
-    <option value="ielts">雅思词汇 (IELTS)</option>
-    <option value="toefl">托福词汇 (TOEFL)</option>
-    <option value="gre">GRE 词汇</option>
-  </select>
-</div>
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <i class="fa fa-image setting-row-icon"></i>
+              <span class="setting-row-label">背景风格</span>
+            </div>
+            <div class="bg-options-inline">
+              <div class="bg-option active" onclick="setBackground('gradient', this)">渐变</div>
+              <div class="bg-option" onclick="setBackground('pure', this)">纯色</div>
+              <div class="bg-option" onclick="setBackground('custom', this)">自定义</div>
+            </div>
           </div>
-        </div>
-        
-        <!-- 内容管理 -->
-        <div class="settings-group">
-          <div class="settings-group-title">内容管理</div>
-          <div class="settings-card">
-            <button class="setting-row setting-row-btn" onclick="openWidgetManager('bookmarks')">
-              <div class="setting-row-left">
-                <i class="fa fa-bookmark setting-row-icon"></i>
-                <span class="setting-row-label">常用书签</span>
-              </div>
-              <i class="fa fa-chevron-right setting-row-arrow"></i>
-            </button>
-            
-            <button class="setting-row setting-row-btn" onclick="openWidgetManager('ai-tools')">
-              <div class="setting-row-left">
-                <i class="fa fa-lightbulb-o setting-row-icon"></i>
-                <span class="setting-row-label">AI 智能助手</span>
-              </div>
-              <i class="fa fa-chevron-right setting-row-arrow"></i>
-            </button>
-            
-            <button class="setting-row setting-row-btn" onclick="openWidgetManager('shortcuts')">
-              <div class="setting-row-left">
-                <i class="fa fa-th setting-row-icon"></i>
-                <span class="setting-row-label">快捷方式</span>
-              </div>
-              <i class="fa fa-chevron-right setting-row-arrow"></i>
-            </button>
-            
-            <button class="setting-row setting-row-btn" onclick="openWidgetManager('todo')">
-              <div class="setting-row-left">
-                <i class="fa fa-check-square-o setting-row-icon"></i>
-                <span class="setting-row-label">待办事项</span>
-              </div>
-              <i class="fa fa-chevron-right setting-row-arrow"></i>
-            </button>
+
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <i class="fa fa-fire setting-row-icon"></i>
+              <span class="setting-row-label">热榜来源</span>
+            </div>
+            <div class="ios-select">
+              <select id="hotboard-source-select" onchange="saveHotboardSource()">
+                <option value="weibo">微博热搜</option>
+                <option value="zhihu">知乎热榜</option>
+                <option value="bilibili">B站热门</option>
+                <option value="baidu">百度热搜</option>
+                <option value="douyin">抖音热榜</option>
+                <option value="toutiao">今日头条</option>
+                <option value="36kr">36氪</option>
+                <option value="hupu">虎扑</option>
+              </select>
+            </div>
           </div>
-          <!-- 关于 -->
-          <div class="settings-group">
-            <div class="settings-group-title">其他</div>
-            <div class="settings-card">
-              <button class="setting-row setting-row-btn" onclick="openAboutModal()">
-                <div class="setting-row-left">
-                  <i class="fa fa-info-circle setting-row-icon"></i>
-                  <span class="setting-row-label">关于搜索页</span>
-                </div>
-                <i class="fa fa-chevron-right setting-row-arrow"></i>
-              </button>
+
+          <div class="setting-row">
+            <div class="setting-row-left">
+              <i class="fa fa-book setting-row-icon"></i>
+              <span class="setting-row-label">单词词库</span>
+            </div>
+            <div class="ios-select">
+              <select id="dailyword-category-select" onchange="saveDailyWordCategory()">
+                <option value="all">全部词汇</option>
+                <option value="cet4">四级词汇 (CET-4)</option>
+                <option value="cet6">六级词汇 (CET-6)</option>
+                <option value="ielts">雅思词汇 (IELTS)</option>
+                <option value="toefl">托福词汇 (TOEFL)</option>
+                <option value="gre">GRE 词汇</option>
+              </select>
             </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    <!-- 统一管理弹窗 -->
-    <div id="manage-modal" class="modal-overlay">
-      <div class="modal-content glass manage-modal-content">
-        <div class="modal-header">
-          <h3 class="modal-title" id="manage-modal-title">管理</h3>
-          <button class="modal-close" onclick="closeManageModal()">
-            <i class="fa fa-times"></i>
+
+      <!-- 内容管理 -->
+      <div class="settings-group">
+        <div class="settings-group-title">内容管理</div>
+        <div class="settings-card">
+          <button class="setting-row setting-row-btn" onclick="openWidgetManager('bookmarks')">
+            <div class="setting-row-left">
+              <i class="fa fa-bookmark setting-row-icon"></i>
+              <span class="setting-row-label">常用书签</span>
+            </div>
+            <i class="fa fa-chevron-right setting-row-arrow"></i>
+          </button>
+
+          <button class="setting-row setting-row-btn" onclick="openWidgetManager('ai-tools')">
+            <div class="setting-row-left">
+              <i class="fa fa-lightbulb-o setting-row-icon"></i>
+              <span class="setting-row-label">AI 智能助手</span>
+            </div>
+            <i class="fa fa-chevron-right setting-row-arrow"></i>
+          </button>
+
+          <button class="setting-row setting-row-btn" onclick="openWidgetManager('shortcuts')">
+            <div class="setting-row-left">
+              <i class="fa fa-th setting-row-icon"></i>
+              <span class="setting-row-label">快捷方式</span>
+            </div>
+            <i class="fa fa-chevron-right setting-row-arrow"></i>
+          </button>
+
+          <button class="setting-row setting-row-btn" onclick="openWidgetManager('todo')">
+            <div class="setting-row-left">
+              <i class="fa fa-check-square-o setting-row-icon"></i>
+              <span class="setting-row-label">待办事项</span>
+            </div>
+            <i class="fa fa-chevron-right setting-row-arrow"></i>
           </button>
         </div>
-        <div id="manage-list-container" class="manage-list"></div>
-        <div class="manage-actions">
-          <button class="setting-btn" id="manage-add-btn" onclick="manageAddItem()">
-            <i class="fa fa-plus"></i> 添加
-          </button>
-        </div>
-      </div>
-    </div>
-    <!-- 关于弹窗 -->
-    <!-- 关于弹窗 -->
-    <div id="about-modal" class="modal-overlay">
-      <div class="modal-content glass" style="max-width: 360px; text-align: center;">
-        <div class="modal-header">
-          <h3 class="modal-title">关于</h3>
-          <button class="modal-close" onclick="closeAboutModal()">
-            <i class="fa fa-times"></i>
-          </button>
-        </div>
-        <div style="padding: 8px 0 20px;">
-          <div class="logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px;">KD</div>
-          <h4 style="margin: 0 0 4px; font-size: 18px; color: var(--text-primary);">KD起始页</h4>
-          <p style="margin: 0 0 20px; font-size: 13px; color: var(--text-secondary);">版本 0.8.0</p>
-          <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
-            iOS 风格浏览器起始页<br>
-            小组件框架 · 拖拽排序 · 多引擎搜索<br>
-            毛玻璃设计 · 深色模式 · 热榜聚合<br>
-            可扩展 · 响应式布局 · 数据本地存储
-          </p>
-          <p style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px;">
-            本软件为开源项目，遵循 MIT 协议
-          </p>
-          <div style="font-size: 12px; color: var(--text-tertiary);">
-            Made with ❤️ by KD<br>
-            © 2026 KD起始页
+
+        <div class="settings-group">
+          <div class="settings-group-title">其他</div>
+          <div class="settings-card">
+            <button class="setting-row setting-row-btn" onclick="openAboutModal()">
+              <div class="setting-row-left">
+                <i class="fa fa-info-circle setting-row-icon"></i>
+                <span class="setting-row-label">关于搜索页</span>
+              </div>
+              <i class="fa fa-chevron-right setting-row-arrow"></i>
+            </button>
           </div>
         </div>
       </div>
     </div>
-    <!-- JavaScript 引入顺序：依赖 -> 框架 -> 组件 -> 主逻辑 -> API -->
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
-    <script src="./src/js/lib/widget-framework.js"></script>
-    <!-- 小组件（顺序无关，只需在 core.js 注册前加载） -->
-    <script src="./src/js/widgets/clock.js"></script>
-    <script src="./src/js/widgets/weather.js"></script>
-    <script src="./src/js/widgets/todo.js"></script>
-    <script src="./src/js/widgets/bookmarks.js"></script>
-    <script src="./src/js/widgets/ai-tools.js"></script>
-    <script src="./src/js/widgets/shortcuts.js"></script>
-    <script src="./src/js/widgets/hotboard.js"></script>
-    <script src="./src/js/widgets/time-progress.js"></script>
-    <script src="./src/js/widgets/daily-word.js"></script>
-    <!-- 应用逻辑 -->
-    <script src="./src/js/app/app.js"></script>
-    <script src="./src/js/app/preferences.js"></script>
-    <script src="./src/js/app/admin.js"></script>
-    <!-- API 层 -->
-    <script src="./src/js/lib/uapi.js"></script>
+  </div>
+
+  <!-- 统一管理弹窗 -->
+  <div id="manage-modal" class="modal-overlay">
+    <div class="modal-content glass manage-modal-content">
+      <div class="modal-header">
+        <h3 class="modal-title" id="manage-modal-title">管理</h3>
+        <button class="modal-close" onclick="closeManageModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div id="manage-list-container" class="manage-list"></div>
+      <div class="manage-actions">
+        <button class="setting-btn" id="manage-add-btn" onclick="manageAddItem()">
+          <i class="fa fa-plus"></i> 添加
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 关于弹窗 -->
+  <div id="about-modal" class="modal-overlay">
+    <div class="modal-content glass" style="max-width: 360px; text-align: center;">
+      <div class="modal-header">
+        <h3 class="modal-title">关于</h3>
+        <button class="modal-close" onclick="closeAboutModal()">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      <div style="padding: 8px 0 20px;">
+        <div class="logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px;">KD</div>
+        <h4 style="margin: 0 0 4px; font-size: 18px; color: var(--text-primary);">KD起始页</h4>
+        <p style="margin: 0 0 20px; font-size: 13px; color: var(--text-secondary);">版本 0.9.0</p>
+        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+          iOS 18 风格浏览器起始页<br>
+          小组件框架 · 拖拽排序 · 多引擎搜索<br>
+          Spring 动画 · 深色模式 · 热榜聚合<br>
+          可扩展 · 响应式布局 · 数据本地存储
+        </p>
+        <p style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px;">
+          本软件为开源项目，遵循 MIT 协议
+        </p>
+        <div style="font-size: 12px; color: var(--text-tertiary);">
+          Made with ❤️ by KD<br>
+          © 2026 KD起始页
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+  <script src="./src/js/lib/widget-framework.js"></script>
+  <!-- 小组件（顺序无关） -->
+  <script src="./src/js/widgets/clock.js"></script>
+  <script src="./src/js/widgets/weather.js"></script>
+  <script src="./src/js/widgets/todo.js"></script>
+  <script src="./src/js/widgets/bookmarks.js"></script>
+  <script src="./src/js/widgets/ai-tools.js"></script>
+  <script src="./src/js/widgets/shortcuts.js"></script>
+  <script src="./src/js/widgets/hotboard.js"></script>
+  <script src="./src/js/widgets/time-progress.js"></script>
+  <script src="./src/js/widgets/daily-word.js"></script>
+  <!-- 应用逻辑 -->
+  <script src="./src/js/app/app.js"></script>
+  <script src="./src/js/app/preferences.js"></script>
+  <script src="./src/js/app/admin.js"></script>
+  <!-- API 层 -->
+  <script src="./src/js/lib/uapi.js"></script>
 </body>
 
 </html>

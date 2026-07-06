@@ -1,14 +1,76 @@
 /* ==========================================
-   iOS 风格小组件框架 - WidgetFramework
-   支持：注册、多区域、拖拽排序(SortableJS)、尺寸切换、持久化、尺寸回调
-   长按延迟：触屏设备按住 1 秒后进入拖拽状态
+   iOS 18 风格小组件框架 - WidgetFramework v2
+   Spring 动画 · 增强拖拽 · 流畅生命周期
    ========================================== */
+
+// ===== Spring 动画工具 =====
+const Spring = {
+  // 常用曲线
+  curves: {
+    pop: 'cubic-bezier(0.32, 0.72, 0, 1)',
+    slide: 'cubic-bezier(0.16, 1, 0.3, 1)',
+    bounce: 'cubic-bezier(0.34, 1.56, 0.64, 1)',
+    smooth: 'cubic-bezier(0.4, 0, 0.2, 1)',
+  },
+
+  /**
+   * 使用 Web Animations API 执行 Spring 动画
+   * @param {Element} el - 目标元素
+   * @param {Object[]} keyframes - 关键帧数组
+   * @param {Object} opts - 选项
+   * @returns {Animation} 动画对象
+   */
+  animate(el, keyframes, opts = {}) {
+    const { duration = 400, easing = this.curves.slide, fill = 'both', delay = 0 } = opts;
+    return el.animate(keyframes, { duration, easing, fill, delay });
+  },
+
+  /** 入场：缩放 + 上移淡入 */
+  animateIn(el, delay = 0) {
+    return this.animate(el, [
+      { opacity: 0, transform: 'scale(0.92) translateY(16px)' },
+      { opacity: 1, transform: 'scale(1) translateY(0)' }
+    ], { duration: 500, easing: this.curves.bounce, delay });
+  },
+
+  /** 出场：缩小淡出 */
+  animateOut(el) {
+    return this.animate(el, [
+      { opacity: 1, transform: 'scale(1)' },
+      { opacity: 0, transform: 'scale(0.85)' }
+    ], { duration: 350, easing: this.curves.pop });
+  },
+
+  /** 尺寸变化脉冲 */
+  animateResize(el) {
+    return this.animate(el, [
+      { transform: 'scale(1)' },
+      { transform: 'scale(1.03)' },
+      { transform: 'scale(1)' }
+    ], { duration: 450, easing: this.curves.bounce });
+  },
+
+  /** 抖动（编辑模式） */
+  animateJiggle(el) {
+    const duration = 120;
+    const degrees = 0.5;
+    return el.animate([
+      { transform: 'rotate(0deg)' },
+      { transform: `${degrees}deg` },
+      { transform: 'rotate(0deg)' },
+      { transform: `-${degrees}deg` },
+      { transform: 'rotate(0deg)' }
+    ], { duration, iterations: Infinity, easing: this.curves.smooth });
+  }
+};
+
+// ========== WidgetFramework 单例 ==========
 const WidgetFramework = {
   registry: new Map(),
   areas: new Map(),
   storageKey: 'widgets-layout',
 
-  // ===== 各小组件预览内容 (展示实际效果) =====
+  // ===== 各小组件预览内容 =====
   _previews: {
     clock: '<div class="preview-widget"><div class="time-display" style="font-size:22px;text-align:center;margin:4px 0 2px;">12:00</div><div class="date-display" style="font-size:10px;text-align:center;">2026年7月5日 周日</div></div>',
     weather: '<div class="preview-widget"><div style="display:flex;align-items:center;gap:10px;justify-content:center;padding:4px 0;"><span style="font-size:26px;">☀️</span><div><div style="font-size:22px;font-weight:700;">28°</div><div style="font-size:11px;color:var(--text-secondary);">晴 · 北京</div></div></div></div>',
@@ -61,7 +123,7 @@ const WidgetFramework = {
     localStorage.setItem(this.storageKey, JSON.stringify(layout));
   },
 
-  // ===== 3D 倾斜效果 =====
+  // ===== 3D 倾斜效果（增强版） =====
   _initTilt(card) {
     let isTilting = false;
     let rafId = null;
@@ -75,8 +137,8 @@ const WidgetFramework = {
         const y = e.clientY - rect.top;
         const centerX = rect.width / 2;
         const centerY = rect.height / 2;
-        const rotateX = ((y - centerY) / centerY) * -8;
-        const rotateY = ((x - centerX) / centerX) * 8;
+        const rotateX = ((y - centerY) / centerY) * -6;
+        const rotateY = ((x - centerX) / centerX) * 6;
         card.style.setProperty('--tilt-x', `${rotateX}deg`);
         card.style.setProperty('--tilt-y', `${rotateY}deg`);
       });
@@ -86,8 +148,11 @@ const WidgetFramework = {
     const onLeave = () => {
       isTilting = false;
       if (rafId) cancelAnimationFrame(rafId);
+      // Spring 回归
       card.style.setProperty('--tilt-x', '0deg');
       card.style.setProperty('--tilt-y', '0deg');
+      card.style.transition = '--tilt-x 0.4s cubic-bezier(0.16, 1, 0.3, 1), --tilt-y 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
+      setTimeout(() => { card.style.transition = ''; }, 500);
     };
 
     card.addEventListener('mouseenter', onEnter);
@@ -95,7 +160,7 @@ const WidgetFramework = {
     card.addEventListener('mouseleave', onLeave);
   },
 
-  // ===== 打开小组件库（预览式） =====
+  // ===== 打开小组件库（Spring 动画版） =====
   openGallery(areaId) {
     const modal = document.getElementById('widget-gallery-modal');
     const listContainer = modal.querySelector('.gallery-list');
@@ -127,7 +192,6 @@ const WidgetFramework = {
         </div>
       `;
 
-      // 3D 倾斜
       this._initTilt(card);
 
       // 添加按钮点击
@@ -137,14 +201,12 @@ const WidgetFramework = {
         if (area) {
           const added = area.addWidget(type);
           if (added) {
-            // 添加成功动效
             card.classList.add('gallery-card-added');
             setTimeout(() => card.classList.remove('gallery-card-added'), 600);
           }
         }
       });
 
-      // 点击卡片整体也可添加
       card.addEventListener('click', () => {
         const area = WidgetFramework.areas.get(areaId);
         if (area) {
@@ -162,35 +224,35 @@ const WidgetFramework = {
     modal.classList.add('active');
     document.body.style.overflow = 'hidden';
 
-    // 触发入场动画
+    // Spring 入场动画（错位）
     requestAnimationFrame(() => {
       listContainer.querySelectorAll('.gallery-card-preview').forEach((c, i) => {
-        c.style.setProperty('--card-delay', `${i * 0.04}s`);
+        c.style.setProperty('--card-delay', `${i * 0.05}s`);
         c.classList.add('gallery-card-visible');
       });
     });
 
-    // 入场动画结束后移除 delay，使 3D 倾斜响应无延迟
     setTimeout(() => {
       listContainer.querySelectorAll('.gallery-card-preview').forEach(c => {
         c.style.removeProperty('--card-delay');
       });
-    }, sortedEntries.length * 40 + 500);
+    }, sortedEntries.length * 50 + 600);
   }
 };
 
-// ========== 基类 Widget ==========
+// ========== 基类 Widget（iOS 18 Spring 版） ==========
 class Widget {
   constructor(container, index) {
     this.container = container;
     this.index = index;
     this.element = null;
     this.currentSize = this.constructor.defaultSize;
+    this._animations = [];
   }
 
   createDOM() {
     const div = document.createElement('div');
-    div.className = `widget glass widget-${this.currentSize}`;
+    div.className = `widget widget-${this.currentSize}`;
     div.dataset.widgetType = this.constructor.type;
     div.innerHTML = `
       <div class="widget-header">
@@ -240,7 +302,19 @@ class Widget {
       area.saveLayout();
     }
 
+    // Spring 尺寸变化动画
+    Spring.animateResize(this.element);
+
     this.onResize(newSize);
+  }
+
+  // ===== Spring 动画生命周期 =====
+  animateIn() {
+    return Spring.animateIn(this.element);
+  }
+
+  animateOut() {
+    return Spring.animateOut(this.element);
   }
 
   onResize(newSize) {
@@ -253,14 +327,15 @@ class Widget {
   openManager() {}
 }
 
-// ========== WidgetArea ==========
+// ========== WidgetArea（Spring 动画版） ==========
 class WidgetArea {
   constructor(container, id) {
     this.container = container;
     this.id = id;
     this.widgets = [];
     this.layout = [];
-    this.sortableInstance = null; // 保存 Sortable 实例引用
+    this.sortableInstance = null;
+    this._pendingRemove = false;
   }
 
   init() {
@@ -299,6 +374,8 @@ class WidgetArea {
       dom.dataset.index = idx;
       this.container.appendChild(dom);
       widget.render();
+      // Spring 入场动画（错位）
+      widget.animateIn(idx * 0.06);
       this.widgets.push(widget);
     });
   }
@@ -308,7 +385,7 @@ class WidgetArea {
     if (!WidgetClass) return false;
     const count = this.layout.filter(l => l.type === type).length;
     if (count >= (WidgetClass.maxPerArea || Infinity)) {
-      alert(`该区域最多添加 ${WidgetClass.maxPerArea} 个“${WidgetClass.displayName}”`);
+      alert(`该区域最多添加 ${WidgetClass.maxPerArea} 个"${WidgetClass.displayName}"`);
       return false;
     }
     const newItem = {
@@ -323,18 +400,22 @@ class WidgetArea {
   }
 
   removeWidget(widgetInstance) {
-    if (this._pendingRemove) return; // 已有移除操作在进行中
+    if (this._pendingRemove) return;
     const idx = this.widgets.indexOf(widgetInstance);
     if (idx > -1) {
       const el = widgetInstance.element;
       if (el) {
         this._pendingRemove = true;
-        el.classList.add('widget-removing');
-        el.addEventListener('animationend', () => {
+        // Spring 出场动画
+        const anim = widgetInstance.animateOut();
+        anim.finished.then(() => {
           this._doRemove(idx);
-        }, { once: true });
-        // 安全兜底：动画超时后强制执行
-        setTimeout(() => this._doRemove(idx), 400);
+        }).catch(() => {
+          // 动画被取消时的兜底
+          this._doRemove(idx);
+        });
+        // 安全超时
+        setTimeout(() => this._doRemove(idx), 500);
       } else {
         this._doRemove(idx);
       }
@@ -384,24 +465,21 @@ class WidgetArea {
       return;
     }
 
-    // 如果已有实例，先销毁
     if (this.sortableInstance) {
       this.sortableInstance.destroy();
       this.sortableInstance = null;
     }
 
     this.sortableInstance = new Sortable(this.container, {
-      animation: 200,
-      easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
-      handle: '.widget-header',
+      animation: 300,
+      easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+      handle: '.widget-header, .widget-content',
       draggable: '.widget',
 
-      // ===== 长按延迟配置（优化移动端体验） =====
-      delay: 500,                    // 按住 1000ms 后才触发拖拽
-      delayOnTouchOnly: true,         // 仅在触屏设备生效（鼠标拖拽无延迟）
-      touchStartThreshold: 3,         // 手指移动 3px 内算长按，防止轻微滑动误触
+      delay: 400,
+      delayOnTouchOnly: true,
+      touchStartThreshold: 3,
 
-      // 过滤按钮，不触发拖拽
       filter: '.widget-size-btn, .widget-delete-btn, .widget-header-add-btn',
       preventOnFilter: false,
 
@@ -409,32 +487,26 @@ class WidgetArea {
       chosenClass: 'widget-chosen',
       dragClass: 'widget-drag',
 
-      // ===== 长按视觉反馈 =====
       onChoose: (evt) => {
-        // 开始长按/选择时，添加等待状态类
         const el = evt.item;
         el.classList.add('widget-waiting');
-        // 可选：触觉反馈（移动端振动）
         if (navigator.vibrate) {
-          navigator.vibrate(15); // 轻微振动提示
+          navigator.vibrate(10);
         }
       },
 
       onUnchoose: (evt) => {
-        // 取消选择时移除等待状态
         const el = evt.item;
         el.classList.remove('widget-waiting');
       },
 
       onStart: (evt) => {
-        // 真正开始拖拽时，移除等待状态并添加拖拽类
         const el = evt.item;
         el.classList.remove('widget-waiting');
         el.classList.add('widget-dragging');
       },
 
       onEnd: (evt) => {
-        // 拖拽结束清理状态
         const el = evt.item;
         el.classList.remove('widget-dragging', 'widget-waiting');
 
