@@ -207,6 +207,7 @@ class UIDropdown {
         this.el = opts.el;
         this.items = opts.items || [];
         this.onChange = opts.onChange || (() => {});
+        UIDropdown.instances.push(this);
 
         const initVal = opts.initialValue !== undefined
             ? opts.initialValue
@@ -311,6 +312,10 @@ class UIDropdown {
     }
 
     open() {
+        // 排他关闭：打开当前时关闭所有其他下拉菜单
+        UIDropdown.instances.forEach(inst => {
+            if (inst !== this) inst.close();
+        });
         this.isOpen = true;
         this.menu.classList.add('open');
         this.btn.classList.add('active');
@@ -341,6 +346,9 @@ class UIDropdown {
     destroy() {
         document.removeEventListener('click', this._outsideHandler);
         document.removeEventListener('keydown', this._keyHandler);
+        const idx = UIDropdown.instances.indexOf(this);
+        if (idx >= 0) UIDropdown.instances.splice(idx, 1);
         this.el.innerHTML = '';
     }
 }
+UIDropdown.instances = [];
