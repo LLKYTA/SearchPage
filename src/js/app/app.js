@@ -25,18 +25,17 @@ WidgetFramework.register('hotboard', HotboardWidget);
 WidgetFramework.register('time-progress', TimeProgressWidget);
 WidgetFramework.register('daily-word', DailyWordWidget);
 
+// ========== UI 组件实例 ==========
+let themeSegment, bgSegment;
+
 document.addEventListener('DOMContentLoaded', () => {
     WidgetFramework.init();
     initSearch();
+    initUISegments();
+    initSettingsDropdowns();
+    initUIModals();
     loadSettings();
     applyTheme();
-    loadDailyWordCategory();
-
-    const hotboardSelect = document.getElementById('hotboard-source-select');
-    if (hotboardSelect) {
-        const savedSource = localStorage.getItem('hotboard-source') || 'weibo';
-        hotboardSelect.value = savedSource;
-    }
 
     // iOS 18 风格启动动画
     const splash = document.getElementById('splash-screen');
@@ -99,9 +98,54 @@ function setSearchEngine(engine) {
 
     const hint = document.getElementById('current-engine');
     if (hint) hint.textContent = CONFIG.searchEngines[engine].name;
-    const select = document.getElementById('default-engine');
-    if (select) select.value = engine;
+    if (typeof engineDropdown !== 'undefined') {
+        engineDropdown.setValue(engine, true);
+    }
     saveSettings();
+}
+
+// ========== 初始化 UI 组件（框架） ==========
+function initUISegments() {
+    // 主题模式分段器
+    themeSegment = new UISegment({
+        el: document.getElementById('theme-segment'),
+        options: [
+            { value: 'light', icon: 'fa-sun-o' },
+            { value: 'dark',  icon: 'fa-moon-o' },
+            { value: 'auto',  icon: 'fa-desktop' }
+        ],
+        initialValue: CONFIG.currentTheme,
+        onChange: (value) => setTheme(value)
+    });
+
+    // 背景风格分段器
+    bgSegment = new UISegment({
+        el: document.getElementById('bg-segment'),
+        options: [
+            { value: 'gradient', label: '渐变' },
+            { value: 'pure',     label: '纯色' },
+            { value: 'custom',   label: '自定义' }
+        ],
+        initialValue: localStorage.getItem('background') || 'gradient',
+        onChange: (value) => setBackground(value)
+    });
+}
+
+function initUIModals() {
+    // 设置弹窗
+    window.settingsModal = new UIModal(document.getElementById('settings-modal'), {
+        closeOnOverlay: false
+    });
+    // 关于弹窗
+    window.aboutModal = new UIModal(document.getElementById('about-modal'));
+    // 管理弹窗
+    window.manageModal = new UIModal(document.getElementById('manage-modal'), {
+        closeOnOverlay: false
+    });
+    // 小组件库弹窗
+    window.galleryModal = new UIModal(document.getElementById('widget-gallery-modal'), {
+        closeOnOverlay: false
+    });
 }
 
 // ========== 引擎下拉菜单 ==========
@@ -129,8 +173,9 @@ function toggleDarkMode() {
 
 function setTheme(theme) {
     CONFIG.currentTheme = theme;
-    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
-    document.querySelector(`[data-theme="${theme}"]`).classList.add('active');
+    if (typeof themeSegment !== 'undefined') {
+        themeSegment.setValue(theme, true);
+    }
     applyTheme();
     saveSettings();
 }
@@ -166,8 +211,6 @@ function loadSettings() {
     const saved = JSON.parse(localStorage.getItem('kd-startpage-settings') || '{}');
     CONFIG.currentEngine = saved.currentEngine || 'bing';
     CONFIG.currentTheme = saved.currentTheme || 'auto';
-    const select = document.getElementById('default-engine');
-    if (select) select.value = CONFIG.currentEngine;
     setSearchEngine(CONFIG.currentEngine);
 }
 

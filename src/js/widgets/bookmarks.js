@@ -99,6 +99,6 @@ class BookmarksWidget extends Widget {
             });
             container.appendChild(row);
         });
-        document.getElementById('manage-modal').classList.add('active');
+        window.manageModal?.open();
     }
 }

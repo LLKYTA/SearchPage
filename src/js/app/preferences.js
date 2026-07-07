@@ -4,56 +4,83 @@
 
 // ========== 设置弹窗 ==========
 function openSettings() {
-    document.getElementById('settings-modal').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    window.settingsModal?.open();
 }
 
 function closeSettings() {
-    document.getElementById('settings-modal').classList.remove('active');
-    document.body.style.overflow = '';
-}
-
-// ========== 热榜来源 ==========
-function saveHotboardSource() {
-    const select = document.getElementById('hotboard-source-select');
-    if (select) {
-        localStorage.setItem('hotboard-source', select.value);
-        const area = WidgetFramework.areas.get('main-area');
-        if (area) {
-            area.widgets.forEach(w => {
-                if (w instanceof HotboardWidget) w.onUpdate();
-            });
-        }
-    }
+    window.settingsModal?.close();
 }
 
 // ========== 背景 ==========
-function setBackground(type, el) {
-    document.querySelectorAll('.bg-option').forEach(b => b.classList.remove('active'));
-    if (el) el.classList.add('active');
+function setBackground(type) {
     localStorage.setItem('background', type);
 }
 
-// ========== 每日单词词库 ==========
-function saveDailyWordCategory() {
-    const select = document.getElementById('dailyword-category-select');
-    if (!select) return;
-    localStorage.setItem('dailyword-category', select.value);
-    const area = WidgetFramework.areas.get('main-area');
-    if (area) {
-        area.widgets.forEach(w => {
-            if (w instanceof DailyWordWidget) w.onUpdate();
-        });
-    }
-}
+// ========== 统一初始化设置中的下拉菜单 ==========
+let engineDropdown, hotboardDropdown, wordDropdown;
 
-function loadDailyWordCategory() {
-    const saved = localStorage.getItem('dailyword-category') || 'all';
-    const select = document.getElementById('dailyword-category-select');
-    if (select) select.value = saved;
+function initSettingsDropdowns() {
+    // 引擎选择
+    engineDropdown = new UIDropdown({
+        el: document.getElementById('settings-engine-dd'),
+        items: [
+            { value: 'bing',   label: 'Bing',   icon: 'fa-edge' },
+            { value: 'baidu',  label: '百度',    icon: 'fa-search' },
+            { value: 'google', label: 'Google',  icon: 'fa-google' }
+        ],
+        initialValue: CONFIG.currentEngine,
+        onChange: (value) => setSearchEngine(value)
+    });
+
+    // 热榜来源
+    hotboardDropdown = new UIDropdown({
+        el: document.getElementById('settings-hotboard-dd'),
+        items: [
+            { value: 'weibo',    label: '微博热搜',  icon: 'fa-weibo' },
+            { value: 'zhihu',    label: '知乎热榜',  icon: 'fa-question-circle' },
+            { value: 'bilibili', label: 'B站热门',   icon: 'fa-play-circle' },
+            { value: 'baidu',    label: '百度热搜',  icon: 'fa-paw' },
+            { value: 'douyin',   label: '抖音热榜',  icon: 'fa-music' },
+            { value: 'toutiao',  label: '今日头条',  icon: 'fa-newspaper-o' },
+            { value: '36kr',     label: '36氪',     icon: 'fa-line-chart' },
+            { value: 'hupu',     label: '虎扑',     icon: 'fa-trophy' }
+        ],
+        initialValue: localStorage.getItem('hotboard-source') || 'weibo',
+        onChange: (value) => {
+            localStorage.setItem('hotboard-source', value);
+            const area = WidgetFramework.areas.get('main-area');
+            if (area) {
+                area.widgets.forEach(w => {
+                    if (w instanceof HotboardWidget) w.onUpdate();
+                });
+            }
+        }
+    });
+
+    // 单词词库
+    wordDropdown = new UIDropdown({
+        el: document.getElementById('settings-word-dd'),
+        items: [
+            { value: 'all',   label: '全部词汇',            icon: 'fa-book' },
+            { value: 'cet4',  label: '四级词汇 (CET-4)',    icon: 'fa-graduation-cap' },
+            { value: 'cet6',  label: '六级词汇 (CET-6)',    icon: 'fa-graduation-cap' },
+            { value: 'ielts', label: '雅思词汇 (IELTS)',     icon: 'fa-language' },
+            { value: 'toefl', label: '托福词汇 (TOEFL)',     icon: 'fa-language' },
+            { value: 'gre',   label: 'GRE 词汇',            icon: 'fa-flask' }
+        ],
+        initialValue: localStorage.getItem('dailyword-category') || 'all',
+        onChange: (value) => {
+            localStorage.setItem('dailyword-category', value);
+            const area = WidgetFramework.areas.get('main-area');
+            if (area) {
+                area.widgets.forEach(w => {
+                    if (w instanceof DailyWordWidget) w.onUpdate();
+                });
+            }
+        }
+    });
 }
 
 function closeWidgetGallery() {
-    document.getElementById('widget-gallery-modal').classList.remove('active');
-    document.body.style.overflow = '';
+    window.galleryModal?.close();
 }

@@ -17,8 +17,7 @@ function openWidgetManager(type) {
 }
 
 function closeManageModal() {
-    document.getElementById('manage-modal').classList.remove('active');
-    document.body.style.overflow = '';
+    window.manageModal?.close();
     const widget = window.currentManageWidget;
     if (widget) {
         widget.render();
@@ -52,25 +51,12 @@ function manageAddItem() {
 // ========== 关于弹窗 ==========
 function openAboutModal() {
     closeSettings();
-    document.getElementById('about-modal').classList.add('active');
-    document.body.style.overflow = 'hidden';
+    window.aboutModal?.open();
 }
 
 function closeAboutModal() {
-    document.getElementById('about-modal').classList.remove('active');
-    document.body.style.overflow = '';
+    window.aboutModal?.close();
 }
 
 // ========== 全局监听 ==========
-document.addEventListener('click', function(e) {
-    if (e.target.id === 'about-modal') closeAboutModal();
-});
-
-document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-        closeAboutModal();
-        closeManageModal();
-        closeSettings();
-        document.getElementById('widget-gallery-modal')?.classList.remove('active');
-    }
-});
+// (弹窗由 UIModal 框架统一管理 Escape 键与遮罩点击)

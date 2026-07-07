@@ -80,6 +80,8 @@
 }
 
 .search-box {
+    position: relative;
+    z-index: 2;
     display: flex;
     align-items: center;
     gap: 12px;
@@ -219,6 +221,7 @@
     opacity: 1;
     transform: scale(1) translateY(0);
     pointer-events: auto;
+    z-index: 99999 !important;
 }
 
 .engine-dropdown-item {

@@ -192,7 +192,165 @@
     box-shadow: 0 1px 4px var(--shadow-color);
 }
 
-/* ===== iOS 18 自定义下拉框 ===== */
+/* ===== 统一自定义下拉菜单（UI 框架） ===== */
+.ui-dropdown {
+    position: relative;
+    flex-shrink: 0;
+}
+
+/* 触发器按钮 */
+.ui-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 9px;
+    border: 1px solid var(--border-color);
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.25s var(--spring-pop);
+    white-space: nowrap;
+    user-select: none;
+}
+.ui-dropdown-btn:hover {
+    border-color: var(--text-tertiary);
+    background: var(--bg-secondary);
+}
+.ui-dropdown-btn:active,
+.ui-dropdown-btn.active {
+    transform: scale(0.95);
+}
+.ui-dropdown-btn > .fa:first-child {
+    font-size: 12px;
+    width: 14px;
+    text-align: center;
+}
+.ui-dropdown-chevron {
+    font-size: 8px;
+    opacity: 0.5;
+    transition: transform 0.3s var(--spring-smooth);
+}
+.ui-dropdown-btn.active .ui-dropdown-chevron {
+    transform: rotate(180deg);
+}
+
+/* 下拉菜单面板 */
+.ui-dropdown-menu {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    box-shadow: 0 12px 48px var(--shadow-color), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 4px;
+    min-width: 130px;
+    opacity: 0;
+    transform: scale(0.88) translateY(-6px);
+    pointer-events: none;
+    transition: all 0.25s var(--spring-pop);
+    z-index: 300;
+    transform-origin: top right;
+}
+.ui-dropdown-menu.open {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+    pointer-events: auto;
+}
+
+/* 菜单项 */
+.ui-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    padding: 7px 10px;
+    border: none;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    font-weight: 400;
+    transition: background 0.15s var(--spring-smooth);
+}
+.ui-dropdown-item:hover {
+    background: var(--bg-tertiary);
+}
+.ui-dropdown-item.active {
+    background: var(--accent-bg);
+    color: var(--ios-blue);
+    font-weight: 600;
+}
+.ui-dropdown-item i {
+    font-size: 12px;
+    width: 16px;
+    text-align: center;
+    color: var(--text-secondary);
+}
+.ui-dropdown-item.active i {
+    color: var(--ios-blue);
+}
+.ui-dropdown-item.active::after {
+    content: '\f00c';
+    font-family: 'FontAwesome';
+    font-size: 9px;
+    margin-left: auto;
+    color: var(--ios-blue);
+}
+
+/* ===== 统一分段选择器（UI 框架） ===== */
+.ui-segment {
+    display: inline-flex;
+    gap: 3px;
+    flex-shrink: 0;
+    background: var(--bg-tertiary);
+    padding: 3px;
+    border-radius: 10px;
+}
+.ui-segment-item {
+    padding: 5px 10px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text-secondary);
+    background: transparent;
+    transition: all 0.3s var(--spring-pop);
+    font-family: inherit;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    line-height: 1.4;
+}
+.ui-segment-item:hover {
+    color: var(--text-primary);
+}
+.ui-segment-item.active {
+    background: var(--card-bg);
+    color: var(--ios-blue);
+    box-shadow: 0 1px 4px var(--shadow-color);
+}
+.ui-segment-item i {
+    font-size: 14px;
+}
+/* 图标模式（无 label，自动方形） */
+.ui-segment-item.icon-only {
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    justify-content: center;
+}
+
+/* ===== iOS 18 自定义下拉框（旧版兼容） ===== */
 .ios-select {
     position: relative;
     display: inline-flex;
@@ -622,6 +780,18 @@
     display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
     border-radius: var(--card-radius); cursor: pointer;
     transition: all var(--transition-fast);
+}
+
+/* ========== 关于弹窗 Logo ========== */
+.logo-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
+    color: white;
+    font-weight: bold;
+    box-shadow: 0 4px 16px rgba(0, 122, 255, 0.3);
 }
 
 /* ========== 启动动画（iOS 18 Spring） ========== */

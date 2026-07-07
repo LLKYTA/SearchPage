@@ -221,8 +221,12 @@ const WidgetFramework = {
       listContainer.appendChild(card);
     });
 
-    modal.classList.add('active');
-    document.body.style.overflow = 'hidden';
+    if (window.galleryModal) {
+        window.galleryModal.open();
+    } else {
+        modal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
 
     // Spring 入场动画（错位）
     requestAnimationFrame(() => {
