@@ -47,6 +47,8 @@
      --radius-md: 12px;
      --radius-lg: 16px;
      --radius-xl: 20px;
+     --radius-card: 18px;
+     --radius-dropdown: 14px;
      
      --widget-padding: 20px;
      --widget-gap: 20px;
@@ -130,16 +132,4 @@
  ::selection {
      background: var(--ios-blue);
      color: white;
- }
- 
- .widget-drag-over {
-     border: 2px dashed var(--ios-blue) !important;
-     background: rgba(0, 122, 255, 0.1) !important;
- }
-
- .widget-placeholder {
-     border: 2px dashed var(--ios-blue);
-     border-radius: var(--radius-lg);
-     background: rgba(0, 122, 255, 0.05);
-     min-height: 100px;
  }

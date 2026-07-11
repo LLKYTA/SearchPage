@@ -74,7 +74,7 @@ function performSearch() {
 const ENGINE_ICONS = {
     baidu: 'fa-search',
     google: 'fa-google',
-    bing: 'fa-windows'
+    bing: 'fa-edge'
 };
 
 function setSearchEngine(engine) {

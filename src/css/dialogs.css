@@ -26,7 +26,7 @@
 .modal-content {
     width: 100%; max-width: 420px;
     background: var(--card-bg);
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     border: 1px solid var(--card-border);
     padding: 0;
     margin: auto;
@@ -94,7 +94,7 @@
 
 .settings-card {
     background: var(--bg-secondary);
-    border-radius: 14px;
+    border-radius: var(--radius-dropdown);
     border: 1px solid var(--border-color);
 }
 
@@ -133,7 +133,7 @@
 .setting-row-icon {
     width: 28px;
     height: 28px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -164,14 +164,14 @@
     flex-shrink: 0;
     background: var(--bg-tertiary);
     padding: 3px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
 }
 .theme-buttons-inline .theme-btn {
     width: 32px;
     height: 32px;
     padding: 0;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-secondary);
     font-size: 14px;
@@ -202,7 +202,7 @@
     align-items: center;
     gap: 6px;
     padding: 5px 10px;
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--border-color);
     background: var(--bg-tertiary);
     color: var(--text-primary);
@@ -243,7 +243,7 @@
     right: 0;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     box-shadow: 0 12px 48px var(--shadow-color), 0 2px 8px rgba(0,0,0,0.06);
     padding: 4px;
     min-width: 130px;
@@ -268,7 +268,7 @@
     width: 100%;
     padding: 7px 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: transparent;
     color: var(--text-primary);
     font-size: 12px;
@@ -310,12 +310,12 @@
     flex-shrink: 0;
     background: var(--bg-tertiary);
     padding: 3px;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
 }
 .ui-segment-item {
     padding: 5px 10px;
     border: none;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     cursor: pointer;
     font-size: 12px;
     font-weight: 500;
@@ -361,7 +361,7 @@
     -webkit-appearance: none;
     padding: 6px 30px 6px 12px;
     border: 1px solid var(--border-color);
-    border-radius: 9px;
+    border-radius: var(--radius-sm);
     background: var(--bg-tertiary);
     color: var(--text-primary);
     font-size: 13px;
@@ -393,37 +393,6 @@
     transition: transform 0.25s var(--spring-smooth);
 }
 
-/* ===== iOS 18 分段选择器（背景风格） ===== */
-.bg-options-inline {
-    display: flex;
-    gap: 3px;
-    flex-shrink: 0;
-    background: var(--bg-tertiary);
-    padding: 3px;
-    border-radius: 10px;
-}
-.bg-options-inline .bg-option {
-    padding: 5px 10px;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-secondary);
-    background: transparent;
-    transition: all 0.3s var(--spring-pop);
-    font-family: inherit;
-    white-space: nowrap;
-}
-.bg-options-inline .bg-option:hover {
-    color: var(--text-primary);
-}
-.bg-options-inline .bg-option.active {
-    background: var(--card-bg);
-    color: var(--ios-blue);
-    box-shadow: 0 1px 4px var(--shadow-color);
-}
-
 /* ========== 统一管理弹窗 ========== */
 .manage-modal-content {
     max-width: 500px;
@@ -451,7 +420,7 @@
     gap: 8px;
     margin-bottom: 8px;
     background: var(--bg-tertiary);
-    border-radius: 12px;
+    border-radius: var(--radius-md);
     padding: 10px 12px;
     flex-wrap: wrap;
     transition: background 0.2s var(--spring-smooth);
@@ -461,7 +430,7 @@
     flex: 1 1 100px;
     padding: 8px 10px;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     background: var(--bg-secondary);
     color: var(--text-primary);
     font-size: 13px;
@@ -482,7 +451,7 @@
     cursor: pointer;
     font-size: 14px;
     padding: 6px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     transition: all 0.2s var(--spring-pop);
     flex-shrink: 0;
     opacity: 0.6;
@@ -509,7 +478,7 @@
     gap: 6px;
     padding: 11px;
     border: 1px dashed var(--text-tertiary);
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     background: transparent;
     color: var(--text-secondary);
     font-size: 13px;
@@ -536,7 +505,7 @@
     background: var(--ios-blue);
     color: white;
     border: none;
-    border-radius: 10px;
+    border-radius: var(--radius-md);
     font-size: 14px;
     font-weight: 500;
     font-family: inherit;
@@ -556,7 +525,7 @@
     align-items: flex-end;
     justify-content: center;
     background: rgba(0, 0, 0, 0.4);
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     padding: 16px;
 }
 #widget-gallery-modal.active { display: flex; }
@@ -564,7 +533,7 @@
 .modal-bottom-sheet {
     background: var(--card-bg);
     border: 1px solid var(--card-border);
-    border-radius: 18px 18px 0 0;
+    border-radius: var(--radius-card) var(--radius-card) 0 0;
     width: 100%;
     max-width: 600px;
     max-height: 80vh;
@@ -617,7 +586,7 @@
 .modal-close-btn {
     background: transparent;
     border: 1px solid var(--border-color);
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     padding: 6px 16px;
     font-size: 13px;
     font-weight: 500;
@@ -643,7 +612,7 @@
 /* ===== 预览卡片 ===== */
 .gallery-card-preview {
     background: var(--bg-secondary);
-    border-radius: 14px;
+    border-radius: var(--radius-dropdown);
     border: 1px solid var(--card-border);
     cursor: pointer;
     overflow: hidden;
@@ -719,7 +688,7 @@
 .gallery-card-add-btn {
     width: 28px;
     height: 28px;
-    border-radius: 8px;
+    border-radius: var(--radius-sm);
     border: 1px solid var(--ios-blue);
     background: transparent;
     color: var(--ios-blue);
@@ -760,7 +729,7 @@
         min-height: 80px;
     }
     .gallery-card-preview {
-        border-radius: 12px;
+        border-radius: var(--radius-md);
     }
 }
 @media (max-width: 400px) {
@@ -780,12 +749,49 @@
     transition: all var(--transition-fast);
 }
 
+/* ========== 关于弹窗 ========== */
+.about-content {
+    padding: 8px 0 20px;
+    text-align: center;
+}
+.about-logo {
+    margin: 0 auto 16px;
+    width: 56px;
+    height: 56px;
+    font-size: 24px;
+}
+.about-name {
+    margin: 0 0 4px;
+    font-size: 18px;
+    color: var(--text-primary);
+}
+.about-version {
+    margin: 0 0 20px;
+    font-size: 13px;
+    color: var(--text-secondary);
+}
+.about-info {
+    font-size: 13px;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    margin-bottom: 20px;
+}
+.about-license {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    margin-bottom: 8px;
+}
+.about-footer {
+    font-size: 12px;
+    color: var(--text-tertiary);
+}
+
 /* ========== 关于弹窗 Logo ========== */
 .logo-icon {
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 16px;
+    border-radius: var(--radius-lg);
     background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
     color: white;
     font-weight: bold;
@@ -805,7 +811,7 @@
 .splash-icon {
     width: 72px; height: 72px;
     background: linear-gradient(135deg, var(--ios-blue), var(--ios-purple));
-    border-radius: 20px; display: flex; align-items: center; justify-content: center;
+    border-radius: var(--radius-xl); display: flex; align-items: center; justify-content: center;
     color: white; font-size: 28px; font-weight: bold;
     margin: 0 auto;
 }
@@ -818,32 +824,10 @@
     100% { transform: scale(1); opacity: 1; }
 }
 
-/* ========== 兼容旧样式 ========== */
-.widget-add-btn {
-    position: absolute; right: 0; top: 50%; transform: translateY(-50%);
-    background: transparent; border: none; border-radius: 50%;
-    width: 24px; height: 24px; color: var(--text-secondary); cursor: pointer; font-size: 12px;
-    display: flex; align-items: center; justify-content: center; transition: all 0.2s ease;
-}
-.widget-add-btn:hover { background: var(--bg-tertiary); }
-.widget-add-btn .fa-refresh.spinning { animation: spin 0.8s linear infinite; }
-@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
-
-.widget-drag-over {
-    border: 2px dashed var(--ios-blue) !important;
-    background: var(--accent-bg) !important;
-}
-.widget-placeholder {
-    border: 2px dashed var(--ios-blue);
-    border-radius: var(--card-radius);
-    background: var(--accent-bg);
-    min-height: 100px;
-}
-
 /* ========== 设置弹窗响应式 ========== */
 @media (max-width: 640px) {
     .modal-content {
-        border-radius: 14px;
+        border-radius: var(--radius-dropdown);
     }
     .manage-modal-content { padding: 0 0 12px; }
     .manage-row { flex-direction: column; align-items: stretch; gap: 6px; padding: 8px 10px; }
@@ -852,6 +836,5 @@
     .settings-group { padding: 14px 16px 4px; }
     .setting-row { padding: 11px 14px; }
     .theme-buttons-inline .theme-btn { width: 30px; height: 30px; font-size: 13px; }
-    .bg-options-inline .bg-option { font-size: 11px; padding: 4px 8px; }
     #manage-add-btn { font-size: 12px; padding: 9px; }
 }

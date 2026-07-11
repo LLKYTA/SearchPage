@@ -31,36 +31,8 @@
     <div class="bg-bubble bg-bubble-3"></div>
   </div>
 
-  <!-- 主容器（无头部，搜索框为视觉焦点） -->
+  <!-- 主容器（无头部，搜索集成到底部栏） -->
   <div class="container-main">
-    <!-- 搜索区 -->
-    <section class="search-section">
-      <div class="search-box glass">
-        <button class="engine-inline" id="engine-switch" onclick="toggleEngineDropdown()">
-          <i class="fa fa-windows" id="engine-inline-icon"></i>
-          <span class="engine-name" id="engine-inline-name">Bing</span>
-          <i class="fa fa-chevron-down engine-chevron"></i>
-        </button>
-        <div class="engine-dropdown" id="engine-dropdown">
-          <button class="engine-dropdown-item" data-engine="baidu" onclick="setSearchEngine('baidu');closeEngineDropdown()">
-            <i class="fa fa-search"></i> 百度
-          </button>
-          <button class="engine-dropdown-item" data-engine="google" onclick="setSearchEngine('google');closeEngineDropdown()">
-            <i class="fa fa-google"></i> Google
-          </button>
-          <button class="engine-dropdown-item active" data-engine="bing" onclick="setSearchEngine('bing');closeEngineDropdown()">
-            <i class="fa fa-windows"></i> Bing
-          </button>
-        </div>
-        <div style="width:1px;height:24px;background:var(--glass-border);flex-shrink:0;"></div>
-        <i class="fa fa-search search-icon"></i>
-        <input type="text" id="search-input" class="search-input" placeholder="搜索任何内容..." autocomplete="off">
-        <button id="search-btn" class="search-btn">
-          <i class="fa fa-arrow-right"></i>
-        </button>
-      </div>
-    </section>
-
     <!-- 小组件区域 -->
     <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
     {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
@@ -68,19 +40,51 @@
     </div>
   </div>
 
-  <!-- 底部浮动操作栏（iOS 18 风格） -->
+  <!-- 底部浮动操作栏（iOS 18 风格 · 集成搜索） -->
   <div class="floating-bar">
-    <button class="floating-bar-btn" onclick="toggleDarkMode()" title="切换主题">
-      <i id="theme-icon-floating" class="fa fa-moon-o"></i>
-    </button>
-    <div class="floating-bar-separator"></div>
-    <button class="floating-bar-btn primary" onclick="WidgetFramework.openGallery('main-area')" title="编辑小组件">
-      <i class="fa fa-plus-circle"></i> 编辑
-    </button>
-    <div class="floating-bar-separator"></div>
-    <button class="floating-bar-btn" onclick="openSettings()" title="设置">
-      <i class="fa fa-cog"></i>
-    </button>
+    <!-- 搜索行（上层） -->
+    <div class="floating-search-row">
+      <button class="engine-inline" id="engine-switch" onclick="toggleEngineDropdown()">
+        <i class="fa fa-edge" id="engine-inline-icon"></i>
+        <span class="engine-name" id="engine-inline-name">Bing</span>
+        <i class="fa fa-chevron-down engine-chevron"></i>
+      </button>
+      <div class="engine-dropdown" id="engine-dropdown">
+        <button class="engine-dropdown-item" data-engine="baidu" onclick="setSearchEngine('baidu');closeEngineDropdown()">
+          <i class="fa fa-search"></i> 百度
+        </button>
+        <button class="engine-dropdown-item" data-engine="google" onclick="setSearchEngine('google');closeEngineDropdown()">
+          <i class="fa fa-google"></i> Google
+        </button>
+        <button class="engine-dropdown-item active" data-engine="bing" onclick="setSearchEngine('bing');closeEngineDropdown()">
+          <i class="fa fa-edge"></i> Bing
+        </button>
+      </div>
+      <div class="floating-search-divider"></div>
+      <i class="fa fa-search search-icon"></i>
+      <input type="text" id="search-input" class="search-input" placeholder="搜索任何内容..." autocomplete="off">
+      <button id="search-btn" class="search-btn">
+        <i class="fa fa-arrow-right"></i>
+      </button>
+    </div>
+
+    <!-- 行间分隔线 -->
+    <div class="floating-bar-row-divider"></div>
+
+    <!-- 操作行（下层） -->
+    <div class="floating-actions-row">
+      <button class="floating-bar-btn" onclick="toggleDarkMode()" title="切换主题">
+        <i id="theme-icon-floating" class="fa fa-moon-o"></i>
+      </button>
+      <div class="floating-bar-separator"></div>
+      <button class="floating-bar-btn primary" onclick="WidgetFramework.openGallery('main-area')" title="编辑小组件">
+        <i class="fa fa-plus-circle"></i> 编辑
+      </button>
+      <div class="floating-bar-separator"></div>
+      <button class="floating-bar-btn" onclick="openSettings()" title="设置">
+        <i class="fa fa-cog"></i>
+      </button>
+    </div>
   </div>
 
   <!-- 小组件库弹窗（底部弹出，预览式卡片） -->
@@ -224,27 +228,27 @@
 
   <!-- 关于弹窗 -->
   <div id="about-modal" class="modal-overlay">
-    <div class="modal-content glass" style="max-width: 360px; text-align: center;">
+    <div class="modal-content glass" style="max-width: 360px;">
       <div class="modal-header">
         <h3 class="modal-title">关于</h3>
         <button class="modal-close">
           <i class="fa fa-times"></i>
         </button>
       </div>
-      <div style="padding: 8px 0 20px;">
-        <div class="logo-icon" style="margin: 0 auto 16px; width: 56px; height: 56px; font-size: 24px;">KD</div>
-        <h4 style="margin: 0 0 4px; font-size: 18px; color: var(--text-primary);">KD起始页</h4>
-        <p style="margin: 0 0 20px; font-size: 13px; color: var(--text-secondary);">版本 0.9.0</p>
-        <p style="font-size: 13px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 20px;">
+      <div class="about-content">
+        <div class="logo-icon about-logo">KD</div>
+        <h4 class="about-name">KD起始页</h4>
+        <p class="about-version">版本 0.9.0</p>
+        <p class="about-info">
           iOS 18 风格浏览器起始页<br>
           小组件框架 · 拖拽排序 · 多引擎搜索<br>
           Spring 动画 · 深色模式 · 热榜聚合<br>
           可扩展 · 响应式布局 · 数据本地存储
         </p>
-        <p style="font-size: 12px; color: var(--text-tertiary); margin-bottom: 8px;">
+        <p class="about-license">
           本软件为开源项目，遵循 MIT 协议
         </p>
-        <div style="font-size: 12px; color: var(--text-tertiary);">
+        <div class="about-footer">
           Made with ❤️ by KD<br>
           ©2026 KD起始页
         </div>

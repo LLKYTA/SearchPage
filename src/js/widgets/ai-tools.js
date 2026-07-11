@@ -9,34 +9,10 @@ class AiToolsWidget extends Widget {
     static icon = 'fa-lightbulb-o';
 
     render() {
-        this._addHeaderAddBtn();
+        this._addHeaderAddBtn('添加AI工具');
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="ai-tools-grid"></div>';
         this._render();
-    }
-
-    _addHeaderAddBtn() {
-        const header = this.element.querySelector('.widget-header');
-        if (!header) return;
-        let actions = header.querySelector('.widget-header-actions');
-        if (!actions) {
-            actions = document.createElement('div');
-            actions.className = 'widget-header-actions';
-            header.appendChild(actions);
-        }
-        if (actions.querySelector('.widget-header-add-btn')) return;
-        const btn = document.createElement('button');
-        btn.className = 'widget-header-add-btn';
-        btn.title = '添加AI工具';
-        btn.innerHTML = '<i class="fa fa-plus"></i>';
-        btn.style.cssText = 'background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:14px;padding:4px;transition:color 0.2s;';
-        btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
-        btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            this.openManager();
-        });
-        actions.prepend(btn);
     }
 
     _render() {

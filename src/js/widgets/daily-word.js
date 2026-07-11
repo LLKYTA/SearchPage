@@ -95,7 +95,7 @@ class DailyWordWidget extends Widget {
                     <div class="dailyword-phonetic">${escapeHtml(phonetic)}</div>
                     <div class="dailyword-def">${escapeHtml(definition)}</div>
                     ${examplesHtml ? `<div class="dailyword-examples">${examplesHtml}</div>` : ''}
-                    <div class="dailyword-source" style="font-size:11px;color:var(--text-tertiary);margin-top:10px;text-align:right;">
+                    <div class="dailyword-source">
                         词库: ${localStorage.getItem('dailyword-category') || 'all'}
                     </div>
                 </div>

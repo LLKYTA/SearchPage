@@ -19,7 +19,7 @@
 /* ========== 小组件通用 - iOS 18 卡片 ========== */
 .widget {
     background: var(--card-bg);
-    border-radius: 18px;
+    border-radius: var(--radius-card);
     padding: 18px 20px;
     cursor: grab;
     user-select: none;
@@ -203,7 +203,7 @@
 /* ========== 时间小组件 ========== */
 .time-display {
     font-size: 40px;
-    font-weight: 650;
+    font-weight: 600;
     color: var(--text-primary);
     line-height: 1;
     margin-bottom: 6px;
@@ -220,7 +220,7 @@
 .weather-content { display: flex; align-items: center; gap: 12px; }
 .weather-icon { font-size: 32px; color: var(--ios-yellow); transition: transform 0.4s var(--spring-bounce); }
 .widget:hover .weather-icon { transform: scale(1.1) rotate(5deg); }
-.weather-temp { font-size: 30px; font-weight: 650; color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.weather-temp { font-size: 30px; font-weight: 600; color: var(--text-primary); font-variant-numeric: tabular-nums; }
 .weather-desc { font-size: 13px; color: var(--text-secondary); }
 
 /* ========== 快捷方式 ========== */
@@ -236,7 +236,7 @@
 .shortcut-item:hover { transform: scale(1.1); }
 .shortcut-item:active { transform: scale(0.92); }
 .shortcut-icon {
-    width: 40px; height: 40px; border-radius: 12px;
+    width: 40px; height: 40px; border-radius: var(--radius-md);
     display: flex; align-items: center; justify-content: center;
     color: white; font-size: 16px;
     transition: transform 0.35s var(--spring-bounce);
@@ -266,14 +266,14 @@
 
 .bookmark-item {
     display: flex; align-items: center; gap: 10px; padding: 8px 10px;
-    border-radius: 12px; text-decoration: none;
+    border-radius: var(--radius-md); text-decoration: none;
     transition: background 0.25s var(--spring-smooth), transform 0.25s var(--spring-pop);
     position: relative;
 }
 .bookmark-item:hover { background: rgba(0,0,0,0.04); transform: translateY(-1px); }
 .dark .bookmark-item:hover { background: rgba(255,255,255,0.06); }
 .bookmark-item:active { transform: scale(0.97); }
-.bookmark-icon { width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; flex-shrink: 0; }
+.bookmark-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; flex-shrink: 0; }
 .bookmark-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
 
 /* ========== AI 工具 ========== */
@@ -284,14 +284,14 @@
 
 .ai-tool-item {
     display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-    border-radius: 12px; text-decoration: none;
+    border-radius: var(--radius-md); text-decoration: none;
     transition: all 0.25s var(--spring-smooth);
     position: relative;
 }
 .ai-tool-item:hover { background: rgba(0,0,0,0.04); transform: translateY(-1px); }
 .dark .ai-tool-item:hover { background: rgba(255,255,255,0.06); }
 .ai-tool-item:active { transform: scale(0.97); }
-.ai-tool-icon { width: 30px; height: 30px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; flex-shrink: 0; }
+.ai-tool-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; flex-shrink: 0; }
 .ai-tool-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
 
 /* ========== 删除按钮（书签/AI/快捷方式） ========== */
@@ -319,7 +319,7 @@
 .hotboard-loading .fa-spinner { font-size: 16px; }
 .hotboard-item {
     display: flex; align-items: center; gap: 12px; padding: 8px 10px;
-    border-radius: 12px; text-decoration: none;
+    border-radius: var(--radius-md); text-decoration: none;
     transition: background 0.2s var(--spring-smooth), transform 0.2s var(--spring-pop);
     cursor: pointer;
 }
@@ -365,12 +365,12 @@
 .dailyword-md .dailyword-word { font-size: 28px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
 .dailyword-md .dailyword-phonetic { font-size: 14px; color: var(--text-secondary); margin-bottom: 4px; }
 .dailyword-md .dailyword-def { font-size: 14px; color: var(--text-secondary); line-height: 1.4; }
-.dailyword-md .dailyword-example { font-size: 13px; color: var(--text-secondary); margin-top: 10px; padding: 8px 12px; background: var(--bg-tertiary); border-radius: 10px; font-style: italic; border-left: 3px solid var(--ios-blue); }
+.dailyword-md .dailyword-example { font-size: 13px; color: var(--text-secondary); margin-top: 10px; padding: 8px 12px; background: var(--bg-tertiary); border-radius: var(--radius-sm); font-style: italic; border-left: 3px solid var(--ios-blue); }
 .dailyword-lg .dailyword-word { font-size: 36px; font-weight: 700; color: var(--text-primary); line-height: 1.2; }
 .dailyword-lg .dailyword-phonetic { font-size: 16px; color: var(--text-secondary); margin-bottom: 6px; }
 .dailyword-lg .dailyword-def { font-size: 16px; color: var(--text-secondary); line-height: 1.5; margin-bottom: 14px; }
 .dailyword-lg .dailyword-examples { display: flex; flex-direction: column; gap: 8px; }
-.dailyword-lg .dailyword-example-item { background: var(--bg-tertiary); border-radius: 10px; padding: 10px 14px; border-left: 3px solid var(--ios-blue); }
+.dailyword-lg .dailyword-example-item { background: var(--bg-tertiary); border-radius: var(--radius-sm); padding: 10px 14px; border-left: 3px solid var(--ios-blue); }
 .dailyword-lg .dailyword-example-text { font-size: 14px; color: var(--text-primary); line-height: 1.4; font-style: italic; }
 .dailyword-lg .dailyword-example-trans { font-size: 12px; color: var(--text-secondary); margin-top: 4px; }
 .dailyword-lg .dailyword-source { font-size: 11px; color: var(--text-tertiary); margin-top: 12px; text-align: right; border-top: 1px solid var(--border-color); padding-top: 8px; }
@@ -394,7 +394,7 @@
     border: 2px dashed var(--ios-blue);
     background: var(--accent-bg) !important;
     transform: scale(0.95);
-    border-radius: 18px;
+    border-radius: var(--radius-card);
 }
 
 .widget-chosen {
@@ -428,7 +428,7 @@
     opacity: 0.3 !important;
     border: 2px dashed var(--ios-blue) !important;
     background: var(--accent-bg) !important;
-    border-radius: 18px;
+    border-radius: var(--radius-card);
 }
 
 /* ========== 响应式 ========== */
@@ -448,7 +448,7 @@
     }
     .widget-sm { grid-column: span 1; }
     .widget-md, .widget-lg { grid-column: span 2; }
-    .widget { padding: 14px 16px; border-radius: 16px; }
+    .widget { padding: 14px 16px; border-radius: var(--radius-lg); }
     .time-display { font-size: 28px; }
     .date-display { font-size: 12px; }
     .weather-temp { font-size: 24px; }
@@ -462,6 +462,6 @@
     .widgets-area { grid-template-columns: 1fr; gap: 10px; }
     .widget-sm, .widget-md, .widget-lg { grid-column: span 1; }
     .shortcuts-grid, .bookmarks-grid, .ai-tools-grid { grid-template-columns: repeat(2, 1fr); }
-    .widget { padding: 12px 14px; border-radius: 14px; }
+    .widget { padding: 12px 14px; border-radius: var(--radius-dropdown); }
     .widget-header { margin-bottom: 8px; }
 }

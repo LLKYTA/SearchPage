@@ -327,6 +327,34 @@ class Widget {
 
   render() { throw new Error('render() must be implemented'); }
   onUpdate() {}
+
+  /**
+   * 在 widget header 添加一个"+"按钮，统一管理入口
+   * @param {string} [title='管理'] - 按钮 tooltip
+   */
+  _addHeaderAddBtn(title = '管理') {
+    const header = this.element.querySelector('.widget-header');
+    if (!header) return;
+    let actions = header.querySelector('.widget-header-actions');
+    if (!actions) {
+      actions = document.createElement('div');
+      actions.className = 'widget-header-actions';
+      header.appendChild(actions);
+    }
+    if (actions.querySelector('.widget-header-add-btn')) return;
+    const btn = document.createElement('button');
+    btn.className = 'widget-header-add-btn';
+    btn.title = title;
+    btn.innerHTML = '<i class="fa fa-plus"></i>';
+    btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
+    btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.openManager();
+    });
+    actions.prepend(btn);
+  }
+
   destroy() { this.element?.remove(); }
   openManager() {}
 }
