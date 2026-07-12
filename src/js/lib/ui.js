@@ -61,6 +61,12 @@ class UIModal {
     open() {
         if (this.el.classList.contains('active')) return;
         this.el.classList.add('active');
+
+        // 补偿滚动条宽度，防止 content 偏移
+        const scrollbarW = window.innerWidth - document.documentElement.clientWidth;
+        if (scrollbarW > 0) {
+            document.body.style.paddingRight = scrollbarW + 'px';
+        }
         document.body.style.overflow = 'hidden';
         this.onOpen();
     }
@@ -73,6 +79,7 @@ class UIModal {
         // 检查是否还有其他模态开着，没有才恢复滚动
         if (!document.querySelector('.modal-overlay.active')) {
             document.body.style.overflow = '';
+            document.body.style.paddingRight = '';
         }
 
         this.onClose();

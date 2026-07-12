@@ -27,7 +27,6 @@ src/
     │   ├── todo.js                         ← 待办事项
     │   ├── bookmarks.js                    ← 常用书签
     │   ├── shortcuts.js                    ← 快捷方式
-    │   ├── ai-tools.js                     ← AI 工具入口
     │   ├── hotboard.js                     ← 多源热榜
     │   ├── time-progress.js                ← 时间进度条
     │   └── daily-word.js                   ← 每日单词
@@ -201,7 +200,6 @@ WidgetFramework.register('hello', HelloWidget);
 | `WeatherWidget` | `weather` | `widgets/weather.js` | 天气显示（UAPI） |
 | `TodoWidget` | `todo` | `widgets/todo.js` | 待办事项列表 |
 | `BookmarksWidget` | `bookmarks` | `widgets/bookmarks.js` | 常用书签 |
-| `AiToolsWidget` | `ai-tools` | `widgets/ai-tools.js` | AI 工具入口 |
 | `ShortcutsWidget` | `shortcuts` | `widgets/shortcuts.js` | 自定义快捷方式 |
 | `HotboardWidget` | `hotboard` | `widgets/hotboard.js` | 多源实时热榜 |
 | `TimeProgressWidget` | `time-progress` | `widgets/time-progress.js` | 时间进度条 |

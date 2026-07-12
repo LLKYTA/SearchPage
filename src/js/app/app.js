@@ -20,7 +20,6 @@ WidgetFramework.register('weather', WeatherWidget);
 WidgetFramework.register('shortcuts', ShortcutsWidget);
 WidgetFramework.register('todo', TodoWidget);
 WidgetFramework.register('bookmarks', BookmarksWidget);
-WidgetFramework.register('ai-tools', AiToolsWidget);
 WidgetFramework.register('hotboard', HotboardWidget);
 WidgetFramework.register('time-progress', TimeProgressWidget);
 WidgetFramework.register('daily-word', DailyWordWidget);
@@ -84,7 +83,7 @@ function setSearchEngine(engine) {
     const nameEl = document.getElementById('engine-inline-name');
     const iconEl = document.getElementById('engine-inline-icon');
     if (nameEl) nameEl.textContent = CONFIG.searchEngines[engine].name;
-    if (iconEl) iconEl.className = ENGINE_ICONS[engine] || 'fa-search';
+    if (iconEl) iconEl.className = 'fa ' + (ENGINE_ICONS[engine] || 'fa-search');
 
     // 更新下拉菜单
     document.querySelectorAll('.engine-dropdown-item').forEach(b => b.classList.remove('active'));
@@ -144,8 +143,131 @@ function initUIModals() {
     });
     // 小组件库弹窗
     window.galleryModal = new UIModal(document.getElementById('widget-gallery-modal'), {
-        closeOnOverlay: false
+        closeOnOverlay: false,
+        onClose: () => {
+            // 清理拖拽残留的 inline 样式，确保下次打开正常
+            const sheet = document.querySelector('#widget-gallery-modal .modal-bottom-sheet');
+            if (sheet) {
+                sheet.style.animation = '';
+                sheet.style.transition = '';
+                sheet.style.transform = '';
+            }
+        }
     });
+    initGallerySwipe();
+}
+
+// ========== 底部菜单拖动关闭（小组件库） ==========
+function initGallerySwipe() {
+    const modal = document.getElementById('widget-gallery-modal');
+    const sheet = modal.querySelector('.modal-bottom-sheet');
+    const handle = modal.querySelector('.modal-header');
+    if (!sheet || !handle) return;
+
+    let startY = -1, startX = -1, lastY = -1, dragging = false;
+
+    function onStart(e) {
+        const p = e.touches ? e.touches[0] : e;
+        startY = p.clientY;
+        startX = p.clientX;
+        lastY = p.clientY;
+        dragging = false;
+    }
+
+    function onMove(e) {
+        // ★ 只在弹窗打开时响应拖拽，防止全局误触
+        if (!modal.classList.contains('active')) return;
+        // ★ 未从 handle 发起拖拽则不响应（防止点击触发按钮后鼠标移动误触）
+        if (startY === -1) return;
+
+        const p = e.touches ? e.touches[0] : e;
+        const dy = p.clientY - startY;
+        const dx = Math.abs(p.clientX - startX);
+
+        // 只有明显向下拖动才启动
+        if (!dragging) {
+            if (dy <= 0 || dy < dx) return;
+            dragging = true;
+            // 停用 CSS 动画，防止与 transform 冲突
+            sheet.style.animation = 'none';
+        }
+
+        if (dy <= 0) return;
+        lastY = p.clientY;
+
+        const progress = Math.min(1, dy / 300);
+        sheet.style.transform = `translateY(${dy}px)`;
+        modal.style.background = `rgba(0,0,0,${0.4 * (1 - progress)})`;
+        modal.style.backdropFilter = `blur(${8 * (1 - progress)}px)`;
+
+        if (e.cancelable) e.preventDefault();
+    }
+
+    function resetDrag() {
+        startY = -1;
+        startX = -1;
+        lastY = -1;
+        dragging = false;
+    }
+
+    function onEnd() {
+        if (!dragging) {
+            resetDrag();
+            return;
+        }
+
+        const dy = lastY - startY;
+        if (dy > 100) {
+            // 超过阈值 → 滑出关闭
+            sheet.style.transition = 'transform 0.28s var(--spring-slide)';
+            sheet.style.transform = 'translateY(100%)';
+            modal.style.transition = 'background 0.28s, backdrop-filter 0.28s';
+            modal.style.background = 'rgba(0,0,0,0)';
+            modal.style.backdropFilter = 'blur(0px)';
+            setTimeout(() => {
+                window.galleryModal.close();
+                cleanup();
+            }, 280);
+        } else {
+            // 不足阈值 → 弹回
+            sheet.style.transition = 'transform 0.3s var(--spring-slide)';
+            sheet.style.transform = 'translateY(0)';
+            modal.style.transition = 'background 0.3s, backdrop-filter 0.3s';
+            modal.style.background = '';
+            modal.style.backdropFilter = '';
+            setTimeout(() => cleanup(), 300);
+        }
+    }
+
+    function cleanup() {
+        resetDrag();
+        sheet.style.animation = '';
+        sheet.style.transition = '';
+        sheet.style.transform = '';
+        modal.style.background = '';
+        modal.style.backdropFilter = '';
+        modal.style.transition = '';
+    }
+
+    // 触摸事件（移动端）
+    handle.addEventListener('touchstart', onStart, { passive: true });
+    document.addEventListener('touchmove', onMove, { passive: false });
+    document.addEventListener('touchend', onEnd);
+
+    // 鼠标事件（桌面端）
+    handle.addEventListener('mousedown', onStart);
+    document.addEventListener('mousemove', onMove);
+    document.addEventListener('mouseup', onEnd);
+    document.addEventListener('mouseleave', () => { if (dragging) onEnd(); });
+
+    // 监测 modal 关闭（Escape / 程序化调用 close() 等不触发 onEnd 的路径）
+    // 只要 'active' 类被移除，就立即清理拖拽状态防止残留
+    const closeObserver = new MutationObserver(() => {
+        if (!modal.classList.contains('active')) {
+            resetDrag();
+        }
+    });
+    closeObserver.observe(modal, { attributes: true, attributeFilter: ['class'] });
 }
 
 // ========== 引擎下拉菜单 ==========
@@ -161,7 +283,8 @@ function closeEngineDropdown() {
 // 点击外部关闭下拉菜单
 document.addEventListener('click', function(e) {
     const btn = document.getElementById('engine-switch');
-    if (btn && !btn.contains(e.target)) {
+    const dropdown = document.getElementById('engine-dropdown');
+    if (btn && dropdown && !btn.contains(e.target) && !dropdown.contains(e.target)) {
         closeEngineDropdown();
     }
 });

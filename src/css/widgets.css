@@ -3,18 +3,17 @@
    Spring 动画 · 增强拖拽 · 扁平卡片
    ======================================== */
 
-/* ========== 小组件网格 ========== */
+/* ========== 小组件网格（自由网格布局） ========== */
 .widgets-area {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
+    grid-auto-rows: auto;
     gap: var(--widget-gap);
     min-height: 80px;
+    position: relative;
 }
 
-/* 尺寸定义 */
-.widget-sm { grid-column: span 1; }
-.widget-md { grid-column: span 2; }
-.widget-lg { grid-column: span 3; }
+/* 尺寸类名保留供内容样式使用，grid-column 由 JS 内联控制 */
 
 /* ========== 小组件通用 - iOS 18 卡片 ========== */
 .widget {
@@ -28,7 +27,7 @@
     transition: box-shadow 0.4s var(--spring-smooth), border-color 0.4s var(--spring-smooth);
     transform: translateY(0);
     animation: widgetSpringIn 0.5s var(--spring-bounce) both;
-    overflow: hidden;
+    overflow-y: auto;
 }
 
 @keyframes widgetSpringIn {
@@ -276,39 +275,20 @@
 .bookmark-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; flex-shrink: 0; }
 .bookmark-name { font-size: 12px; font-weight: 500; color: var(--text-primary); }
 
-/* ========== AI 工具 ========== */
-.ai-description { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
-.ai-tools-grid { display: grid; gap: 8px; grid-template-columns: repeat(2, 1fr); }
-@media (min-width: 480px) { .ai-tools-grid { grid-template-columns: repeat(2, 1fr); } }
-@media (min-width: 640px) { .ai-tools-grid { grid-template-columns: repeat(3, 1fr); } }
-
-.ai-tool-item {
-    display: flex; align-items: center; gap: 10px; padding: 10px 12px;
-    border-radius: var(--radius-md); text-decoration: none;
-    transition: all 0.25s var(--spring-smooth);
-    position: relative;
-}
-.ai-tool-item:hover { background: rgba(0,0,0,0.04); transform: translateY(-1px); }
-.dark .ai-tool-item:hover { background: rgba(255,255,255,0.06); }
-.ai-tool-item:active { transform: scale(0.97); }
-.ai-tool-icon { width: 30px; height: 30px; border-radius: var(--radius-sm); display: flex; align-items: center; justify-content: center; color: white; font-size: 13px; flex-shrink: 0; }
-.ai-tool-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
-
-/* ========== 删除按钮（书签/AI/快捷方式） ========== */
-.bookmark-delete-btn, .ai-tool-delete-btn, .shortcut-delete-btn {
+/* ========== 删除按钮（书签/快捷方式） ========== */
+.bookmark-delete-btn, .shortcut-delete-btn {
     position: absolute; top: -6px; right: -6px; width: 20px; height: 20px;
     border-radius: 50%; background: #ff3b30; color: white; border: none;
     font-size: 10px; cursor: pointer; display: none; align-items: center; justify-content: center;
     z-index: 10; box-shadow: 0 2px 8px rgba(255,59,48,0.4);
     transition: transform 0.25s var(--spring-pop);
 }
-.bookmark-delete-btn:hover, .ai-tool-delete-btn:hover, .shortcut-delete-btn:hover { transform: scale(1.15); }
+.bookmark-delete-btn:hover, .shortcut-delete-btn:hover { transform: scale(1.15); }
 .bookmark-item:hover .bookmark-delete-btn,
-.ai-tool-item:hover .ai-tool-delete-btn,
 .shortcut-item:hover .shortcut-delete-btn { display: flex; }
 
-.bookmark-icon img, .ai-tool-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
-.bookmark-icon-loading, .ai-tool-icon-loading { display: flex; align-items: center; justify-content: center; color: #999; font-size: 20px; }
+.bookmark-icon img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+.bookmark-icon-loading { display: flex; align-items: center; justify-content: center; color: #999; font-size: 20px; }
 
 /* ========== 热榜 ========== */
 .hotboard-meta { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; padding-bottom: 10px; border-bottom: 1px solid var(--border-color); }
@@ -434,11 +414,8 @@
 /* ========== 响应式 ========== */
 @media (max-width: 900px) {
     .widgets-area {
-        grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
         gap: 14px;
     }
-    .widget-md { grid-column: span 2; }
-    .widget-lg { grid-column: span 2; }
 }
 
 @media (max-width: 768px) {
@@ -446,22 +423,19 @@
         grid-template-columns: repeat(2, 1fr);
         gap: 12px;
     }
-    .widget-sm { grid-column: span 1; }
-    .widget-md, .widget-lg { grid-column: span 2; }
     .widget { padding: 14px 16px; border-radius: var(--radius-lg); }
     .time-display { font-size: 28px; }
     .date-display { font-size: 12px; }
     .weather-temp { font-size: 24px; }
     .weather-icon { font-size: 28px; }
     .hotboard-list { max-height: 200px; }
-    .bookmarks-grid, .shortcuts-grid, .ai-tools-grid { grid-template-columns: repeat(2, 1fr) !important; }
+    .bookmarks-grid, .shortcuts-grid { grid-template-columns: repeat(2, 1fr) !important; }
     .widget-header { margin-bottom: 10px; }
 }
 
 @media (max-width: 480px) {
     .widgets-area { grid-template-columns: 1fr; gap: 10px; }
-    .widget-sm, .widget-md, .widget-lg { grid-column: span 1; }
-    .shortcuts-grid, .bookmarks-grid, .ai-tools-grid { grid-template-columns: repeat(2, 1fr); }
+    .shortcuts-grid, .bookmarks-grid { grid-template-columns: repeat(2, 1fr); }
     .widget { padding: 12px 14px; border-radius: var(--radius-dropdown); }
     .widget-header { margin-bottom: 8px; }
 }

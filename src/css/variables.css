@@ -111,22 +111,42 @@
      transition: background-color var(--transition-slow);
  }
  
+ /* iOS 风格滚动条 — 极细、半透明、胶囊形 */
  ::-webkit-scrollbar {
-     width: 6px;
-     height: 6px;
+     width: 4px;
+     height: 4px;
  }
- 
+
  ::-webkit-scrollbar-track {
      background: transparent;
  }
- 
+
  ::-webkit-scrollbar-thumb {
-     background: var(--text-tertiary);
-     border-radius: 3px;
+     background: rgba(128, 128, 128, 0.25);
+     border-radius: 2px;
+     transition: background 0.3s ease;
  }
- 
+
  ::-webkit-scrollbar-thumb:hover {
-     background: var(--text-secondary);
+     background: rgba(128, 128, 128, 0.4);
+ }
+
+ .dark ::-webkit-scrollbar-thumb {
+     background: rgba(255, 255, 255, 0.2);
+ }
+
+ .dark ::-webkit-scrollbar-thumb:hover {
+     background: rgba(255, 255, 255, 0.35);
+ }
+
+ /* Firefox 兼容 */
+ * {
+     scrollbar-width: thin;
+     scrollbar-color: rgba(128, 128, 128, 0.25) transparent;
+ }
+
+ .dark * {
+     scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
  }
  
  ::selection {

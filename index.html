@@ -31,24 +31,24 @@
     <div class="bg-bubble bg-bubble-3"></div>
   </div>
 
-  <!-- 主容器（无头部，搜索集成到底部栏） -->
+  <!-- 主容器（搜索卡片 + 小组件） -->
   <div class="container-main">
-    <!-- 小组件区域 -->
-    <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
-    {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
-    {"type":"bookmarks"},{"type":"ai-tools"},{"type":"hotboard"}]'>
-    </div>
-  </div>
-
-  <!-- 底部浮动操作栏（iOS 18 风格 · 集成搜索） -->
-  <div class="floating-bar">
-    <!-- 搜索行（上层） -->
-    <div class="floating-search-row">
-      <button class="engine-inline" id="engine-switch" onclick="toggleEngineDropdown()">
-        <i class="fa fa-edge" id="engine-inline-icon"></i>
-        <span class="engine-name" id="engine-inline-name">Bing</span>
-        <i class="fa fa-chevron-down engine-chevron"></i>
-      </button>
+    <!-- 搜索卡片（视觉焦点区） -->
+    <div class="search-hero">
+      <div class="search-card glass" id="searchCard">
+        <button class="engine-pill" id="engine-switch" onclick="toggleEngineDropdown()">
+          <i class="fa fa-edge" id="engine-inline-icon"></i>
+          <span class="engine-name" id="engine-inline-name">Bing</span>
+          <i class="fa fa-chevron-down engine-chevron"></i>
+        </button>
+        <div class="search-card-divider"></div>
+        <i class="fa fa-search search-card-icon"></i>
+        <input type="text" id="search-input" class="search-input" placeholder="搜索任何内容..." autocomplete="off" spellcheck="false">
+        <button id="search-btn" class="search-card-btn">
+          <i class="fa fa-arrow-right"></i>
+        </button>
+      </div>
+      <!-- 引擎下拉菜单（在搜索卡片下方展开） -->
       <div class="engine-dropdown" id="engine-dropdown">
         <button class="engine-dropdown-item" data-engine="baidu" onclick="setSearchEngine('baidu');closeEngineDropdown()">
           <i class="fa fa-search"></i> 百度
@@ -60,31 +60,28 @@
           <i class="fa fa-edge"></i> Bing
         </button>
       </div>
-      <div class="floating-search-divider"></div>
-      <i class="fa fa-search search-icon"></i>
-      <input type="text" id="search-input" class="search-input" placeholder="搜索任何内容..." autocomplete="off">
-      <button id="search-btn" class="search-btn">
-        <i class="fa fa-arrow-right"></i>
-      </button>
     </div>
 
-    <!-- 行间分隔线 -->
-    <div class="floating-bar-row-divider"></div>
-
-    <!-- 操作行（下层） -->
-    <div class="floating-actions-row">
-      <button class="floating-bar-btn" onclick="toggleDarkMode()" title="切换主题">
-        <i id="theme-icon-floating" class="fa fa-moon-o"></i>
-      </button>
-      <div class="floating-bar-separator"></div>
-      <button class="floating-bar-btn primary" onclick="WidgetFramework.openGallery('main-area')" title="编辑小组件">
-        <i class="fa fa-plus-circle"></i> 编辑
-      </button>
-      <div class="floating-bar-separator"></div>
-      <button class="floating-bar-btn" onclick="openSettings()" title="设置">
-        <i class="fa fa-cog"></i>
-      </button>
+    <!-- 小组件区域 -->
+    <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
+    {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
+    {"type":"bookmarks"},{"type":"hotboard"}]'>
     </div>
+  </div>
+
+  <!-- 底部极简操作栏（纯图标胶囊） -->
+  <div class="floating-bar">
+    <button class="floating-bar-btn" onclick="toggleDarkMode()" title="切换主题">
+      <i id="theme-icon-floating" class="fa fa-moon-o"></i>
+    </button>
+    <div class="floating-bar-separator"></div>
+    <button class="floating-bar-btn" onclick="WidgetFramework.openGallery('main-area')" title="编辑小组件">
+      <i class="fa fa-plus-circle"></i>
+    </button>
+    <div class="floating-bar-separator"></div>
+    <button class="floating-bar-btn" onclick="openSettings()" title="设置">
+      <i class="fa fa-cog"></i>
+    </button>
   </div>
 
   <!-- 小组件库弹窗（底部弹出，预览式卡片） -->
@@ -102,7 +99,7 @@
 
   <!-- 设置弹窗 -->
   <div id="settings-modal" class="modal-overlay">
-    <div class="modal-content glass">
+    <div class="modal-content glass setting-modal-content">
       <div class="modal-header">
         <h3 class="modal-title">设置</h3>
         <button class="modal-close">
@@ -110,9 +107,10 @@
         </button>
       </div>
 
-      <div class="settings-group">
-        <div class="settings-group-title">显示与偏好</div>
-        <div class="settings-card">
+      <div class="settings-body">
+        <div class="settings-group">
+          <div class="settings-group-title">显示与偏好</div>
+          <div class="settings-card">
           <div class="setting-row">
             <div class="setting-row-left">
               <i class="fa fa-paint-brush setting-row-icon"></i>
@@ -167,14 +165,6 @@
             <i class="fa fa-chevron-right setting-row-arrow"></i>
           </button>
 
-          <button class="setting-row setting-row-btn" onclick="openWidgetManager('ai-tools')">
-            <div class="setting-row-left">
-              <i class="fa fa-lightbulb-o setting-row-icon"></i>
-              <span class="setting-row-label">AI 智能助手</span>
-            </div>
-            <i class="fa fa-chevron-right setting-row-arrow"></i>
-          </button>
-
           <button class="setting-row setting-row-btn" onclick="openWidgetManager('shortcuts')">
             <div class="setting-row-left">
               <i class="fa fa-th setting-row-icon"></i>
@@ -191,8 +181,9 @@
             <i class="fa fa-chevron-right setting-row-arrow"></i>
           </button>
         </div>
+      </div>
 
-        <div class="settings-group">
+      <div class="settings-group">
           <div class="settings-group-title">其他</div>
           <div class="settings-card">
             <button class="setting-row setting-row-btn" onclick="openAboutModal()">
@@ -204,6 +195,7 @@
             </button>
           </div>
         </div>
+
       </div>
     </div>
   </div>
@@ -265,7 +257,6 @@
   <script src="./src/js/widgets/weather.js"></script>
   <script src="./src/js/widgets/todo.js"></script>
   <script src="./src/js/widgets/bookmarks.js"></script>
-  <script src="./src/js/widgets/ai-tools.js"></script>
   <script src="./src/js/widgets/shortcuts.js"></script>
   <script src="./src/js/widgets/hotboard.js"></script>
   <script src="./src/js/widgets/time-progress.js"></script>

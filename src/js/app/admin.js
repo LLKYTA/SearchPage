@@ -36,10 +36,6 @@ function manageAddItem() {
         const bookmarks = JSON.parse(localStorage.getItem('custom-bookmarks') || '[]');
         bookmarks.push({ name: '新书签', url: 'https://', favicon: '' });
         localStorage.setItem('custom-bookmarks', JSON.stringify(bookmarks));
-    } else if (widget instanceof AiToolsWidget) {
-        const tools = JSON.parse(localStorage.getItem('custom-ai-tools') || '[]');
-        tools.push({ name: '新工具', url: 'https://', favicon: '' });
-        localStorage.setItem('custom-ai-tools', JSON.stringify(tools));
     } else if (widget instanceof ShortcutsWidget) {
         const shortcuts = JSON.parse(localStorage.getItem('custom-shortcuts') || '[]');
         shortcuts.push({ name: '新快捷', url: 'https://', icon: 'fa-external-link', color: '#999' });

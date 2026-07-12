@@ -1,6 +1,6 @@
 /* ==========================================
-   iOS 18 风格小组件框架 - WidgetFramework v2
-   Spring 动画 · 增强拖拽 · 流畅生命周期
+   iOS 18 风格小组件框架 - WidgetFramework v3
+   Spring 动画 · 位置感知网格 · 智能紧凑排列
    ========================================== */
 
 // ===== Spring 动画工具 =====
@@ -50,25 +50,65 @@ const Spring = {
     ], { duration: 450, easing: this.curves.bounce });
   },
 
-  /** 抖动（编辑模式） */
-  animateJiggle(el) {
-    const duration = 120;
-    const degrees = 0.5;
-    return el.animate([
-      { transform: 'rotate(0deg)' },
-      { transform: `${degrees}deg` },
-      { transform: 'rotate(0deg)' },
-      { transform: `-${degrees}deg` },
-      { transform: 'rotate(0deg)' }
-    ], { duration, iterations: Infinity, easing: this.curves.smooth });
-  }
 };
+
+// ========== GridTracker — 网格占用追踪与空位查找 ==========
+class GridTracker {
+  constructor(maxCols = 3) {
+    this.maxCols = maxCols;
+    this.cells = new Set(); // "row,col" 字符串
+  }
+
+  /** 在网格中占位 */
+  occupy(col, row, size) {
+    const span = this._span(size);
+    for (let c = col; c < Math.min(col + span, this.maxCols + 1); c++) {
+      this.cells.add(`${row},${c}`);
+    }
+  }
+
+  /** 清除占位 */
+  clear(col, row, size) {
+    const span = this._span(size);
+    for (let c = col; c < Math.min(col + span, this.maxCols + 1); c++) {
+      this.cells.delete(`${row},${c}`);
+    }
+  }
+
+  /** 指定位置是否可用 */
+  isAvailable(col, row, size) {
+    const span = this._span(size);
+    for (let c = col; c < Math.min(col + span, this.maxCols + 1); c++) {
+      if (this.cells.has(`${row},${c}`)) return false;
+    }
+    return true;
+  }
+
+  /** 寻找下一个空位（从左到右，从上到下） */
+  findNextAvailable(size) {
+    const span = this._span(size);
+    for (let row = 1; row < 100; row++) {
+      for (let col = 1; col <= this.maxCols - span + 1; col++) {
+        if (this.isAvailable(col, row, size)) {
+          return { col, row };
+        }
+      }
+    }
+    return { col: 1, row: 1 }; // 兜底
+  }
+
+  _span(size) {
+    const map = { sm: 1, md: 2, lg: 3 };
+    return Math.min(map[size] || 1, this.maxCols);
+  }
+}
 
 // ========== WidgetFramework 单例 ==========
 const WidgetFramework = {
   registry: new Map(),
   areas: new Map(),
   storageKey: 'widgets-layout',
+  _layoutVersion: 2,         // 当前布局版本
 
   // ===== 各小组件预览内容 =====
   _previews: {
@@ -85,10 +125,6 @@ const WidgetFramework = {
     bookmarks: '<div class="preview-widget"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:4px;">' +
       [ ['Github','#333'], ['知乎','#056DE8'], ['B站','#FB7299'], ['掘金','#1E80FF'] ].map(([n,c]) =>
         `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;"><div style="width:20px;height:20px;border-radius:5px;background:${c};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-globe" style="color:white;font-size:10px;"></i></div><span style="font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span></div>`
-      ).join('') + '</div></div>',
-    'ai-tools': '<div class="preview-widget"><div style="display:grid;grid-template-columns:repeat(2,1fr);gap:6px;">' +
-      [ ['ChatGPT','#10A37F'], ['Claude','#6B4FBB'], ['Midjourney','#1B1B1B'], ['Copilot','#0078D4'] ].map(([n,c]) =>
-        `<div style="display:flex;align-items:center;gap:6px;padding:4px 6px;border-radius:6px;"><div style="width:20px;height:20px;border-radius:5px;background:${c};display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fa fa-robot" style="color:white;font-size:10px;"></i></div><span style="font-size:10px;color:var(--text-primary);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${n}</span></div>`
       ).join('') + '</div></div>',
     hotboard: '<div class="preview-widget" style="padding:0 4px;">' +
       [ ['微博热搜','128万'], ['热榜第一','95万'], ['热门话题','76万'], ['热搜趋势','52万'] ].map(([t,h],i) =>
@@ -148,7 +184,6 @@ const WidgetFramework = {
     const onLeave = () => {
       isTilting = false;
       if (rafId) cancelAnimationFrame(rafId);
-      // Spring 回归
       card.style.setProperty('--tilt-x', '0deg');
       card.style.setProperty('--tilt-y', '0deg');
       card.style.transition = '--tilt-x 0.4s cubic-bezier(0.16, 1, 0.3, 1), --tilt-y 0.4s cubic-bezier(0.16, 1, 0.3, 1)';
@@ -194,7 +229,6 @@ const WidgetFramework = {
 
       this._initTilt(card);
 
-      // 添加按钮点击
       card.querySelector('.gallery-card-add-btn').addEventListener('click', (e) => {
         e.stopPropagation();
         const area = WidgetFramework.areas.get(areaId);
@@ -228,7 +262,6 @@ const WidgetFramework = {
         document.body.style.overflow = 'hidden';
     }
 
-    // Spring 入场动画（错位）
     requestAnimationFrame(() => {
       listContainer.querySelectorAll('.gallery-card-preview').forEach((c, i) => {
         c.style.setProperty('--card-delay', `${i * 0.05}s`);
@@ -295,20 +328,48 @@ class Widget {
     const nextIdx = (sizes.indexOf(current) + 1) % sizes.length;
     const newSize = sizes[nextIdx];
 
+    const areaId = this.container.closest('[data-widget-area]').dataset.widgetArea;
+    const area = WidgetFramework.areas.get(areaId);
+    if (!area) return;
+
+    const cols = area._getColumnCount();
+    const span = area._span(newSize, cols);
+    const item = area.layout[this.index];
+
+    // 更新布局中的尺寸
+    if (item) {
+      item.size = newSize;
+
+      // 检查位置是否溢出，如有必要则找新位置
+      if (item.position) {
+        const maxCol = cols - span + 1;
+        if (item.position.col > maxCol) {
+          // 超出右边界 → 找空位
+          const grid = area._buildOccupiedGrid();
+          // 先清除自己原占位
+          grid.clear(item.position.col, item.position.row, current);
+          const newPos = grid.findNextAvailable(newSize);
+          item.position = { col: newPos.col, row: newPos.row };
+          grid.occupy(newPos.col, newPos.row, newSize);
+        }
+      }
+
+      area.saveLayout();
+    }
+
+    // 更新 DOM
     this.element.classList.remove(`widget-${current}`);
     this.element.classList.add(`widget-${newSize}`);
     this.currentSize = newSize;
 
-    const areaId = this.container.closest('[data-widget-area]').dataset.widgetArea;
-    const area = WidgetFramework.areas.get(areaId);
-    if (area && area.layout[this.index]) {
-      area.layout[this.index].size = newSize;
-      area.saveLayout();
+    // 更新内联网格定位
+    if (item && item.position) {
+      this.element.style.gridColumn = `${item.position.col} / span ${Math.min(span, cols)}`;
+      this.element.style.gridRow = `${item.position.row} / span 1`;
+      this.element.dataset.position = JSON.stringify(item.position);
     }
 
-    // Spring 尺寸变化动画
     Spring.animateResize(this.element);
-
     this.onResize(newSize);
   }
 
@@ -359,7 +420,7 @@ class Widget {
   openManager() {}
 }
 
-// ========== WidgetArea（Spring 动画版） ==========
+// ========== WidgetArea（自由网格布局版） ==========
 class WidgetArea {
   constructor(container, id) {
     this.container = container;
@@ -368,49 +429,191 @@ class WidgetArea {
     this.layout = [];
     this.sortableInstance = null;
     this._pendingRemove = false;
+    this._lastCols = 3;
+    this._resizeHandler = null;
   }
 
   init() {
     this.loadLayout();
     this.render();
     this._enableDragDrop();
+    this._initResizeObserver();
   }
+
+  // ===== 布局持久化 =====
 
   loadLayout() {
     const all = WidgetFramework.getLayout();
+    const version = all._version || 1;
     const areaLayout = all[this.id] || this._getDefaultLayout();
+
+    if (version < WidgetFramework._layoutVersion) {
+      this._migrateLayout(areaLayout, version);
+      all[this.id] = areaLayout;
+      all._version = WidgetFramework._layoutVersion;
+      WidgetFramework.saveLayout(all);
+    }
+
     this.layout = areaLayout;
+  }
+
+  /** 迁移旧布局：自动计算初始位置 */
+  _migrateLayout(layout, fromVersion) {
+    if (fromVersion >= 2) return;
+    const cols = this._getColumnCount();
+    const grid = new GridTracker(cols);
+    layout.forEach(item => {
+      const WidgetClass = WidgetFramework.registry.get(item.type);
+      const defaultSize = WidgetClass ? WidgetClass.defaultSize : 'sm';
+      const size = item.size || defaultSize;
+      delete item.position;
+      const pos = grid.findNextAvailable(size);
+      item.position = { col: pos.col, row: pos.row };
+      item.size = size; // 补齐缺失的 size
+      grid.occupy(pos.col, pos.row, size);
+    });
   }
 
   _getDefaultLayout() {
     const str = this.container.dataset.defaultWidgets;
-    return str ? JSON.parse(str) : [];
+    if (!str) return [];
+    try {
+      return JSON.parse(str);
+    } catch {
+      return [];
+    }
   }
 
   saveLayout() {
     const all = WidgetFramework.getLayout();
     all[this.id] = this.layout;
+    all._version = WidgetFramework._layoutVersion;
     WidgetFramework.saveLayout(all);
   }
 
+  // ===== 渲染 =====
+
   render() {
+    // FLIP：捕获旧位置
+    const oldRects = new Map();
+    this.container.querySelectorAll('.widget').forEach(el => {
+      const key = el.dataset.widgetType + '_' + el.dataset.position;
+      oldRects.set(key, el.getBoundingClientRect());
+    });
+
     this.container.innerHTML = '';
     this.widgets = [];
-    this.layout.forEach((item, idx) => {
+
+    const cols = this._getColumnCount();
+    this._lastCols = cols;
+
+    // 计算当前断点下的布局
+    const positioned = this._layoutForBreakpoint(cols);
+
+    positioned.forEach((item, sortIndex) => {
       const WidgetClass = WidgetFramework.registry.get(item.type);
       if (!WidgetClass) return;
-      const widget = new WidgetClass(this.container, idx);
+      const widget = new WidgetClass(this.container, sortIndex);
       const dom = widget.createDOM();
-      const size = item.size || WidgetClass.defaultSize;
-      dom.classList.add(`widget-${size}`);
-      dom.dataset.index = idx;
+
+      // 显式网格定位
+      const span = this._span(item.size, cols);
+      const pos = item.position || { col: 1, row: 1 };
+      dom.style.gridColumn = `${pos.col} / span ${span}`;
+      dom.style.gridRow = `${pos.row} / span 1`;
+      dom.dataset.position = JSON.stringify(pos);
+
       this.container.appendChild(dom);
       widget.render();
-      // Spring 入场动画（错位）
-      widget.animateIn(idx * 0.06);
+
+      // FLIP 动画：从旧位置过渡到新位置
+      const key = dom.dataset.widgetType + '_' + dom.dataset.position;
+      const old = oldRects.get(key);
+      if (old) {
+        const now = dom.getBoundingClientRect();
+        const dx = old.left - now.left;
+        const dy = old.top - now.top;
+        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
+          dom.animate([
+            { transform: `translate(${dx}px, ${dy}px)`, opacity: 0.6 },
+            { transform: 'translate(0, 0)', opacity: 1 }
+          ], { duration: 400, easing: Spring.curves.slide });
+        } else {
+          widget.animateIn(sortIndex * 0.06);
+        }
+      } else {
+        widget.animateIn(sortIndex * 0.06);
+      }
+
       this.widgets.push(widget);
     });
   }
+
+  /** 根据当前列数适配布局 */
+  _layoutForBreakpoint(cols) {
+    if (cols === 3) {
+      return this.layout.map(item => ({
+        ...item,
+        position: item.position || { col: 1, row: 1 }
+      }));
+    }
+    // 2列或1列：重新计算位置，消除空行
+    const grid = new GridTracker(cols);
+    return this.layout.map(item => {
+      let size = item.size;
+      if (cols === 1) {
+        size = 'sm';
+      } else if (cols === 2 && size === 'lg') {
+        size = 'md';
+      }
+      const pos = grid.findNextAvailable(size);
+      grid.occupy(pos.col, pos.row, size);
+      return { ...item, size, position: pos };
+    });
+  }
+
+  /** 获取当前视口宽度对应的列数（与 CSS media query 对齐） */
+  _getColumnCount() {
+    const w = window.innerWidth;
+    if (w <= 480) return 1;
+    if (w <= 768) return 2;
+    return 3;
+  }
+
+  /** 获取尺寸对应的列跨度数 */
+  _span(size, cols) {
+    const map = { sm: 1, md: 2, lg: 3 };
+    return Math.min(map[size] || 1, cols);
+  }
+
+  // ===== 窗口尺寸变化监听 =====
+
+  _initResizeObserver() {
+    let resizeTimer = null;
+    this._resizeHandler = () => {
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        const newCols = this._getColumnCount();
+        if (newCols !== this._lastCols) {
+          this._lastCols = newCols;
+          this.render();
+        }
+        resizeTimer = null;
+      }, 150);
+    };
+    window.addEventListener('resize', this._resizeHandler);
+  }
+
+  destroy() {
+    if (this._resizeHandler) {
+      window.removeEventListener('resize', this._resizeHandler);
+    }
+    if (this.sortableInstance) {
+      this.sortableInstance.destroy();
+    }
+  }
+
+  // ===== Widget 增删改 =====
 
   addWidget(type, size) {
     const WidgetClass = WidgetFramework.registry.get(type);
@@ -420,10 +623,23 @@ class WidgetArea {
       alert(`该区域最多添加 ${WidgetClass.maxPerArea} 个"${WidgetClass.displayName}"`);
       return false;
     }
+
+    const cols = this._getColumnCount();
+    const grid = new GridTracker(cols);
+    this.layout.forEach(item => {
+      if (item.position) {
+        grid.occupy(item.position.col, item.position.row, item.size || 'sm');
+      }
+    });
+
+    const newSize = size || WidgetClass.defaultSize || 'sm';
+    const pos = grid.findNextAvailable(newSize);
+
     const newItem = {
       type,
-      size: size || WidgetClass.defaultSize || 'sm',
-      config: {}
+      size: newSize,
+      config: {},
+      position: pos
     };
     this.layout.push(newItem);
     this.saveLayout();
@@ -438,15 +654,12 @@ class WidgetArea {
       const el = widgetInstance.element;
       if (el) {
         this._pendingRemove = true;
-        // Spring 出场动画
         const anim = widgetInstance.animateOut();
         anim.finished.then(() => {
           this._doRemove(idx);
         }).catch(() => {
-          // 动画被取消时的兜底
           this._doRemove(idx);
         });
-        // 安全超时
         setTimeout(() => this._doRemove(idx), 500);
       } else {
         this._doRemove(idx);
@@ -463,6 +676,29 @@ class WidgetArea {
     this.layout.splice(idx, 1);
     this.widgets.splice(idx, 1);
     if (widgetInstance) widgetInstance.destroy();
+
+    // 移除后紧凑排列
+    this._compactPositions();
+
+    this.saveLayout();
+    this.render();
+  }
+
+  /** 紧凑排列：消除空行间隙 */
+  _compactPositions() {
+    const cols = this._getColumnCount();
+    const grid = new GridTracker(cols);
+    this.layout.forEach(item => {
+      if (!item.position) return;
+      const pos = grid.findNextAvailable(item.size || 'sm');
+      item.position = { col: pos.col, row: pos.row };
+      grid.occupy(pos.col, pos.row, item.size || 'sm');
+    });
+  }
+
+  /** 手动触发紧凑（供外部调用） */
+  compactAll() {
+    this._compactPositions();
     this.saveLayout();
     this.render();
   }
@@ -470,25 +706,17 @@ class WidgetArea {
   moveWidget(fromIdx, toIdx) {
     if (fromIdx === toIdx) return;
 
-    const children = this.container.children;
-    const fromNode = children[fromIdx];
-    const toNode = children[toIdx];
-    if (fromNode && toNode) {
-      if (fromIdx < toIdx) {
-        this.container.insertBefore(fromNode, toNode.nextSibling);
-      } else {
-        this.container.insertBefore(fromNode, toNode);
-      }
-    }
-
-    const movedWidget = this.widgets.splice(fromIdx, 1)[0];
-    this.widgets.splice(toIdx, 0, movedWidget);
-    this.widgets.forEach((w, idx) => w.index = idx);
-
+    // 更新 layout 数组顺序
     const movedLayout = this.layout.splice(fromIdx, 1)[0];
     this.layout.splice(toIdx, 0, movedLayout);
+    this.widgets.splice(fromIdx, 1);
+    this.widgets.splice(toIdx, 0, null); // 占位
 
+    // 重新紧凑排列
+    this._compactPositions();
     this.saveLayout();
+    // 重渲染以生效网格位置变化
+    this.render();
   }
 
   _enableDragDrop() {
@@ -548,4 +776,5 @@ class WidgetArea {
       }
     });
   }
+
 }
