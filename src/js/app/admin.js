@@ -47,6 +47,11 @@ function manageAddItem() {
 // ========== 关于弹窗 ==========
 function openAboutModal() {
     closeSettings();
+    // 从 APP_VERSION 动态填充关于内容
+    const container = document.getElementById('about-content');
+    if (container && typeof APP_VERSION !== 'undefined') {
+        container.innerHTML = APP_VERSION.getAboutHTML();
+    }
     window.aboutModal?.open();
 }
 

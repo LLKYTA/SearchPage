@@ -33,6 +33,7 @@ WidgetFramework (global registry, layout persistence, widget gallery)
 |-------|-------|---------|
 | **Infrastructure** | `src/js/lib/widget-framework.js` | Framework core: `WidgetFramework` singleton, `Widget` base class, `WidgetArea` |
 | **Infrastructure** | `src/js/lib/uapi.js` | External APIs: weather, hotboard, daily word (via uapis.cn) |
+| **Infrastructure** | `src/js/lib/version.js` | Version control: semver, build info, about dialog |
 | **Widgets** | `src/js/widgets/*.js` | 8 standalone widget classes, one file each, no cross-dependencies |
 | **App logic** | `src/js/app/app.js` | Entry point: init, search, theme toggle, widget registration |
 | **App logic** | `src/js/app/preferences.js` | Settings dialog: background, hotboard source, word category |
