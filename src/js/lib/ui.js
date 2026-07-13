@@ -71,10 +71,46 @@ class UIModal {
         this.onOpen();
     }
 
-    /** 关闭弹窗 */
-    close() {
+    /** 关闭弹窗（带动画） */
+    close(animated = true) {
+        if (!this.el.classList.contains('active')) return;
+
+        // 找到内容主体
+        const content = this.el.querySelector('.modal-content, .modal-bottom-sheet');
+        if (content && animated) {
+            const isSheet = content.classList.contains('modal-bottom-sheet');
+            content.classList.add(isSheet ? 'sheet-closing' : 'modal-closing');
+
+            // 遮罩淡出
+            this.el.style.transition = 'opacity 0.25s ease';
+            const bgOpacity = this.el.style.background || 'rgba(0,0,0,0.4)';
+            this.el.style.opacity = '0';
+
+            content.addEventListener('animationend', () => {
+                this._doClose();
+            }, { once: true });
+
+            // 兜底：300ms 后强制关闭（防止 animation 不触发）
+            setTimeout(() => {
+                if (this.el.classList.contains('active')) this._doClose();
+            }, 320);
+        } else {
+            this._doClose();
+        }
+    }
+
+    /** 实际关闭逻辑 */
+    _doClose() {
         if (!this.el.classList.contains('active')) return;
         this.el.classList.remove('active');
+
+        // 恢复内联样式
+        this.el.style.transition = '';
+        this.el.style.opacity = '';
+        const content = this.el.querySelector('.modal-content, .modal-bottom-sheet');
+        if (content) {
+            content.classList.remove('modal-closing', 'sheet-closing');
+        }
 
         // 检查是否还有其他模态开着，没有才恢复滚动
         if (!document.querySelector('.modal-overlay.active')) {
@@ -359,3 +395,231 @@ class UIDropdown {
     }
 }
 UIDropdown.instances = [];
+
+// ==========================================
+// UINavigationPage — iOS 18 导航式页面切换
+// 用于设置等场景的二级导航页面
+// 用法:
+//   const nav = new UINavigationPage(container)
+//   nav.push('page-id')    // 滑入子页面
+//   nav.pop()              // 返回上一页
+// ==========================================
+class UINavigationPage {
+    /**
+     * @param {HTMLElement} container - 包含 .nav-page-container 的容器
+     * @param {Object} [opts]
+     * @param {Function} [opts.onPush] - (pageId) => {} 页面推入回调
+     * @param {Function} [opts.onPop]  - (pageId) => {} 页面弹出回调
+     */
+    constructor(container, opts = {}) {
+        this.container = container;
+        this.onPush = opts.onPush || (() => {});
+        this.onPop = opts.onPop || (() => {});
+        /** @type {string[]} 页面 ID 栈 */
+        this.stack = [];
+        /** @type {HTMLElement} 页面容器 */
+        this.pageContainer = container.querySelector('.nav-page-container') || this._createContainer();
+        this._initStack();
+    }
+
+    /** 如果页面容器不存在则创建 */
+    _createContainer() {
+        const wrap = document.createElement('div');
+        wrap.className = 'nav-page-container';
+        while (this.container.firstChild) {
+            wrap.appendChild(this.container.firstChild);
+        }
+        this.container.appendChild(wrap);
+        return wrap;
+    }
+
+    /** 初始化栈：将所有 .nav-page 加入栈，找到 active 的作为当前页 */
+    _initStack() {
+        const pages = this.pageContainer.querySelectorAll('.nav-page');
+        let activeFound = false;
+        pages.forEach(p => {
+            const id = p.dataset.page;
+            if (id) {
+                // 已存在的页面入栈
+                if (p.classList.contains('active')) {
+                    this.stack.push(id);
+                    activeFound = true;
+                }
+            }
+        });
+        // 没有 active 页，激活第一个
+        if (!activeFound && pages.length > 0) {
+            const first = pages[0];
+            if (first.dataset.page) {
+                first.classList.add('active');
+                this.stack.push(first.dataset.page);
+            }
+        }
+    }
+
+    /** 获取页面元素 */
+    _getPage(id) {
+        return this.pageContainer.querySelector(`.nav-page[data-page="${id}"]`);
+    }
+
+    /**
+     * 推入子页面（当前页滑出到左，新页滑入从右）
+     * @param {string} id - 页面 data-page 属性值
+     */
+    push(id) {
+        const page = this._getPage(id);
+        if (!page) {
+            console.warn(`UINavigationPage: 未找到页面 "${id}"`);
+            return;
+        }
+        const currentId = this.stack[this.stack.length - 1];
+        const currentPage = currentId ? this._getPage(currentId) : null;
+
+        // 如果已在栈顶，忽略
+        if (currentId === id) return;
+
+        // 当前页滑出到左
+        if (currentPage) {
+            currentPage.classList.remove('active');
+            currentPage.classList.add('slide-left');
+        }
+
+        // 新页滑入
+        page.classList.remove('slide-right');
+        page.classList.add('active');
+        this.stack.push(id);
+        this.onPush(id);
+
+        // 清理动画类
+        setTimeout(() => {
+            if (currentPage) currentPage.classList.remove('slide-left');
+        }, 400);
+    }
+
+    /**
+     * 返回到上一页（当前页滑出到右，上一页滑入从左）
+     */
+    pop() {
+        if (this.stack.length <= 1) return;
+
+        const currentId = this.stack.pop();
+        const prevId = this.stack[this.stack.length - 1];
+        const currentPage = this._getPage(currentId);
+        const prevPage = this._getPage(prevId);
+
+        if (currentPage) {
+            currentPage.classList.remove('active');
+            currentPage.classList.add('slide-right');
+        }
+        if (prevPage) {
+            prevPage.classList.remove('slide-left');
+            prevPage.classList.add('active');
+        }
+
+        this.onPop(currentId);
+
+        setTimeout(() => {
+            if (currentPage) currentPage.classList.remove('slide-right');
+        }, 400);
+    }
+
+    /** 直接跳转到指定页面（不保留中间历史） */
+    goTo(id) {
+        const page = this._getPage(id);
+        if (!page) return;
+        // 隐藏所有
+        this.pageContainer.querySelectorAll('.nav-page').forEach(p => {
+            p.classList.remove('active', 'slide-left', 'slide-right');
+        });
+        page.classList.add('active');
+        this.stack = [id];
+    }
+
+    /** 销毁 */
+    destroy() {
+        this.stack = [];
+        this.pageContainer.innerHTML = '';
+    }
+}
+
+
+// ==========================================
+// UIToggle — iOS 18 风格胶囊开关
+// 用法:
+//   new UIToggle({ el, initialValue: true, onChange: (val) => ... })
+// ==========================================
+class UIToggle {
+    /**
+     * @param {Object} opts
+     * @param {HTMLElement} opts.el          - 容器元素
+     * @param {boolean}     [opts.initialValue=false] - 初始开关状态
+     * @param {Function}    [opts.onChange]           - (value) => void 回调
+     * @param {boolean}     [opts.disabled=false]     - 是否禁用
+     */
+    constructor(opts = {}) {
+        if (!opts.el) throw new Error('UIToggle: el is required');
+        this.el = opts.el;
+        this.isOn = opts.initialValue !== undefined ? !!opts.initialValue : false;
+        this.onChange = opts.onChange || (() => {});
+        this.disabled = !!opts.disabled;
+        this._build();
+        this._bindEvents();
+    }
+
+    _build() {
+        this.el.innerHTML = `
+            <button class="ui-toggle ${this.isOn ? 'on' : ''}" type="button" ${this.disabled ? 'disabled' : ''}>
+                <span class="ui-toggle-track">
+                    <span class="ui-toggle-thumb"></span>
+                </span>
+            </button>
+        `;
+        this.btn = this.el.querySelector('.ui-toggle');
+    }
+
+    _bindEvents() {
+        this.btn.addEventListener('click', () => {
+            if (this.disabled) return;
+            this.toggle();
+        });
+    }
+
+    /**
+     * 设置开关状态
+     * @param {boolean} value
+     * @param {boolean} [silent=false] - 是否静默（不触发 onChange）
+     */
+    setValue(value, silent = false) {
+        const v = !!value;
+        if (v === this.isOn) return;
+        this.isOn = v;
+        this.btn.classList.toggle('on', v);
+        if (!silent) this.onChange(v);
+    }
+
+    /** 获取当前状态 */
+    getValue() {
+        return this.isOn;
+    }
+
+    /** 切换开关 */
+    toggle() {
+        this.setValue(!this.isOn);
+    }
+
+    /** 启用 */
+    enable() {
+        this.disabled = false;
+        this.btn.removeAttribute('disabled');
+    }
+
+    /** 禁用 */
+    disable() {
+        this.disabled = true;
+        this.btn.setAttribute('disabled', '');
+    }
+
+    destroy() {
+        this.el.innerHTML = '';
+    }
+}

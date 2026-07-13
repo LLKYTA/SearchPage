@@ -81,13 +81,11 @@
     flex-shrink: 0;
 }
 
-/* ========== 搜索卡片（玻璃质感浮动卡片） ========== */
+/* ========== 搜索卡片（玻璃质感浮动卡片，可展开） ========== */
 .search-card {
     display: flex;
-    align-items: center;
-    gap: 8px;
+    flex-direction: column;
     width: min(520px, 92vw);
-    padding: 6px 6px 6px 20px;
     background: rgba(255,255,255,0.78);
     backdrop-filter: blur(24px);
     -webkit-backdrop-filter: blur(24px);
@@ -98,8 +96,10 @@
         0 1px 4px rgba(0,0,0,0.04),
         inset 0 1px 0 rgba(255,255,255,0.6);
     transition: border-color 0.3s var(--spring-smooth),
-                box-shadow 0.3s var(--spring-smooth);
+                box-shadow 0.3s var(--spring-smooth),
+                border-radius 0.35s var(--spring-smooth);
     position: relative;
+    overflow: hidden;
     animation: searchCardIn 0.7s var(--spring-slide) 0.1s both;
 }
 
@@ -125,6 +125,71 @@
         0 8px 40px rgba(0,122,255,0.15),
         0 0 0 3px rgba(0,122,255,0.1),
         inset 0 1px 0 rgba(255,255,255,0.05);
+}
+
+/* 搜索卡片输入行（引擎切换 + 输入框 + 搜索按钮） */
+.search-card-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 6px 6px 20px;
+}
+
+/* 搜索卡片扩展区（最近搜索 & 建议，浮动面板，不影响小组件布局） */
+.search-card-expand {
+    position: absolute;
+    top: calc(100% - 24px); /* = 卡片底部 + 8px 间距 */
+    left: 50%;
+    transform: translateX(-50%) translateY(-8px) scale(0.96);
+    width: min(520px, 92vw);
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: var(--radius-dropdown);
+    box-shadow: 0 12px 48px var(--shadow-color), 0 2px 8px rgba(0,0,0,0.06);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s var(--spring-smooth),
+                transform 0.35s var(--spring-slide);
+    z-index: 200;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 0;
+}
+
+.search-card-expand.open {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0) scale(1);
+    pointer-events: auto;
+    padding: 6px 4px;
+}
+
+.search-card-expand .search-suggestions,
+.search-card-expand .search-recents {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    border-radius: 0;
+    padding: 0;
+}
+
+/* 浮动面板的小箭头指示器 */
+.search-card-expand::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    margin-left: -6px;
+    width: 12px;
+    height: 12px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-right: none;
+    border-bottom: none;
+    transform: rotate(45deg);
+}
+
+.dark .search-card-expand::before {
+    border-color: var(--card-border);
 }
 
 @keyframes searchCardIn {
@@ -262,7 +327,7 @@
     min-width: 140px;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.3s var(--spring-pop);
+    transition: all 0.3s var(--spring-pop), top 0.35s var(--spring-slide);
     z-index: 200;
 }
 
@@ -469,8 +534,10 @@
 
     .search-card {
         width: 94vw;
-        padding: 5px 5px 5px 16px;
         border-radius: 16px;
+    }
+    .search-card-row {
+        padding: 5px 5px 5px 16px;
     }
 
     .search-hero .engine-dropdown {
@@ -526,8 +593,10 @@
     }
 
     .search-card {
-        padding: 4px 4px 4px 14px;
         border-radius: 14px;
+    }
+    .search-card-row {
+        padding: 4px 4px 4px 14px;
     }
 
     .engine-pill {
@@ -568,3 +637,197 @@
         height: 18px;
     }
 }
+
+/* ========================================
+   搜索卡片扩展区 — 搜索建议 & 最近搜索
+   卡片向下自然展开，与卡片融为一体
+   ======================================== */
+.search-card-expand .suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s var(--spring-smooth);
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+    font-size: 13px;
+    color: var(--text-primary);
+}
+
+.search-card-expand .suggestion-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.search-card-expand .suggestion-item:active {
+    transform: scale(0.98);
+}
+
+.search-card-expand .suggestion-item .fa-search {
+    font-size: 12px;
+    color: var(--text-tertiary);
+    width: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.search-card-expand .suggestion-item .suggestion-query {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-card-expand .suggestion-item .suggestion-hl {
+    color: var(--ios-blue);
+    font-weight: 600;
+}
+
+.search-card-expand .suggestion-item .suggestion-engine {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+/* ===== 最近搜索 ===== */
+.search-card-expand .recent-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px 4px;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.search-card-expand .recent-clear-btn {
+    background: none;
+    border: none;
+    color: var(--ios-blue);
+    font-size: 12px;
+    font-family: inherit;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+    transition: background 0.15s;
+}
+
+.search-card-expand .recent-clear-btn:hover {
+    background: var(--accent-bg);
+}
+
+.search-card-expand .recent-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    cursor: pointer;
+    transition: background 0.15s var(--spring-smooth);
+    border: none;
+    background: transparent;
+    width: 100%;
+    font-family: inherit;
+    text-align: left;
+}
+
+.search-card-expand .recent-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.search-card-expand .recent-item:active {
+    transform: scale(0.98);
+}
+
+.search-card-expand .recent-item .fa {
+    font-size: 12px;
+    width: 18px;
+    text-align: center;
+    color: var(--text-secondary);
+    flex-shrink: 0;
+}
+
+.search-card-expand .recent-item-query {
+    flex: 1;
+    font-size: 13px;
+    color: var(--text-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.search-card-expand .recent-item-engine {
+    font-size: 10px;
+    color: var(--text-tertiary);
+    background: var(--bg-tertiary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    flex-shrink: 0;
+}
+
+.search-card-expand .recent-item-time {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    flex-shrink: 0;
+}
+
+/* ===== 空状态 ===== */
+.search-card-expand-empty {
+    padding: 20px;
+    text-align: center;
+    font-size: 13px;
+    color: var(--text-tertiary);
+}
+
+/* ===== 加载状态 ===== */
+.search-card-expand-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 16px;
+    color: var(--text-tertiary);
+    font-size: 12px;
+}
+
+.search-card-expand-loading .fa-spinner {
+    font-size: 14px;
+}
+
+/* ===== 搜索卡片扩展区响应式 ===== */
+@media (max-width: 768px) {
+    .search-card-expand {
+        width: min(480px, 94vw);
+    }
+    .search-card-expand .suggestion-item,
+    .search-card-expand .recent-item {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .search-card-expand {
+        width: 94vw;
+    }
+    .search-card-expand.open {
+        max-height: 300px;
+    }
+    .search-card-expand .recent-item-time {
+        display: none;
+    }
+}
+
+/* ========================================
+   iOS 18 风格页面入场动画序列
+   ======================================== */
+.widgets-area .widget:nth-child(8) { animation-delay: 0.64s; }

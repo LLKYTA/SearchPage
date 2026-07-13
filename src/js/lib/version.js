@@ -6,12 +6,12 @@
 const APP_VERSION = {
     // ==================== 版本信息 ====================
     major: 0,
-    minor: 9,
-    patch: 0,
+    minor: 10,
+    patch: 1,
 
     // 构建元信息（自动填充，手动更新时同步修改）
-    buildDate: '2026-07-12',
-    build: '20260712',
+    buildDate: '2026-07-14',
+    build: '20260714',
 
     // 应用标识
     name: 'KD起始页',
@@ -46,9 +46,9 @@ const APP_VERSION = {
     get aboutText() {
         return [
             `${this.description}`,
-            `小组件框架 · 拖拽排序 · 多引擎搜索`,
+            `拖拽管理 · 多引擎搜索 · 浮动搜索建议`,
             `Spring 动画 · 深色模式 · 热榜聚合`,
-            `可扩展 · 响应式布局 · 数据本地存储`
+            `最近搜索 · 关闭动画 · 响应式布局`
         ].join('<br>');
     },
 

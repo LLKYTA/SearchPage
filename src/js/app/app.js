@@ -14,6 +14,120 @@ const CONFIG = {
     currentTheme: 'auto'
 };
 
+// ========== 可扩展搜索引擎池 ==========
+const SEARCH_ENGINE_POOL = [
+    { id: 'google',     name: 'Google',     url: 'https://www.google.com/search?q=',     icon: 'fa-google' },
+    { id: 'bing',       name: 'Bing',       url: 'https://www.bing.com/search?q=',       icon: 'fa-edge' },
+    { id: 'baidu',      name: '百度',       url: 'https://www.baidu.com/s?wd=',          icon: 'fa-search' },
+    { id: 'duckduckgo', name: 'DuckDuckGo', url: 'https://duckduckgo.com/?q=',           icon: 'fa-search' },
+    { id: 'sogou',      name: '搜狗',       url: 'https://www.sogou.com/web?query=',    icon: 'fa-search' },
+    { id: '360',        name: '360搜索',    url: 'https://www.so.com/s?q=',             icon: 'fa-search' },
+    { id: 'yahoo',      name: 'Yahoo',      url: 'https://search.yahoo.com/search?p=',   icon: 'fa-yahoo' },
+];
+
+// ========== 搜索引擎辅助函数 ==========
+
+/** 获取已启用的引擎 ID 列表 */
+function getEnabledEngines() {
+    const saved = localStorage.getItem('search-enabled-engines');
+    if (saved) {
+        try { return JSON.parse(saved); }
+        catch { /* fall through */ }
+    }
+    // 首次加载：从旧 CONFIG 同步
+    return ['bing', 'google', 'baidu'];
+}
+
+/** 保存已启用的引擎 ID 列表 */
+function saveEnabledEngines(engines) {
+    localStorage.setItem('search-enabled-engines', JSON.stringify(engines));
+}
+
+/** 从引擎池中查找引擎配置 */
+function getEngineConfig(id) {
+    return SEARCH_ENGINE_POOL.find(e => e.id === id) ||
+           CONFIG.searchEngines[id] ||
+           { id, name: id, url: '', icon: 'fa-search' };
+}
+
+/** 获取引擎图标 */
+function getEngineIcon(id) {
+    const pool = SEARCH_ENGINE_POOL.find(e => e.id === id);
+    if (pool) return pool.icon;
+    const icons = { baidu: 'fa-search', google: 'fa-google', bing: 'fa-edge' };
+    return icons[id] || 'fa-search';
+}
+
+/** 动态渲染引擎下拉菜单 */
+function renderEngineDropdown() {
+    const dropdown = document.getElementById('engine-dropdown');
+    if (!dropdown) return;
+    const engines = getEnabledEngines();
+    dropdown.innerHTML = engines.map(id => {
+        const cfg = getEngineConfig(id);
+        const isActive = id === CONFIG.currentEngine;
+        return `<button class="engine-dropdown-item ${isActive ? 'active' : ''}"
+                        data-engine="${id}"
+                        onclick="selectEngineFromDropdown('${id}')">
+            <i class="fa ${cfg.icon || 'fa-search'}"></i> ${cfg.name}
+        </button>`;
+    }).join('') +
+    '<div class="engine-dropdown-divider"></div>' +
+    `<button class="engine-dropdown-item edit-btn" data-engine="__edit__" onclick="openEngineManager();closeEngineDropdown()">
+        <i class="fa fa-pencil"></i> 编辑
+    </button>` +
+    '<div class="engine-dropdown-divider"></div>' +
+    `<button class="engine-dropdown-item reset-btn" onclick="resetSearchSystem();closeEngineDropdown()">
+        <i class="fa fa-refresh"></i> 搜索系统重置
+    </button>`;
+}
+
+/** 从下拉菜单选择引擎 */
+window.selectEngineFromDropdown = function(engine) {
+    setSearchEngine(engine);
+    closeEngineDropdown();
+};
+
+/** 搜索系统重置 — 恢复所有搜索相关设置至出厂默认值 */
+window.resetSearchSystem = function() {
+    if (!confirm('确认重置搜索引擎设置？\n\n此操作将：\n• 恢复默认搜索引擎（百度、Google、Bing）\n• 清除最近搜索记录\n• 恢复搜索建议和最近搜索开关至开启状态')) return;
+
+    // 1. 恢复默认启用的搜索引擎
+    saveEnabledEngines(['bing', 'google', 'baidu']);
+
+    // 2. 恢复默认当前引擎（Bing）
+    CONFIG.currentEngine = 'bing';
+
+    // 3. 清除最近搜索
+    localStorage.removeItem('recent-searches');
+
+    // 4. 恢复搜索建议和最近搜索开关
+    localStorage.setItem('search-suggestions-enabled', 'true');
+    localStorage.setItem('recent-searches-enabled', 'true');
+
+    // 5. 持久化设置
+    saveSettings();
+
+    // 6. 更新界面 — 引擎显示
+    setSearchEngine('bing');
+    renderEngineDropdown();
+
+    // 7. 刷新设置页面的引擎下拉菜单
+    if (typeof refreshEngineDropdown === 'function') refreshEngineDropdown();
+
+    // 8. 关闭搜索卡片扩展区
+    closeSearchOverlay();
+
+    // 9. 同步 UI 开关组件（如果设置页面已初始化）
+    try {
+        if (window.__toggleSuggestions) window.__toggleSuggestions.setValue(true, true);
+        if (window.__toggleRecents) window.__toggleRecents.setValue(true, true);
+    } catch (e) { /* 静默 — 开关可能未初始化 */ }
+
+    // 10. 关闭设置弹窗（如果开着）
+    if (window.settingsModal) window.settingsModal.close();
+};
+
 // ========== 注册所有小组件 ==========
 WidgetFramework.register('clock', ClockWidget);
 WidgetFramework.register('weather', WeatherWidget);
@@ -29,6 +143,7 @@ let themeSegment, bgSegment;
 
 document.addEventListener('DOMContentLoaded', () => {
     WidgetFramework.init();
+    renderEngineDropdown();
     initSearch();
     initUISegments();
     initSettingsDropdowns();
@@ -56,6 +171,10 @@ function initSearch() {
     });
     document.getElementById('search-btn').addEventListener('click', performSearch);
 
+    // 初始化搜索建议和最近搜索
+    initSearchSuggestions();
+    initRecentSearches();
+
     // 搜索框自动获得焦点（桌面端），类似 iOS 18 的快速搜索
     if (window.innerWidth > 768 && !/Mobi|Android/i.test(navigator.userAgent)) {
         setTimeout(() => input.focus(), 1500);
@@ -65,7 +184,11 @@ function initSearch() {
 function performSearch() {
     const query = document.getElementById('search-input').value.trim();
     if (query) {
-        window.open(CONFIG.searchEngines[CONFIG.currentEngine].url + encodeURIComponent(query), '_blank');
+        // 记录最近搜索
+        saveRecentSearch(query, CONFIG.currentEngine);
+        // 关闭覆盖层
+        closeSearchOverlay();
+        window.open(getEngineConfig(CONFIG.currentEngine).url + encodeURIComponent(query), '_blank');
     }
 }
 
@@ -78,12 +201,13 @@ const ENGINE_ICONS = {
 
 function setSearchEngine(engine) {
     CONFIG.currentEngine = engine;
+    const cfg = getEngineConfig(engine);
 
     // 更新内联引擎切换钮
     const nameEl = document.getElementById('engine-inline-name');
     const iconEl = document.getElementById('engine-inline-icon');
-    if (nameEl) nameEl.textContent = CONFIG.searchEngines[engine].name;
-    if (iconEl) iconEl.className = 'fa ' + (ENGINE_ICONS[engine] || 'fa-search');
+    if (nameEl) nameEl.textContent = cfg.name;
+    if (iconEl) iconEl.className = 'fa ' + (cfg.icon || 'fa-search');
 
     // 更新下拉菜单
     document.querySelectorAll('.engine-dropdown-item').forEach(b => b.classList.remove('active'));
@@ -96,11 +220,251 @@ function setSearchEngine(engine) {
     if (oldByEngine) oldByEngine.classList.add('active');
 
     const hint = document.getElementById('current-engine');
-    if (hint) hint.textContent = CONFIG.searchEngines[engine].name;
+    if (hint) hint.textContent = cfg.name;
     if (typeof engineDropdown !== 'undefined') {
         engineDropdown.setValue(engine, true);
     }
     saveSettings();
+}
+
+// ========== 搜索卡片扩展区管理 ==========
+function openSearchOverlay() {
+    const overlay = document.getElementById('searchOverlay');
+    if (overlay) {
+        overlay.classList.add('open');
+    }
+}
+
+function closeSearchOverlay() {
+    const overlay = document.getElementById('searchOverlay');
+    if (overlay) {
+        overlay.classList.remove('open');
+        document.getElementById('searchSuggestions').style.display = 'none';
+        document.getElementById('searchRecents').style.display = 'none';
+    }
+    // 关闭引擎下拉（避免两个覆盖层同时显示）
+    closeEngineDropdown();
+}
+
+// 点击外部关闭搜索卡片扩展区
+document.addEventListener('click', function(e) {
+    const searchCard = document.getElementById('searchCard');
+    if (searchCard && !searchCard.contains(e.target)) {
+        closeSearchOverlay();
+    }
+});
+
+// ========== 搜索建议 ==========
+const SUGGESTION_CACHE = {};
+let suggestTimer = null;
+
+/**
+ * 获取搜索建议
+ * @param {string} engineId - 搜索引擎 ID
+ * @param {string} query - 搜索词
+ * @returns {Promise<string[]>} 建议列表
+ */
+async function getSuggestions(engineId, query) {
+    if (!query || query.length < 2) return [];
+    const cacheKey = engineId + ':' + query;
+    if (SUGGESTION_CACHE[cacheKey]) return SUGGESTION_CACHE[cacheKey];
+
+    try {
+        let url;
+        if (engineId === 'baidu') {
+            // Baidu 建议 API（需要 script tag JSONP 方式）
+            url = `https://suggestion.baidu.com/s?wd=${encodeURIComponent(query)}&cb=`;
+            const resp = await fetch(url);
+            if (!resp.ok) return [];
+            const text = await resp.text();
+            // Baidu 返回格式: window.baidu.sug({q:'...',p:false,s:['a','b',...]})
+            const match = text.match(/s:\s*(\[[^\]]+\])/);
+            if (match) {
+                const items = JSON.parse(match[1]);
+                SUGGESTION_CACHE[cacheKey] = items;
+                return items;
+            }
+            return [];
+        } else if (engineId === 'google') {
+            url = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`;
+            const resp = await fetch(url);
+            if (!resp.ok) return [];
+            const data = await resp.json();
+            const items = data[1] || [];
+            SUGGESTION_CACHE[cacheKey] = items;
+            return items;
+        }
+        // 其他引擎暂不支持建议
+        return [];
+    } catch (e) {
+        console.warn('获取搜索建议失败:', e);
+        return [];
+    }
+}
+
+function showSuggestions(items, query) {
+    const container = document.getElementById('searchSuggestions');
+    const recents = document.getElementById('searchRecents');
+    if (!items || !items.length) {
+        container.style.display = 'none';
+        return;
+    }
+    recents.style.display = 'none';
+    container.style.display = 'block';
+    openSearchOverlay();
+
+    container.innerHTML = items.map(item => {
+        const hl = item.replace(new RegExp(escapeRegExp(query), 'gi'),
+            m => `<span class="suggestion-hl">${escapeHtml(m)}</span>`);
+        return `<button class="suggestion-item" onclick="fillSuggestion('${escapeHtml(item)}')">
+            <i class="fa fa-search"></i>
+            <span class="suggestion-query">${hl}</span>
+        </button>`;
+    }).join('');
+}
+
+/** 点击建议项 */
+window.fillSuggestion = function(query) {
+    const input = document.getElementById('search-input');
+    input.value = query;
+    closeSearchOverlay();
+    performSearch();
+};
+
+function initSearchSuggestions() {
+    const input = document.getElementById('search-input');
+    input.addEventListener('input', function() {
+        const query = this.value.trim();
+        clearTimeout(suggestTimer);
+        // 自动填充或引擎切换时不要触发
+        if (this._filling) {
+            this._filling = false;
+            return;
+        }
+        if (query.length < 2) {
+            closeSearchOverlay();
+            document.getElementById('searchSuggestions').style.display = 'none';
+            return;
+        }
+        suggestTimer = setTimeout(async () => {
+            const suggestionsEnabled = localStorage.getItem('search-suggestions-enabled') !== 'false';
+            if (!suggestionsEnabled) return;
+            const items = await getSuggestions(CONFIG.currentEngine, query);
+            showSuggestions(items, query);
+        }, 200);
+    });
+}
+
+// ========== 最近搜索 ==========
+
+function getRecentSearches() {
+    try {
+        return JSON.parse(localStorage.getItem('recent-searches') || '[]');
+    } catch { return []; }
+}
+
+function saveRecentSearch(query, engine) {
+    const recents = getRecentSearches();
+    // 去重：有相同 query+engine 的移到最前
+    const idx = recents.findIndex(r => r.query === query && r.engine === engine);
+    if (idx >= 0) recents.splice(idx, 1);
+    const cfg = getEngineConfig(engine);
+    recents.unshift({
+        query,
+        engine,
+        engineName: cfg.name,
+        timestamp: Date.now()
+    });
+    // 限制最多 10 条
+    if (recents.length > 10) recents.length = 10;
+    localStorage.setItem('recent-searches', JSON.stringify(recents));
+}
+
+function showRecentSearches() {
+    const recentEnabled = localStorage.getItem('recent-searches-enabled') !== 'false';
+    if (!recentEnabled) return;
+    const recents = getRecentSearches();
+    const container = document.getElementById('searchRecents');
+    const suggestions = document.getElementById('searchSuggestions');
+    if (!recents.length) {
+        container.style.display = 'none';
+        return;
+    }
+
+    suggestions.style.display = 'none';
+    container.style.display = 'block';
+    openSearchOverlay();
+
+    container.innerHTML = `
+        <div class="recent-header">
+            <span>最近搜索</span>
+            <button class="recent-clear-btn" onclick="clearRecentSearches()">清除</button>
+        </div>
+        ${recents.map(r => {
+            const cfg = getEngineConfig(r.engine);
+            const timeStr = formatRecentTime(r.timestamp);
+            return `<button class="recent-item" onclick="fillRecentSearch('${r.engine}', '${escapeHtml(r.query)}')">
+                <i class="fa ${cfg.icon || 'fa-search'}"></i>
+                <span class="recent-item-query">${escapeHtml(r.query)}</span>
+                <span class="recent-item-engine">${escapeHtml(r.engineName)}</span>
+                <span class="recent-item-time">${timeStr}</span>
+            </button>`;
+        }).join('')}
+    `;
+}
+
+/** 点击最近搜索项 */
+window.fillRecentSearch = function(engine, query) {
+    if (engine !== CONFIG.currentEngine) {
+        setSearchEngine(engine);
+    }
+    const input = document.getElementById('search-input');
+    input._filling = true;
+    input.value = query;
+    closeSearchOverlay();
+    performSearch();
+};
+
+window.clearRecentSearches = function() {
+    localStorage.removeItem('recent-searches');
+    closeSearchOverlay();
+    document.getElementById('searchRecents').style.display = 'none';
+};
+
+function formatRecentTime(timestamp) {
+    const diff = Date.now() - timestamp;
+    if (diff < 60000) return '刚刚';
+    if (diff < 3600000) return Math.floor(diff / 60000) + '分钟前';
+    if (diff < 86400000) return Math.floor(diff / 3600000) + '小时前';
+    const d = new Date(timestamp);
+    return (d.getMonth() + 1) + '/' + d.getDate();
+}
+
+function initRecentSearches() {
+    const input = document.getElementById('search-input');
+    input.addEventListener('focus', function() {
+        if (!this.value.trim()) {
+            showRecentSearches();
+        }
+    });
+    input.addEventListener('input', function() {
+        if (this.value.trim()) {
+            document.getElementById('searchRecents').style.display = 'none';
+        }
+    });
+    // 点击输入框关闭引擎下拉
+    input.addEventListener('click', function(e) {
+        e.stopPropagation();
+        closeEngineDropdown();
+        if (!this.value.trim()) {
+            showRecentSearches();
+        }
+    });
+}
+
+// ========== 工具函数 ==========
+function escapeRegExp(string) {
+    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // ========== 初始化 UI 组件（框架） ==========
@@ -133,8 +497,14 @@ function initUISegments() {
 function initUIModals() {
     // 设置弹窗
     window.settingsModal = new UIModal(document.getElementById('settings-modal'), {
-        closeOnOverlay: false
+        closeOnOverlay: false,
+        onOpen: () => {
+            // 打开设置时刷新引擎下拉（可能已被管理弹窗变更）
+            if (typeof refreshEngineDropdown === 'function') refreshEngineDropdown();
+        }
     });
+    // 设置导航页面（放在 settings-body 内，需等 settingsModal 初始化）
+    initSettingsNavigation();
     // 关于弹窗
     window.aboutModal = new UIModal(document.getElementById('about-modal'));
     // 管理弹窗
@@ -225,7 +595,7 @@ function initGallerySwipe() {
             modal.style.background = 'rgba(0,0,0,0)';
             modal.style.backdropFilter = 'blur(0px)';
             setTimeout(() => {
-                window.galleryModal.close();
+                window.galleryModal.close(false); // swipe 已处理动画
                 cleanup();
             }, 280);
         } else {
@@ -274,6 +644,10 @@ function initGallerySwipe() {
 function toggleEngineDropdown() {
     const dropdown = document.getElementById('engine-dropdown');
     dropdown.classList.toggle('open');
+    // 引擎下拉打开时关闭搜索覆盖层
+    if (dropdown.classList.contains('open')) {
+        closeSearchOverlay();
+    }
 }
 
 function closeEngineDropdown() {

@@ -1,5 +1,5 @@
 /* ==========================================
-   settings.js - 设置弹窗、热榜来源、背景、词库
+   settings.js - 设置弹窗、搜索设置、热榜、词库
    ========================================== */
 
 // ========== 设置弹窗 ==========
@@ -16,18 +16,20 @@ function setBackground(type) {
     localStorage.setItem('background', type);
 }
 
-// ========== 统一初始化设置中的下拉菜单 ==========
+// ========== 统一初始化设置中的下拉菜单和导航 ==========
 let engineDropdown, hotboardDropdown, wordDropdown;
+let navPage = null;
+let toggleSuggestions, toggleRecents;
 
 function initSettingsDropdowns() {
-    // 引擎选择
+    // 引擎选择（只显示已启用的引擎）
+    const enabled = getEnabledEngines();
     engineDropdown = new UIDropdown({
         el: document.getElementById('settings-engine-dd'),
-        items: [
-            { value: 'bing',   label: 'Bing',   icon: 'fa-edge' },
-            { value: 'baidu',  label: '百度',    icon: 'fa-search' },
-            { value: 'google', label: 'Google',  icon: 'fa-google' }
-        ],
+        items: enabled.map(id => {
+            const cfg = getEngineConfig(id);
+            return { value: id, label: cfg.name, icon: cfg.icon || 'fa-search' };
+        }),
         initialValue: CONFIG.currentEngine,
         onChange: (value) => setSearchEngine(value)
     });
@@ -79,6 +81,81 @@ function initSettingsDropdowns() {
             }
         }
     });
+}
+
+/** 当启用的引擎列表变化时，更新设置中的引擎下拉菜单 */
+function refreshEngineDropdown() {
+    if (!engineDropdown) return;
+    const enabled = getEnabledEngines();
+    const items = enabled.map(id => {
+        const cfg = getEngineConfig(id);
+        return { value: id, label: cfg.name, icon: cfg.icon || 'fa-search' };
+    });
+    engineDropdown.updateItems(items);
+    // 如果当前引擎不在列表中，切换到第一个
+    if (!enabled.includes(CONFIG.currentEngine) && enabled.length > 0) {
+        engineDropdown.setValue(enabled[0], true);
+    } else {
+        engineDropdown.setValue(CONFIG.currentEngine, true);
+    }
+}
+
+// ========== 设置导航页面 ==========
+
+function initSettingsNavigation() {
+    const body = document.querySelector('#settings-modal .settings-body');
+    if (!body) return;
+    navPage = new UINavigationPage(body, {
+        onPush: (pageId) => {
+            if (pageId === 'search') {
+                // 初始化搜索设置页面
+                initSearchSettingsPage();
+            }
+        },
+        onPop: () => {
+            // 返回到根页面时刷新引擎下拉（启停可能已变更）
+            refreshEngineDropdown();
+        }
+    });
+    window.navPage = navPage;
+}
+
+// ========== 搜索设置 ==========
+
+function openSearchSettings() {
+    if (!navPage) initSettingsNavigation();
+    if (navPage) navPage.push('search');
+}
+
+function initSearchSettingsPage() {
+    // 只初始化一次
+    if (toggleSuggestions) return;
+
+    // 搜索建议开关
+    const suggestEl = document.getElementById('toggle-suggestions');
+    if (suggestEl) {
+        toggleSuggestions = new UIToggle({
+            el: suggestEl,
+            initialValue: localStorage.getItem('search-suggestions-enabled') !== 'false',
+            onChange: (val) => {
+                localStorage.setItem('search-suggestions-enabled', val);
+            }
+        });
+        window.__toggleSuggestions = toggleSuggestions;
+    }
+
+    // 最近搜索开关
+    const recentsEl = document.getElementById('toggle-recents');
+    if (recentsEl) {
+        toggleRecents = new UIToggle({
+            el: recentsEl,
+            initialValue: localStorage.getItem('recent-searches-enabled') !== 'false',
+            onChange: (val) => {
+                localStorage.setItem('recent-searches-enabled', val);
+            }
+        });
+        window.__toggleRecents = toggleRecents;
+    }
 }
 
 function closeWidgetGallery() {
