@@ -99,7 +99,7 @@
                 box-shadow 0.3s var(--spring-smooth),
                 border-radius 0.35s var(--spring-smooth);
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden removed — 浮动面板和下拉菜单需要流出卡片边界 */
     animation: searchCardIn 0.7s var(--spring-slide) 0.1s both;
 }
 
@@ -138,10 +138,9 @@
 /* 搜索卡片扩展区（最近搜索 & 建议，浮动面板，不影响小组件布局） */
 .search-card-expand {
     position: absolute;
-    top: calc(100% - 24px); /* = 卡片底部 + 8px 间距 */
-    left: 50%;
-    transform: translateX(-50%) translateY(-8px) scale(0.96);
-    width: min(520px, 92vw);
+    top: calc(100% + 8px);
+    left: 0;
+    width: 100%;        /* 与卡片同宽，跟随响应式 */
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-dropdown);
@@ -150,6 +149,7 @@
     pointer-events: none;
     transition: opacity 0.3s var(--spring-smooth),
                 transform 0.35s var(--spring-slide);
+    transform: translateY(-8px) scale(0.96);
     z-index: 200;
     max-height: 400px;
     overflow-y: auto;
@@ -158,7 +158,7 @@
 
 .search-card-expand.open {
     opacity: 1;
-    transform: translateX(-50%) translateY(0) scale(1);
+    transform: translateY(0) scale(1);
     pointer-events: auto;
     padding: 6px 4px;
 }
@@ -311,14 +311,12 @@
     box-shadow: 0 1px 6px rgba(0,122,255,0.2);
 }
 
-/* 引擎下拉菜单（从搜索卡片下方展开） */
+/* 引擎下拉菜单（从搜索卡片下方展开，与卡片同宽） */
 .search-hero .engine-dropdown {
     position: absolute;
     top: calc(100% + 8px);
-    left: 50%;
-    transform: translateX(-50%) scale(0.88) translateY(-6px);
-    transform-origin: top center;
-    width: min(520px, 92vw);
+    left: 0;
+    width: 100%;
     background: var(--card-bg);
     border: 1px solid var(--card-border);
     border-radius: var(--radius-dropdown);
@@ -327,13 +325,16 @@
     min-width: 140px;
     opacity: 0;
     pointer-events: none;
-    transition: all 0.3s var(--spring-pop), top 0.35s var(--spring-slide);
+    transform: translateY(-6px) scale(0.88);
+    transform-origin: top center;
+    transition: opacity 0.25s var(--spring-pop),
+                transform 0.3s var(--spring-pop);
     z-index: 200;
 }
 
 .search-hero .engine-dropdown.open {
     opacity: 1;
-    transform: translateX(-50%) scale(1) translateY(0);
+    transform: translateY(0) scale(1);
     pointer-events: auto;
     z-index: 99999 !important;
 }
@@ -805,9 +806,6 @@
 
 /* ===== 搜索卡片扩展区响应式 ===== */
 @media (max-width: 768px) {
-    .search-card-expand {
-        width: min(480px, 94vw);
-    }
     .search-card-expand .suggestion-item,
     .search-card-expand .recent-item {
         padding: 8px 10px;
@@ -816,9 +814,6 @@
 }
 
 @media (max-width: 480px) {
-    .search-card-expand {
-        width: 94vw;
-    }
     .search-card-expand.open {
         max-height: 300px;
     }

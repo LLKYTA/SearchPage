@@ -49,14 +49,14 @@
             <i class="fa fa-arrow-right"></i>
           </button>
         </div>
+        <!-- 卡片扩展区（最近搜索 & 搜索建议，浮动面板，不影响小组件布局） -->
+        <div class="search-card-expand" id="searchOverlay">
+          <div class="search-suggestions" id="searchSuggestions" style="display:none;"></div>
+          <div class="search-recents" id="searchRecents" style="display:none;"></div>
+        </div>
+        <!-- 引擎下拉菜单（JS 动态渲染，与卡片同宽） -->
+        <div class="engine-dropdown" id="engine-dropdown"></div>
       </div>
-      <!-- 卡片扩展区（最近搜索 & 搜索建议，浮动面板，不影响小组件布局） -->
-      <div class="search-card-expand" id="searchOverlay">
-        <div class="search-suggestions" id="searchSuggestions" style="display:none;"></div>
-        <div class="search-recents" id="searchRecents" style="display:none;"></div>
-      </div>
-      <!-- 引擎下拉菜单（JS 动态渲染） -->
-      <div class="engine-dropdown" id="engine-dropdown"></div>
     </div>
 
     <!-- 小组件区域 -->

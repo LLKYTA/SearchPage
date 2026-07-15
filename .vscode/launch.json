@@ -9,6 +9,12 @@
             "request": "launch",
             "name": "Open index.html",
             "url": "file:///d%3A/github/SearchPage/index.html"
+        },
+        {
+            "type": "java",
+            "name": "Launch Java Program",
+            "request": "launch",
+            "mainClass": ""
         }
         
     ]
