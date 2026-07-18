@@ -222,6 +222,11 @@ function initWallpaperSettings() {
     WallpaperSystem.setBlur(parseInt(blurSlider.value));
   });
 
+  // 从 WallpaperSystem 读取已存储的模糊值初始化滑块
+  const blurCfg = WallpaperSystem.getConfig();
+  blurSlider.value = blurCfg.blur ?? 24;
+  blurValue.textContent = blurSlider.value + 'px';
+
   // 色调选择器
   renderTintPicker();
 
