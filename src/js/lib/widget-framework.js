@@ -416,6 +416,8 @@ class Widget {
     div.dataset.widgetType = this.constructor.type;
     div.innerHTML = `<div class="widget-content"></div>`;
     this.element = div;
+    // 初始化移动端长按手势
+    this._initLongPress();
     return div;
   }
 
@@ -521,7 +523,80 @@ class Widget {
     WidgetContextMenu.show(event, this, this.getContextMenuItems());
   }
 
+  /**
+   * 初始化移动端长按手势
+   * 通过位移阈值（10px）区分：按住不动→菜单，按住移动→拖拽
+   */
+  _initLongPress() {
+    const el = this.element;
+    if (!el) return;
+    let longPressTimer = null;
+    let startX = -1, startY = -1;
+    const THRESHOLD = 10;    // 位移阈值，超过则取消长按
+    const DELAY = 500;       // 长按触发延迟（ms）
+
+    const onTouchStart = (e) => {
+      if (WidgetContextMenu.isVisible()) return;
+      const t = e.touches[0];
+      startX = t.clientX;
+      startY = t.clientY;
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        // 震动反馈
+        if (navigator.vibrate) navigator.vibrate(10);
+        // 构造一个类似 MouseEvent 的事件对象传给 onContextMenu
+        const fakeEvent = {
+          clientX: startX,
+          clientY: startY,
+          preventDefault: () => e.preventDefault(),
+          target: el,
+        };
+        // 阻止浏览器原生 contextmenu
+        el.addEventListener('contextmenu', function preventNative(e) {
+          e.preventDefault();
+          el.removeEventListener('contextmenu', preventNative);
+        }, { once: true });
+        this.onContextMenu(fakeEvent);
+      }, DELAY);
+    };
+
+    const onTouchMove = (e) => {
+      if (longPressTimer === null) return;
+      const t = e.touches[0];
+      const dx = Math.abs(t.clientX - startX);
+      const dy = Math.abs(t.clientY - startY);
+      if (dx > THRESHOLD || dy > THRESHOLD) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
+    const onTouchEnd = () => {
+      if (longPressTimer !== null) {
+        clearTimeout(longPressTimer);
+        longPressTimer = null;
+      }
+    };
+
+    el.addEventListener('touchstart', onTouchStart, { passive: true });
+    el.addEventListener('touchmove', onTouchMove, { passive: true });
+    el.addEventListener('touchend', onTouchEnd, { passive: true });
+    el.addEventListener('touchcancel', onTouchEnd, { passive: true });
+
+    // 保存引用以备 destroy 时清理
+    this._longPressCleanup = () => {
+      el.removeEventListener('touchstart', onTouchStart);
+      el.removeEventListener('touchmove', onTouchMove);
+      el.removeEventListener('touchend', onTouchEnd);
+      el.removeEventListener('touchcancel', onTouchEnd);
+    };
+  }
+
   destroy() {
+    if (this._longPressCleanup) {
+      this._longPressCleanup();
+      this._longPressCleanup = null;
+    }
     if (WidgetContextMenu._activeWidget === this) {
         WidgetContextMenu.dismiss();
     }
