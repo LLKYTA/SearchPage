@@ -947,7 +947,7 @@ class WidgetArea {
       const grid = new GridTracker(cols);
       group.widgets.forEach(item => {
         let size = item.size;
-        if (cols === 1) size = 'sm';
+        if (cols === 1 && size === 'lg') size = 'md';
         else if (cols === 2 && size === 'lg') size = 'md';
         const pos = grid.findNextAvailable(size);
         item.position = { col: pos.col, row: pos.row };
