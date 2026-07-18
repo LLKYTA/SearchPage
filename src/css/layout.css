@@ -55,6 +55,62 @@
     75% { transform: translate(20px, 30px) scale(1.02); }
 }
 
+/* ========================================
+   壁纸背景系统 — iOS 18 层级堆叠
+   wallpaper.js 将层级注入 #wallpaper-layers
+   ======================================== */
+
+/* 壁纸容器 — 全屏固定底层 */
+#wallpaper-layers {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 通用层级 — 每个层都填满容器 */
+.wp-layer {
+    position: absolute;
+    inset: 0;
+}
+
+/* L0: 壁纸图片/渐变背景 — 铺满、居中、不重复 */
+.wp-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* L1: 模糊层 — 对底层图片施加毛玻璃模糊
+   默认值 24px，由 wallpaper.js 动态控制 */
+.wp-blur {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+/* L2: 色调覆盖层 — 叠加半透明色，降低图片杂乱感 */
+.wp-tint {
+    background: var(--tint-overlay);
+    transition: background 0.5s ease;
+}
+
+.dark .wp-tint {
+    background: var(--dark-tint-overlay);
+}
+
+/* L3: 暗色覆盖层 — 暗色模式下加深背景
+   WallpaperSystem.updateDarkOverlay() 动态控制
+   JS 设置 inline background，CSS 提供过渡与暗色默认值 */
+.wp-dark {
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.5s ease;
+}
+
+.dark .wp-dark {
+    background: rgba(0, 0, 0, 0.25);
+}
+
 /* ========== 主容器 ========== */
 .container-main {
     position: relative;
