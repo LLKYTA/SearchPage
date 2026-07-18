@@ -1040,6 +1040,11 @@ class WidgetArea {
         chosenClass: 'widget-chosen',
         dragClass: 'widget-drag',
         onChoose: (evt) => {
+          // 如果上下文菜单已打开，不启动拖拽视觉提示
+          if (WidgetContextMenu.isVisible()) {
+            evt.item.classList.remove('widget-waiting');
+            return;
+          }
           evt.item.classList.add('widget-waiting');
           if (navigator.vibrate) navigator.vibrate(10);
         },
@@ -1047,6 +1052,9 @@ class WidgetArea {
           evt.item.classList.remove('widget-waiting');
         },
         onStart: (evt) => {
+          if (WidgetContextMenu.isVisible()) {
+            WidgetContextMenu.dismiss();
+          }
           evt.item.classList.remove('widget-waiting');
           evt.item.classList.add('widget-dragging');
         },
