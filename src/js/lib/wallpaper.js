@@ -32,14 +32,12 @@ const WallpaperSystem = {
 
   init() {
     this.loadConfig();
-    this.apply();
+    this._refreshIfNeeded(); // 内部会调用 apply()
     // 监听暗色模式变化，更新覆盖层
     const observer = new MutationObserver(() => {
       this.updateDarkOverlay();
     });
     observer.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
-    // 每日首次加载时尝试刷新 Bing 壁纸
-    this._refreshIfNeeded();
   },
 
   loadConfig() {
@@ -54,19 +52,25 @@ const WallpaperSystem = {
   },
 
   async apply() {
-    let bgImage = null;
-    const src = this.config.source;
+    if (this._applying) return;
+    this._applying = true;
+    try {
+      let bgImage = null;
+      const src = this.config.source;
 
-    if (src === 'bing') {
-      bgImage = await this._getBingImage();
-    } else if (src === 'preset') {
-      bgImage = null; // 预设使用 gradient
-    } else if (src === 'custom' && this.config.customImage) {
-      bgImage = this.config.customImage;
+      if (src === 'bing') {
+        bgImage = await this._getBingImage();
+      } else if (src === 'preset') {
+        bgImage = null; // 预设使用 gradient
+      } else if (src === 'custom' && this.config.customImage) {
+        bgImage = this.config.customImage;
+      }
+
+      this._renderLayers(bgImage);
+      this.saveConfig();
+    } finally {
+      this._applying = false;
     }
-
-    this._renderLayers(bgImage);
-    this.saveConfig();
   },
 
   /** 获取 Bing 每日一图 URL（含 localStorage 缓存） */
@@ -123,7 +127,7 @@ const WallpaperSystem = {
     const imgLayer = document.createElement('div');
     imgLayer.className = 'wp-layer wp-image';
     if (bgImage) {
-      imgLayer.style.backgroundImage = `url(${JSON.stringify(bgImage)}`;
+      imgLayer.style.backgroundImage = `url(${JSON.stringify(bgImage)})`;
       imgLayer.style.backgroundSize = 'cover';
       imgLayer.style.backgroundPosition = 'center';
       imgLayer.style.backgroundRepeat = 'no-repeat';
