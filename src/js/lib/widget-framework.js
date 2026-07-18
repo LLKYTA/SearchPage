@@ -603,6 +603,12 @@ class WidgetArea {
       dom.dataset.position = JSON.stringify(pos);
 
       this.container.appendChild(dom);
+
+      // 绑定右键/长按上下文菜单
+      dom.addEventListener('contextmenu', (e) => {
+          widget.onContextMenu(e);
+      });
+
       widget.render();
 
       // FLIP 动画：从旧位置过渡到新位置
@@ -812,14 +818,14 @@ class WidgetArea {
     this.sortableInstance = new Sortable(this.container, {
       animation: 300,
       easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-      handle: '.widget-header, .widget-content',
+      handle: '.widget-content',
       draggable: '.widget',
 
       delay: 400,
       delayOnTouchOnly: true,
       touchStartThreshold: 3,
 
-      filter: '.widget-size-btn, .widget-delete-btn, .widget-header-add-btn',
+      filter: '',
       preventOnFilter: false,
 
       ghostClass: 'widget-ghost',
