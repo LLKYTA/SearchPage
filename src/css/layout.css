@@ -4,14 +4,75 @@
    底部浮动操作栏
    ======================================== */
 
-/* ========== 背景渐变与动画 ========== */
-.bg-gradient {
+/* ========================================
+   壁纸背景系统 — iOS 18 层级堆叠
+   wallpaper.js 将层级注入 #wallpaper-layers
+   ======================================== */
+
+/* 壁纸容器 — 全屏固定底层 */
+#wallpaper-layers {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+/* 通用层级 — 每个层都填满容器 */
+.wp-layer {
+    position: absolute;
+    inset: 0;
+}
+
+/* L0: 壁纸图片/渐变背景 — 铺满、居中、不重复 */
+.wp-image {
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
+/* L1: 模糊层 — 对底层图片施加毛玻璃模糊
+   默认值 24px，由 wallpaper.js 动态控制 */
+.wp-blur {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+}
+
+/* L2: 色调覆盖层 — 叠加半透明色，降低图片杂乱感 */
+.wp-tint {
+    background: var(--tint-overlay);
+    transition: background 0.5s ease;
+}
+
+.dark .wp-tint {
+    background: var(--dark-tint-overlay);
+}
+
+/* L3: 暗色覆盖层 — 暗色模式下加深背景
+   WallpaperSystem.updateDarkOverlay() 动态控制
+   JS 设置 inline background，CSS 提供过渡与暗色默认值 */
+.wp-dark {
+    background: rgba(0, 0, 0, 0);
+    transition: background 0.5s ease;
+}
+
+.dark .wp-dark {
+    background: rgba(0, 0, 0, 0.25);
+}
+
+/* ========== 壁纸就绪状态切换 ========== */
+body.wallpaper-ready #wallpaper-layers {
+    display: block;
+}
+
+/* ========== 备用背景（壁纸加载失败或未设置时） ========== */
+body:not(.wallpaper-ready) {
     background: linear-gradient(135deg, #E0EAFF 0%, #F5E6FF 25%, #FFE6F0 50%, #FFF0E6 75%, #E6FFFA 100%);
     background-size: 400% 400%;
     animation: gradientShift 20s ease infinite;
 }
 
-.dark .bg-gradient {
+.dark body:not(.wallpaper-ready) {
     background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 25%, #312E81 50%, #1E3A8A 75%, #0F172A 100%);
     background-size: 400% 400%;
 }
@@ -19,40 +80,6 @@
 @keyframes gradientShift {
     0%, 100% { background-position: 0% 50%; }
     50% { background-position: 100% 50%; }
-}
-
-/* ========== 装饰元素 ========== */
-.bg-decoration {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.bg-bubble {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.3;
-    mix-blend-mode: multiply;
-    animation: float 20s ease-in-out infinite;
-}
-
-.dark .bg-bubble {
-    mix-blend-mode: soft-light;
-    opacity: 0.15;
-}
-
-.bg-bubble-1 { width: 400px; height: 400px; background: #A78BFA; top: -150px; right: -100px; animation-delay: 0s; }
-.bg-bubble-2 { width: 350px; height: 350px; background: #F472B6; top: 20%; left: -100px; animation-delay: -5s; }
-.bg-bubble-3 { width: 380px; height: 380px; background: #60A5FA; bottom: -100px; right: 10%; animation-delay: -10s; }
-
-@keyframes float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(30px, -30px) scale(1.05); }
-    50% { transform: translate(-20px, 20px) scale(0.95); }
-    75% { transform: translate(20px, 30px) scale(1.02); }
 }
 
 /* ========== 主容器 ========== */
@@ -86,15 +113,12 @@
     display: flex;
     flex-direction: column;
     width: min(520px, 92vw);
-    background: rgba(255,255,255,0.78);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 0.5px solid rgba(255,255,255,0.5);
+    background: var(--glass-search-bg);
+    backdrop-filter: blur(var(--glass-search-blur));
+    -webkit-backdrop-filter: blur(var(--glass-search-blur));
+    border: 0.5px solid var(--glass-card-border);
     border-radius: 18px;
-    box-shadow:
-        0 8px 40px rgba(0,0,0,0.06),
-        0 1px 4px rgba(0,0,0,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.6);
+    box-shadow: var(--shadow-glass);
     transition: border-color 0.3s var(--spring-smooth),
                 box-shadow 0.3s var(--spring-smooth),
                 border-radius 0.35s var(--spring-smooth);
@@ -104,12 +128,9 @@
 }
 
 .dark .search-card {
-    background: rgba(40,42,54,0.82);
-    border-color: rgba(255,255,255,0.08);
-    box-shadow:
-        0 8px 40px rgba(0,0,0,0.2),
-        0 1px 4px rgba(0,0,0,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+    background: var(--dark-glass-card-bg);
+    border-color: var(--dark-glass-card-border);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
 }
 
 .search-card {
@@ -124,15 +145,13 @@
     border-color: var(--ios-blue);
     box-shadow:
         0 8px 40px rgba(0,122,255,0.12),
-        0 0 0 3px rgba(0,122,255,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.6);
+        0 0 0 3px rgba(0,122,255,0.08);
 }
 
 .dark .search-card:focus-within {
     box-shadow:
         0 8px 40px rgba(0,122,255,0.15),
-        0 0 0 3px rgba(0,122,255,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 0 0 3px rgba(0,122,255,0.1);
 }
 
 /* 搜索卡片输入行（引擎切换 + 输入框 + 搜索按钮） */
@@ -833,4 +852,3 @@
 /* ========================================
    iOS 18 风格页面入场动画序列
    ======================================== */
-.widgets-area .widget:nth-child(8) { animation-delay: 0.64s; }

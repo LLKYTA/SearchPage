@@ -24,6 +24,25 @@
      --border-color: #E5E7EB;
      --shadow-color: rgba(0, 0, 0, 0.08);
 
+     /* iOS 18 毛玻璃卡片体系（壁纸模式） */
+     --glass-card-bg: rgba(255, 255, 255, 0.12);
+     --glass-card-border: rgba(255, 255, 255, 0.08);
+     --glass-card-blur: 30px;
+     --glass-card-hover-bg: rgba(255, 255, 255, 0.18);
+
+     /* 搜索卡片（更高透明度） */
+     --glass-search-bg: rgba(255, 255, 255, 0.15);
+     --glass-search-blur: 40px;
+
+     /* 壁纸色调层 */
+     --tint-overlay: rgba(0, 0, 0, 0.12);
+     --dark-tint-overlay: rgba(0, 0, 0, 0.25);
+
+     /* 阴影体系 */
+     --shadow-glass: 0 4px 20px rgba(0, 0, 0, 0.06);
+     --shadow-glass-hover: 0 8px 32px rgba(0, 0, 0, 0.10);
+     --shadow-glass-drag: 0 20px 50px rgba(0, 0, 0, 0.15);
+
      /* 统一卡片体系（扁平现代） */
      --card-bg: #FFFFFF;
      --card-border: #E8EAED;
@@ -50,7 +69,7 @@
      --radius-card: 18px;
      --radius-dropdown: 14px;
      
-     --widget-padding: 20px;
+     --widget-padding: 16px 20px;
      --widget-gap: 20px;
      
      /* ----- iOS 18 Spring 动画曲线 ----- */
@@ -86,6 +105,12 @@
      
      --border-color: var(--dark-border-color);
      --shadow-color: var(--dark-shadow-color);
+
+     /* 暗色毛玻璃 */
+     --dark-glass-card-bg: rgba(40, 42, 54, 0.65);
+     --dark-glass-card-border: rgba(255, 255, 255, 0.06);
+     --glass-card-bg: var(--dark-glass-card-bg);
+     --glass-card-border: var(--dark-glass-card-border);
 
      /* 统一卡片体系（暗色） */
      --card-bg: var(--dark-bg-secondary);

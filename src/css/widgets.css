@@ -5,26 +5,29 @@
 
 /* ========== 小组件网格（自由网格布局） ========== */
 .widgets-area {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    grid-auto-rows: auto;
-    gap: var(--widget-gap);
-    min-height: 80px;
-    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    flex-shrink: 0;
 }
 
 /* 尺寸类名保留供内容样式使用，grid-column 由 JS 内联控制 */
 
 /* ========== 小组件通用 - iOS 18 卡片 ========== */
 .widget {
-    background: var(--card-bg);
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(var(--glass-card-blur));
+    -webkit-backdrop-filter: blur(var(--glass-card-blur));
     border-radius: var(--radius-card);
-    padding: 16px 20px;
+    padding: var(--widget-padding);
     cursor: grab;
     user-select: none;
     position: relative;
-    border: 1px solid var(--card-border);
-    transition: box-shadow 0.4s var(--spring-smooth), border-color 0.4s var(--spring-smooth);
+    border: 0.5px solid var(--glass-card-border);
+    box-shadow: var(--shadow-glass);
+    transition: box-shadow 0.4s var(--spring-smooth),
+                border-color 0.4s var(--spring-smooth),
+                background 0.4s var(--spring-smooth);
     transform: translateY(0);
     animation: widgetSpringIn 0.5s var(--spring-bounce) both;
     overflow-y: auto;
@@ -45,25 +48,93 @@
     }
 }
 
-/* 小组件入场延迟递增（涟漪效果），与搜索卡片入场动画衔接 */
-.widgets-area .widget:nth-child(1) { animation-delay: 0.02s; }
-.widgets-area .widget:nth-child(2) { animation-delay: 0.08s; }
-.widgets-area .widget:nth-child(3) { animation-delay: 0.14s; }
-.widgets-area .widget:nth-child(4) { animation-delay: 0.20s; }
-.widgets-area .widget:nth-child(5) { animation-delay: 0.26s; }
-.widgets-area .widget:nth-child(6) { animation-delay: 0.32s; }
-.widgets-area .widget:nth-child(7) { animation-delay: 0.38s; }
-.widgets-area .widget:nth-child(8) { animation-delay: 0.44s; }
 
 .widget:active { cursor: grabbing; }
 
 .widget:hover {
-    box-shadow: 0 8px 32px var(--shadow-color);
+    background: var(--glass-card-hover-bg);
+    box-shadow: var(--shadow-glass-hover);
     border-color: transparent;
 }
 
 .dark .widget:hover {
+    background: rgba(255, 255, 255, 0.12);
     border-color: var(--ios-blue);
+}
+
+/* ========== 控制中心分组标题 ========== */
+.widget-group {
+    margin-bottom: 4px;
+    break-inside: avoid;
+}
+
+.widget-group-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 4px 10px;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    animation: groupHeaderIn 0.4s var(--spring-slide) both;
+}
+
+@keyframes groupHeaderIn {
+    from {
+        opacity: 0;
+        transform: translateX(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.widget-group-header .fa {
+    font-size: 12px;
+    opacity: 0.7;
+}
+
+.dark .widget-group-header {
+    color: rgba(255, 255, 255, 0.35);
+}
+
+/* 分组网格（内部使用 grid 布局） */
+.widget-group-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--widget-gap);
+    position: relative;
+}
+
+/* 响应式：分组网格列数随断点变化 */
+@media (max-width: 768px) {
+    .widget-group-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    .widget-group-header {
+        font-size: 11px;
+        padding: 8px 4px 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .widget-group-grid {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .widget-group-header {
+        font-size: 10px;
+        padding: 6px 4px 4px;
+    }
+}
+
+.dark .widget {
+    background: var(--dark-glass-card-bg);
+    border-color: var(--dark-glass-card-border);
 }
 
 /* 标题栏已移除 — 内容一体化设计，参见 iOS 18 风格 */
@@ -274,7 +345,7 @@
 
 /* ========== 拖拽与排序动画（iOS 18 优化） ========== */
 .widget-drag {
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: var(--shadow-glass-drag) !important;
     opacity: 0.95;
     z-index: 1000 !important;
     transform: scale(1.02) !important;
@@ -309,7 +380,7 @@
 }
 
 .widget-dragging {
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: var(--shadow-glass-drag) !important;
     opacity: 0.92;
     z-index: 1000 !important;
     transform: scale(1.04) !important;

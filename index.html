@@ -14,21 +14,15 @@
   <link rel="stylesheet" href="./src/css/layout.css">
   <link rel="stylesheet" href="./src/css/widgets.css">
   <link rel="stylesheet" href="./src/css/dialogs.css">
+  <link rel="stylesheet" href="./src/css/wallpaper-settings.css">
 </head>
 
-<body class="bg-gradient">
+<body>
   <!-- iOS 18 风格启动动画 -->
   <div id="splash-screen" class="splash-screen">
     <div class="splash-logo">
       <div class="splash-icon">KD</div>
     </div>
-  </div>
-
-  <!-- 背景装饰 -->
-  <div class="bg-decoration">
-    <div class="bg-bubble bg-bubble-1"></div>
-    <div class="bg-bubble bg-bubble-2"></div>
-    <div class="bg-bubble bg-bubble-3"></div>
   </div>
 
   <!-- 主容器（搜索卡片 + 小组件） -->
@@ -60,9 +54,12 @@
     </div>
 
     <!-- 小组件区域 -->
-    <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
-    {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
-    {"type":"bookmarks"},{"type":"hotboard"}]'>
+    <div class="widgets-area" data-widget-area="main-area" data-default-widgets='{"groups":[
+      {"id":"tools","title":"常用工具","icon":"fa-wrench","widgets":[{"type":"clock","size":"sm"},{"type":"weather","size":"sm"}]},
+      {"id":"tasks","title":"任务","icon":"fa-clipboard","widgets":[{"type":"todo","size":"sm"},{"type":"bookmarks","size":"md"}]},
+      {"id":"shortcuts","title":"快捷方式","icon":"fa-link","widgets":[{"type":"shortcuts","size":"sm"}]},
+      {"id":"news","title":"资讯","icon":"fa-newspaper-o","widgets":[{"type":"hotboard","size":"md"}]}
+    ]}'>
     </div>
   </div>
 
@@ -127,12 +124,12 @@
                 <i class="fa fa-chevron-right setting-row-arrow"></i>
               </div>
 
-              <div class="setting-row">
+              <div class="setting-row setting-row-clickable" onclick="openWallpaperSettings()">
                 <div class="setting-row-left">
                   <i class="fa fa-image setting-row-icon"></i>
-                  <span class="setting-row-label">背景风格</span>
+                  <span class="setting-row-label">壁纸与背景</span>
                 </div>
-                <div id="bg-segment"></div>
+                <i class="fa fa-chevron-right setting-row-arrow"></i>
               </div>
 
               <div class="setting-row">
@@ -253,6 +250,88 @@
               </div>
             </div>
           </div>
+
+          <!-- ====== 壁纸与背景子页面 ====== -->
+          <div class="nav-page" data-page="wallpaper">
+            <div class="nav-page-header">
+              <button class="nav-back-btn" onclick="window.navPage?.pop()">
+                <i class="fa fa-chevron-left"></i> 设置
+              </button>
+              <span class="nav-page-header-title">壁纸与背景</span>
+            </div>
+
+            <!-- 壁纸预览 -->
+            <div class="settings-group">
+              <div id="wp-preview" class="wp-settings-preview">
+                <div class="wp-preview-label">当前壁纸</div>
+                <div class="wp-preview-source" id="wp-preview-source">Bing 每日一图</div>
+              </div>
+            </div>
+
+            <!-- 壁纸来源 -->
+            <div class="settings-group">
+              <div class="settings-card">
+                <div class="setting-row">
+                  <div class="setting-row-left">
+                    <i class="fa fa-source setting-row-icon"></i>
+                    <span class="setting-row-label">壁纸来源</span>
+                  </div>
+                  <div id="wp-source-segment"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- 预设选择（仅在预设模式下显示） -->
+            <div class="settings-group" id="wp-preset-group" style="display:none;">
+              <div class="settings-card">
+                <div id="wp-preset-list" class="wp-preset-grid"></div>
+              </div>
+            </div>
+
+            <!-- 本地上传（仅在自定义模式下显示） -->
+            <div class="settings-group" id="wp-upload-group" style="display:none;">
+              <div class="settings-card">
+                <div class="setting-row">
+                  <button type="button" class="wp-upload-btn" onclick="document.getElementById('wp-file-input').click()">
+                    <i class="fa fa-upload"></i> 选择图片
+                  </button>
+                  <input type="file" id="wp-file-input" accept="image/*" style="display:none;">
+                </div>
+              </div>
+            </div>
+
+            <!-- 模糊 -->
+            <div class="settings-group">
+              <div class="settings-card">
+                <div class="setting-row">
+                  <div class="setting-row-left">
+                    <i class="fa fa-eye-slash setting-row-icon"></i>
+                    <span class="setting-row-label">模糊</span>
+                  </div>
+                  <span class="wp-slider-value" id="wp-blur-value">24px</span>
+                </div>
+                <div class="setting-row">
+                  <input type="range" id="wp-blur-slider" class="wp-slider" min="0" max="40" value="24">
+                </div>
+              </div>
+            </div>
+
+            <!-- 色调 -->
+            <div class="settings-group">
+              <div class="settings-card">
+                <div class="setting-row">
+                  <div class="setting-row-left">
+                    <i class="fa fa-tint setting-row-icon"></i>
+                    <span class="setting-row-label">色调</span>
+                  </div>
+                </div>
+                <div class="setting-row">
+                  <div class="wp-tint-picker" id="wp-tint-picker"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
       </div>
     </div>
@@ -326,6 +405,7 @@
   <script src="./src/js/widgets/time-progress.js"></script>
   <script src="./src/js/widgets/daily-word.js"></script>
   <!-- 应用逻辑 -->
+  <script src="./src/js/lib/wallpaper.js"></script>
   <script src="./src/js/app/app.js"></script>
   <script src="./src/js/app/preferences.js"></script>
   <script src="./src/js/app/admin.js"></script>
