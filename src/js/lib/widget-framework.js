@@ -832,16 +832,13 @@ class WidgetArea {
       anim.finished.then(doRemove).catch(doRemove);
       setTimeout(doRemove, 500);
     } else {
+      this._pendingRemove = true;
       this._doRemove(idx);
     }
   }
 
   _doRemove(widgetIdx) {
     if (!this._pendingRemove) return;
-    if (this._removingIndex === -1) return; // 已处理
-    this._removingIndex = -1;
-    this._pendingRemove = false;
-
     if (widgetIdx < 0 || widgetIdx >= this.widgets.length) return;
     const widgetInstance = this.widgets[widgetIdx];
 
