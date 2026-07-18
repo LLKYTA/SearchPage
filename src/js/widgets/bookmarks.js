@@ -9,7 +9,6 @@ class BookmarksWidget extends Widget {
     static icon = 'fa-bookmark';
 
     render() {
-        this._addHeaderAddBtn('添加书签');
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="bookmarks-grid"></div>';
         this._renderBookmarks();

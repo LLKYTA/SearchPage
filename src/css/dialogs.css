@@ -782,9 +782,7 @@
     }
 }
 
-.gallery-card-preview-inner .widget-header {
-    display: none !important;
-}
+/* .widget-header no longer exists — gallery content is self-contained */
 
 .gallery-card {
     width: 100%; min-height: 85px;

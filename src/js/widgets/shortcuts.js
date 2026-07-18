@@ -9,7 +9,6 @@ class ShortcutsWidget extends Widget {
     static icon = 'fa-th';
 
     render() {
-        this._addHeaderAddBtn('添加快捷方式');
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="shortcuts-grid"></div>';
         this._render();

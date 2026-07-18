@@ -52,6 +52,112 @@ const Spring = {
 
 };
 
+// ========== WidgetContextMenu — 浮动上下文菜单 ==========
+const WidgetContextMenu = {
+  _activeMenu: null,
+  _activeWidget: null,
+  _dismissTimer: null,
+
+  show(event, widget, items) {
+    if (this._dismissTimer) {
+      clearTimeout(this._dismissTimer);
+      this._dismissTimer = null;
+    }
+    this.dismiss();
+
+    const menu = document.createElement('div');
+    menu.className = 'widget-context-menu';
+    menu.style.position = 'fixed';
+    menu.style.zIndex = '10000';
+    menu.style.opacity = '0';
+    menu.style.transform = 'scale(0.92)';
+    menu.style.transition = 'opacity 0.2s, transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+
+    items.forEach(item => {
+      if (item.type === 'separator') {
+        const sep = document.createElement('div');
+        sep.className = 'context-menu-separator';
+        menu.appendChild(sep);
+        return;
+      }
+      const btn = document.createElement('button');
+      btn.className = 'context-menu-item' + (item.destructive ? ' destructive' : '');
+      btn.innerHTML = item.icon ? `<span class="context-menu-icon">${item.icon}</span>` : '';
+      btn.innerHTML += `<span class="context-menu-label">${item.label}</span>`;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.dismiss();
+        item.action();
+      });
+      menu.appendChild(btn);
+    });
+
+    document.body.appendChild(menu);
+
+    // 定位：防止溢出视口
+    requestAnimationFrame(() => {
+      const rect = menu.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let left = event.clientX;
+      let top = event.clientY;
+
+      if (left + rect.width + 16 > vw) left = vw - rect.width - 16;
+      if (top + rect.height + 16 > vh) top = vh - rect.height - 16;
+      left = Math.max(12, left);
+      top = Math.max(12, top);
+
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+      menu.style.opacity = '1';
+      menu.style.transform = 'scale(1)';
+    });
+
+    this._activeMenu = menu;
+    this._activeWidget = widget;
+
+    // 点击外部关闭
+    setTimeout(() => {
+      document.addEventListener('pointerdown', this._dismissHandler = () => this.dismiss(), { once: true });
+    }, 0);
+
+    // Escape 关闭
+    document.addEventListener('keydown', this._escHandler = (e) => {
+      if (e.key === 'Escape') this.dismiss();
+    }, { once: true });
+  },
+
+  dismiss() {
+    if (this._dismissTimer) {
+      clearTimeout(this._dismissTimer);
+      this._dismissTimer = null;
+    }
+    if (this._activeMenu) {
+      const menu = this._activeMenu;
+      this._activeMenu = null;
+      menu.style.opacity = '0';
+      menu.style.transform = 'scale(0.92)';
+      this._dismissTimer = setTimeout(() => {
+        if (menu.parentNode) menu.remove();
+        this._dismissTimer = null;
+      }, 200);
+      this._activeWidget = null;
+    }
+    if (this._dismissHandler) {
+      document.removeEventListener('pointerdown', this._dismissHandler);
+      this._dismissHandler = null;
+    }
+    if (this._escHandler) {
+      document.removeEventListener('keydown', this._escHandler);
+      this._escHandler = null;
+    }
+  },
+
+  isVisible() {
+    return this._activeMenu !== null && this._activeMenu.parentNode !== null;
+  }
+};
+
 // ========== GridTracker — 网格占用追踪与空位查找 ==========
 class GridTracker {
   constructor(maxCols = 3) {
@@ -363,9 +469,16 @@ class Widget {
   render() { throw new Error('render() must be implemented'); }
   onUpdate() {}
 
+  /**
+   * 返回上下文菜单项数组。
+   * 子类可覆盖此方法追加自定义菜单项。
+   * @returns {Array<{id:string, label:string, icon?:string, destructive?:boolean, action:Function}>}
+   */
   getContextMenuItems() {
     const items = [];
+    // 尺寸切换
     items.push({ id: 'size', label: '切换尺寸', icon: '🔃', action: () => this.cycleSize() });
+    // 如果子类覆盖了 openManager，展示管理入口
     if (this.openManager !== Widget.prototype.openManager) {
         items.push({ id: 'manage', label: '管理', icon: '✏️', action: () => this.openManager() });
     }
@@ -377,6 +490,10 @@ class Widget {
     return items;
   }
 
+  /**
+   * 响应上下文菜单事件（contextmenu / 长按）
+   * @param {PointerEvent|MouseEvent} event
+   */
   onContextMenu(event) {
     event.preventDefault();
     WidgetContextMenu.show(event, this, this.getContextMenuItems());
@@ -495,6 +612,12 @@ class WidgetArea {
       dom.dataset.position = JSON.stringify(pos);
 
       this.container.appendChild(dom);
+
+      // 绑定右键/长按上下文菜单
+      dom.addEventListener('contextmenu', (e) => {
+          widget.onContextMenu(e);
+      });
+
       widget.render();
 
       // FLIP 动画：从旧位置过渡到新位置
@@ -704,14 +827,14 @@ class WidgetArea {
     this.sortableInstance = new Sortable(this.container, {
       animation: 300,
       easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-      handle: '.widget-header, .widget-content',
+      handle: '.widget-content',
       draggable: '.widget',
 
-      delay: 400,
+      delay: 600,
       delayOnTouchOnly: true,
-      touchStartThreshold: 3,
+      touchStartThreshold: 5,
 
-      filter: '.widget-size-btn, .widget-delete-btn, .widget-header-add-btn',
+      filter: '',
       preventOnFilter: false,
 
       ghostClass: 'widget-ghost',

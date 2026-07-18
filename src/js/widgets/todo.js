@@ -9,7 +9,6 @@ class TodoWidget extends Widget {
     static icon = 'fa-check-square-o';
 
     render() {
-        this._addHeaderAddBtn('添加待办');
         const content = this.element.querySelector('.widget-content');
         content.innerHTML = '<div class="todo-list"></div>';
         this._loadTodos();
