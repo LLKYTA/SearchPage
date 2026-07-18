@@ -143,6 +143,11 @@ let themeSegment;
 
 document.addEventListener('DOMContentLoaded', () => {
     WidgetFramework.init();
+    // 壁纸系统初始化（wallpaper.js 需在 app.js 之前加载）
+    if (typeof WallpaperSystem !== 'undefined') {
+        WallpaperSystem.init();
+        document.body.classList.add('wallpaper-ready');
+    }
     renderEngineDropdown();
     initSearch();
     initUISegments();
