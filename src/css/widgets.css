@@ -321,7 +321,7 @@
 }
 
 .widget-dragging {
-    box-shadow: 0 30px 70px rgba(0, 0, 0, 0.25) !important;
+    box-shadow: var(--shadow-glass-drag) !important;
     opacity: 0.92;
     z-index: 1000 !important;
     transform: scale(1.04) !important;
