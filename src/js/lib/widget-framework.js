@@ -214,7 +214,24 @@ const WidgetFramework = {
   registry: new Map(),
   areas: new Map(),
   storageKey: 'widgets-layout',
-  _layoutVersion: 2,         // 当前布局版本
+  _layoutVersion: 3,         // 当前布局版本 v3 = 分组
+
+  // ===== 分组定义 =====
+  WIDGET_GROUPS: [
+    { id: 'tools',     title: '常用工具', icon: 'fa-wrench',      types: ['clock', 'weather', 'time-progress'] },
+    { id: 'tasks',     title: '任务',     icon: 'fa-clipboard',    types: ['todo', 'bookmarks'] },
+    { id: 'shortcuts', title: '快捷方式', icon: 'fa-link',        types: ['shortcuts'] },
+    { id: 'news',      title: '资讯',     icon: 'fa-newspaper-o',  types: ['hotboard', 'daily-word'] },
+  ],
+
+  getGroupForType(type) {
+    const group = this.WIDGET_GROUPS.find(g => g.types.includes(type));
+    return group ? group.id : 'other';
+  },
+
+  getGroupDef(id) {
+    return this.WIDGET_GROUPS.find(g => g.id === id) || { id: 'other', title: '其他', icon: 'fa-puzzle-piece' };
+  },
 
   // ===== 各小组件预览内容 =====
   _previews: {
@@ -412,10 +429,23 @@ class Widget {
     const area = WidgetFramework.areas.get(areaId);
     if (!area) return;
 
-    // 更新布局中的尺寸
-    const item = area.layout[this.index];
-    if (item) {
-      item.size = newSize;
+    // 通过 dataset.groupId 和全局索引找到布局中对应的项
+    const groupId = this.element?.dataset.groupId;
+    if (area.layout && area.layout.groups && groupId) {
+      let globalIdx = 0;
+      for (const g of area.layout.groups) {
+        const wList = g.widgets || [];
+        if (this.index >= globalIdx && this.index < globalIdx + wList.length) {
+          if (g.id === groupId) {
+            const localIdx = this.index - globalIdx;
+            if (wList[localIdx]) {
+              wList[localIdx].size = newSize;
+            }
+          }
+          break;
+        }
+        globalIdx += wList.length;
+      }
     }
 
     this.currentSize = newSize;
@@ -485,17 +515,17 @@ class WidgetArea {
     this.container = container;
     this.id = id;
     this.widgets = [];
-    this.layout = [];
-    this.sortableInstance = null;
+    this.layout = { groups: [] };
+    this._sortableInstances = [];
     this._pendingRemove = false;
     this._lastCols = 3;
     this._resizeHandler = null;
+    this._groupElements = {};
   }
 
   init() {
     this.loadLayout();
     this.render();
-    this._enableDragDrop();
     this._initResizeObserver();
   }
 
@@ -504,10 +534,15 @@ class WidgetArea {
   loadLayout() {
     const all = WidgetFramework.getLayout();
     const version = all._version || 1;
-    const areaLayout = all[this.id] || this._getDefaultLayout();
+    let areaLayout = all[this.id];
+
+    // 处理空布局
+    if (!areaLayout) {
+      areaLayout = this._getDefaultLayout();
+    }
 
     if (version < WidgetFramework._layoutVersion) {
-      this._migrateLayout(areaLayout, version);
+      areaLayout = this._migrateLayout(areaLayout, version);
       all[this.id] = areaLayout;
       all._version = WidgetFramework._layoutVersion;
       WidgetFramework.saveLayout(all);
@@ -516,30 +551,79 @@ class WidgetArea {
     this.layout = areaLayout;
   }
 
-  /** 迁移旧布局：自动计算初始位置 */
+  /** 迁移旧布局：v2（扁平数组）→ v3（分组格式） */
   _migrateLayout(layout, fromVersion) {
-    if (fromVersion >= 2) return;
-    const cols = this._getColumnCount();
-    const grid = new GridTracker(cols);
-    layout.forEach(item => {
-      const WidgetClass = WidgetFramework.registry.get(item.type);
-      const defaultSize = WidgetClass ? WidgetClass.defaultSize : 'sm';
-      const size = item.size || defaultSize;
-      delete item.position;
-      const pos = grid.findNextAvailable(size);
-      item.position = { col: pos.col, row: pos.row };
-      item.size = size; // 补齐缺失的 size
-      grid.occupy(pos.col, pos.row, size);
-    });
+    // v2 → v3: 扁平数组 → 分组格式
+    if (fromVersion < 3) {
+      let flat;
+      if (Array.isArray(layout)) {
+        // v0/v1 或 v2: layout 是数组
+        if (fromVersion < 2) {
+          // v0/v1: 没有 position，需要计算
+          const cols = this._getColumnCount();
+          const grid = new GridTracker(cols);
+          layout.forEach(item => {
+            const WidgetClass = WidgetFramework.registry.get(item.type);
+            const defaultSize = WidgetClass ? WidgetClass.defaultSize : 'sm';
+            const size = item.size || defaultSize;
+            const pos = grid.findNextAvailable(size);
+            item.size = size;
+            item.config = item.config || {};
+            item.position = { col: pos.col, row: pos.row };
+            grid.occupy(pos.col, pos.row, size);
+          });
+        }
+        flat = layout;
+      } else if (layout && layout.groups) {
+        // 已经是分组格式但版本低
+        return layout;
+      } else {
+        flat = [];
+      }
+
+      // 按类型分组
+      const groupMap = {};
+      WidgetFramework.WIDGET_GROUPS.forEach(g => { groupMap[g.id] = []; });
+      groupMap.other = [];
+
+      flat.forEach(item => {
+        const gid = WidgetFramework.getGroupForType(item.type);
+        if (!groupMap[gid]) groupMap[gid] = [];
+        groupMap[gid].push({
+          type: item.type,
+          size: item.size || 'sm',
+          config: item.config || {}
+        });
+      });
+
+      // 移除空组
+      const groups = [];
+      WidgetFramework.WIDGET_GROUPS.forEach(g => {
+        if (groupMap[g.id] && groupMap[g.id].length > 0) {
+          groups.push({ ...g, widgets: groupMap[g.id] });
+        }
+      });
+      if (groupMap.other && groupMap.other.length > 0) {
+        groups.push({ id: 'other', title: '其他', icon: 'fa-puzzle-piece', widgets: groupMap.other, types: [] });
+      }
+
+      return { groups };
+    }
+    return layout;
   }
 
   _getDefaultLayout() {
     const str = this.container.dataset.defaultWidgets;
-    if (!str) return [];
+    if (!str) return { groups: [] };
     try {
-      return JSON.parse(str);
+      const parsed = JSON.parse(str);
+      // 兼容旧格式（扁平数组）
+      if (Array.isArray(parsed)) {
+        return this._migrateLayout(parsed, 2);
+      }
+      return parsed;
     } catch {
-      return [];
+      return { groups: [] };
     }
   }
 
@@ -553,78 +637,74 @@ class WidgetArea {
   // ===== 渲染 =====
 
   render() {
-    // FLIP：捕获旧位置
-    const oldRects = new Map();
-    this.container.querySelectorAll('.widget').forEach(el => {
-      const key = el.dataset.widgetType + '_' + el.dataset.position;
-      oldRects.set(key, el.getBoundingClientRect());
-    });
-
     this.container.innerHTML = '';
     this.widgets = [];
+    this._groupElements = {};
+    this._sortableInstances = [];
+
+    // 确保布局是 v3 格式
+    if (!this.layout || !this.layout.groups) {
+      this.layout = { groups: [] };
+    }
 
     const cols = this._getColumnCount();
     this._lastCols = cols;
 
-    // 计算当前断点下的布局
-    const positioned = this._layoutForBreakpoint(cols);
+    this.layout.groups.forEach((group, gi) => {
+      // 创建分组 section
+      const section = document.createElement('section');
+      section.className = 'widget-group';
+      section.dataset.group = group.id;
 
-    positioned.forEach((item, sortIndex) => {
-      const WidgetClass = WidgetFramework.registry.get(item.type);
-      if (!WidgetClass) return;
-      const widget = new WidgetClass(this.container, sortIndex);
-      const dom = widget.createDOM();
+      // 分组标题
+      const header = document.createElement('div');
+      header.className = 'widget-group-header';
+      header.innerHTML = `<i class="fa ${group.icon}"></i><span>${group.title}</span>`;
+      section.appendChild(header);
 
-      // 显式网格定位
-      const span = this._span(item.size, cols);
-      const pos = item.position || { col: 1, row: 1 };
-      dom.style.gridColumn = `${pos.col} / span ${span}`;
-      dom.style.gridRow = `${pos.row} / span 1`;
-      dom.dataset.position = JSON.stringify(pos);
+      // 分组网格容器
+      const grid = document.createElement('div');
+      grid.className = 'widget-group-grid';
+      grid.dataset.groupGrid = group.id;
+      section.appendChild(grid);
 
-      this.container.appendChild(dom);
+      this.container.appendChild(section);
+      this._groupElements[group.id] = grid;
 
-      // 绑定右键/长按上下文菜单
-      dom.addEventListener('contextmenu', (e) => {
-          widget.onContextMenu(e);
-      });
+      // 计算该组的网格位置
+      const positioned = this._layoutGroupForBreakpoint(group.widgets, cols);
 
-      widget.render();
+      positioned.forEach((item, sortIndex) => {
+        const WidgetClass = WidgetFramework.registry.get(item.type);
+        if (!WidgetClass) return;
+        const widget = new WidgetClass(this.container, this.widgets.length);
+        const dom = widget.createDOM();
 
-      // FLIP 动画：从旧位置过渡到新位置
-      const key = dom.dataset.widgetType + '_' + dom.dataset.position;
-      const old = oldRects.get(key);
-      if (old) {
-        const now = dom.getBoundingClientRect();
-        const dx = old.left - now.left;
-        const dy = old.top - now.top;
-        if (Math.abs(dx) > 1 || Math.abs(dy) > 1) {
-          dom.animate([
-            { transform: `translate(${dx}px, ${dy}px)`, opacity: 0.6 },
-            { transform: 'translate(0, 0)', opacity: 1 }
-          ], { duration: 400, easing: Spring.curves.slide });
-        } else {
-          widget.animateIn(sortIndex * 0.06);
-        }
-      } else {
+        const span = this._span(item.size, cols);
+        const pos = item.position || { col: 1, row: 1 };
+        dom.style.gridColumn = `${pos.col} / span ${span}`;
+        dom.style.gridRow = `${pos.row} / span 1`;
+        dom.dataset.position = JSON.stringify(pos);
+        dom.dataset.groupId = group.id;
+
+        grid.appendChild(dom);
+
+        // 上下文菜单
+        dom.addEventListener('contextmenu', (e) => widget.onContextMenu(e));
+
+        widget.render();
         widget.animateIn(sortIndex * 0.06);
-      }
-
-      this.widgets.push(widget);
+        this.widgets.push(widget);
+      });
     });
+
+    this._enableDragDrop();
   }
 
-  /** 根据当前列数适配布局 */
-  _layoutForBreakpoint(cols) {
-    if (cols === 3) {
-      return this.layout.map(item => ({
-        ...item,
-        position: item.position || { col: 1, row: 1 }
-      }));
-    }
-    // 2列或1列：重新计算位置，消除空行
+  /** 计算一组内 widgets 的网格位置 */
+  _layoutGroupForBreakpoint(widgets, cols) {
     const grid = new GridTracker(cols);
-    return this.layout.map(item => {
+    return widgets.map(item => {
       let size = item.size;
       if (cols === 1) {
         size = 'sm';
@@ -673,8 +753,9 @@ class WidgetArea {
     if (this._resizeHandler) {
       window.removeEventListener('resize', this._resizeHandler);
     }
-    if (this.sortableInstance) {
-      this.sortableInstance.destroy();
+    if (this._sortableInstances) {
+      this._sortableInstances.forEach(s => s.destroy());
+      this._sortableInstances = [];
     }
   }
 
@@ -683,30 +764,29 @@ class WidgetArea {
   addWidget(type, size) {
     const WidgetClass = WidgetFramework.registry.get(type);
     if (!WidgetClass) return false;
-    const count = this.layout.filter(l => l.type === type).length;
+
+    // 获取目标组
+    const groupId = WidgetFramework.getGroupForType(type);
+    let group = this.layout.groups.find(g => g.id === groupId);
+    if (!group) {
+      const def = WidgetFramework.getGroupDef(groupId);
+      group = { ...def, widgets: [] };
+      this.layout.groups.push(group);
+    }
+
+    // 检查数量限制
+    const count = group.widgets.filter(w => w.type === type).length;
     if (count >= (WidgetClass.maxPerArea || Infinity)) {
       alert(`该区域最多添加 ${WidgetClass.maxPerArea} 个"${WidgetClass.displayName}"`);
       return false;
     }
 
-    const cols = this._getColumnCount();
-    const grid = new GridTracker(cols);
-    this.layout.forEach(item => {
-      if (item.position) {
-        grid.occupy(item.position.col, item.position.row, item.size || 'sm');
-      }
+    group.widgets.push({
+      type,
+      size: size || WidgetClass.defaultSize || 'sm',
+      config: {}
     });
 
-    const newSize = size || WidgetClass.defaultSize || 'sm';
-    const pos = grid.findNextAvailable(newSize);
-
-    const newItem = {
-      type,
-      size: newSize,
-      config: {},
-      position: pos
-    };
-    this.layout.push(newItem);
     this.saveLayout();
     this.render();
     return true;
@@ -715,49 +795,65 @@ class WidgetArea {
   removeWidget(widgetInstance) {
     if (this._pendingRemove) return;
     const idx = this.widgets.indexOf(widgetInstance);
-    if (idx > -1) {
-      const el = widgetInstance.element;
-      if (el) {
-        this._pendingRemove = true;
-        const anim = widgetInstance.animateOut();
-        anim.finished.then(() => {
-          this._doRemove(idx);
-        }).catch(() => {
-          this._doRemove(idx);
-        });
-        setTimeout(() => this._doRemove(idx), 500);
-      } else {
+    if (idx === -1) return;
+    const el = widgetInstance.element;
+    if (el) {
+      this._pendingRemove = true;
+      const anim = widgetInstance.animateOut();
+      anim.finished.then(() => {
         this._doRemove(idx);
-      }
+      }).catch(() => {
+        this._doRemove(idx);
+      });
+      setTimeout(() => this._doRemove(idx), 500);
+    } else {
+      this._doRemove(idx);
     }
   }
 
-  _doRemove(idx) {
+  _doRemove(widgetIdx) {
     if (!this._pendingRemove) return;
     this._pendingRemove = false;
 
-    if (idx < 0 || idx >= this.layout.length) return;
-    const widgetInstance = this.widgets[idx];
-    this.layout.splice(idx, 1);
-    this.widgets.splice(idx, 1);
+    if (widgetIdx < 0 || widgetIdx >= this.widgets.length) return;
+    const widgetInstance = this.widgets[widgetIdx];
+
+    // 根据全局 widget 索引找到对应的组和组内索引
+    let globalIdx = 0;
+    for (const g of this.layout.groups) {
+      const wList = g.widgets || [];
+      if (widgetIdx < globalIdx + wList.length) {
+        const localIdx = widgetIdx - globalIdx;
+        wList.splice(localIdx, 1);
+        if (wList.length === 0) {
+          // 空组自动移除
+          this.layout.groups = this.layout.groups.filter(gg => gg.id !== g.id);
+        }
+        break;
+      }
+      globalIdx += wList.length;
+    }
+
     if (widgetInstance) widgetInstance.destroy();
-
-    // 移除后紧凑排列
-    this._compactPositions();
-
     this.saveLayout();
     this.render();
   }
 
   /** 紧凑排列：消除空行间隙 */
   _compactPositions() {
+    if (!this.layout.groups) return;
     const cols = this._getColumnCount();
-    const grid = new GridTracker(cols);
-    this.layout.forEach(item => {
-      if (!item.position) return;
-      const pos = grid.findNextAvailable(item.size || 'sm');
-      item.position = { col: pos.col, row: pos.row };
-      grid.occupy(pos.col, pos.row, item.size || 'sm');
+    this.layout.groups.forEach(group => {
+      if (!group.widgets) return;
+      const grid = new GridTracker(cols);
+      group.widgets.forEach(item => {
+        let size = item.size;
+        if (cols === 1) size = 'sm';
+        else if (cols === 2 && size === 'lg') size = 'md';
+        const pos = grid.findNextAvailable(size);
+        item.position = { col: pos.col, row: pos.row };
+        grid.occupy(pos.col, pos.row, size);
+      });
     });
   }
 
@@ -768,19 +864,52 @@ class WidgetArea {
     this.render();
   }
 
-  moveWidget(fromIdx, toIdx) {
+  /** 组内移动 widget（SortableJS onEnd 回调） */
+  _moveWidgetInGroup(groupId, fromIdx, toIdx) {
     if (fromIdx === toIdx) return;
+    const group = this.layout.groups.find(g => g.id === groupId);
+    if (!group || !group.widgets) return;
+    const [moved] = group.widgets.splice(fromIdx, 1);
+    group.widgets.splice(toIdx, 0, moved);
+    this.saveLayout();
+    this.render();
+  }
 
-    // 更新 layout 数组顺序
-    const movedLayout = this.layout.splice(fromIdx, 1)[0];
-    this.layout.splice(toIdx, 0, movedLayout);
-    this.widgets.splice(fromIdx, 1);
-    this.widgets.splice(toIdx, 0, null); // 占位
+  /** 跨组移动 widget（供上下文菜单使用） */
+  moveWidgetToGroup(widgetInstance, targetGroupId) {
+    const sourceGroupId = widgetInstance.element?.dataset.groupId;
+    if (!sourceGroupId || sourceGroupId === targetGroupId) return;
 
-    // 重新紧凑排列
+    const srcGroup = this.layout.groups.find(g => g.id === sourceGroupId);
+    const dstGroup = this.layout.groups.find(g => g.id === targetGroupId);
+    if (!srcGroup || !dstGroup) return;
+
+    // 找到在 srcGroup.widgets 中的索引
+    const globalIdx = this.widgets.indexOf(widgetInstance);
+    if (globalIdx === -1) return;
+
+    let srcIdx = -1;
+    let counter = 0;
+    for (const g of this.layout.groups) {
+      for (let i = 0; i < (g.widgets || []).length; i++) {
+        if (counter === globalIdx && g.id === sourceGroupId) {
+          srcIdx = i;
+          break;
+        }
+        counter++;
+      }
+      if (srcIdx >= 0) break;
+    }
+
+    if (srcIdx < 0) return;
+    const [moved] = srcGroup.widgets.splice(srcIdx, 1);
+    dstGroup.widgets.push(moved);
+
+    // 移除空组
+    this.layout.groups = this.layout.groups.filter(g => g.widgets.length > 0);
+
     this._compactPositions();
     this.saveLayout();
-    // 重渲染以生效网格位置变化
     this.render();
   }
 
@@ -790,55 +919,45 @@ class WidgetArea {
       return;
     }
 
-    if (this.sortableInstance) {
-      this.sortableInstance.destroy();
-      this.sortableInstance = null;
+    // 销毁旧实例
+    if (this._sortableInstances) {
+      this._sortableInstances.forEach(s => s.destroy());
     }
+    this._sortableInstances = [];
 
-    this.sortableInstance = new Sortable(this.container, {
-      animation: 300,
-      easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
-      handle: '.widget-content',
-      draggable: '.widget',
-
-      delay: 600,
-      delayOnTouchOnly: true,
-      touchStartThreshold: 5,
-
-      filter: '',
-      preventOnFilter: false,
-
-      ghostClass: 'widget-ghost',
-      chosenClass: 'widget-chosen',
-      dragClass: 'widget-drag',
-
-      onChoose: (evt) => {
-        const el = evt.item;
-        el.classList.add('widget-waiting');
-        if (navigator.vibrate) {
-          navigator.vibrate(10);
+    this.container.querySelectorAll('.widget-group-grid').forEach(grid => {
+      const groupId = grid.dataset.groupGrid;
+      const sortable = new Sortable(grid, {
+        animation: 300,
+        easing: 'cubic-bezier(0.16, 1, 0.3, 1)',
+        handle: '.widget-content',
+        draggable: '.widget',
+        delay: 600,
+        delayOnTouchOnly: true,
+        touchStartThreshold: 5,
+        filter: '',
+        preventOnFilter: false,
+        ghostClass: 'widget-ghost',
+        chosenClass: 'widget-chosen',
+        dragClass: 'widget-drag',
+        onChoose: (evt) => {
+          evt.item.classList.add('widget-waiting');
+          if (navigator.vibrate) navigator.vibrate(10);
+        },
+        onUnchoose: (evt) => {
+          evt.item.classList.remove('widget-waiting');
+        },
+        onStart: (evt) => {
+          evt.item.classList.remove('widget-waiting');
+          evt.item.classList.add('widget-dragging');
+        },
+        onEnd: (evt) => {
+          evt.item.classList.remove('widget-dragging', 'widget-waiting');
+          if (evt.oldIndex === evt.newIndex) return;
+          this._moveWidgetInGroup(groupId, evt.oldIndex, evt.newIndex);
         }
-      },
-
-      onUnchoose: (evt) => {
-        const el = evt.item;
-        el.classList.remove('widget-waiting');
-      },
-
-      onStart: (evt) => {
-        const el = evt.item;
-        el.classList.remove('widget-waiting');
-        el.classList.add('widget-dragging');
-      },
-
-      onEnd: (evt) => {
-        const el = evt.item;
-        el.classList.remove('widget-dragging', 'widget-waiting');
-
-        if (evt.oldIndex !== evt.newIndex) {
-          this.moveWidget(evt.oldIndex, evt.newIndex);
-        }
-      }
+      });
+      this._sortableInstances.push(sortable);
     });
   }
 
