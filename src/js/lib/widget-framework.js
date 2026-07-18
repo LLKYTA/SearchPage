@@ -412,45 +412,16 @@ class Widget {
     const area = WidgetFramework.areas.get(areaId);
     if (!area) return;
 
-    const cols = area._getColumnCount();
-    const span = area._span(newSize, cols);
-    const item = area.layout[this.index];
-
     // 更新布局中的尺寸
+    const item = area.layout[this.index];
     if (item) {
       item.size = newSize;
-
-      // 检查位置是否溢出，如有必要则找新位置
-      if (item.position) {
-        const maxCol = cols - span + 1;
-        if (item.position.col > maxCol) {
-          // 超出右边界 → 找空位
-          const grid = area._buildOccupiedGrid();
-          // 先清除自己原占位
-          grid.clear(item.position.col, item.position.row, current);
-          const newPos = grid.findNextAvailable(newSize);
-          item.position = { col: newPos.col, row: newPos.row };
-          grid.occupy(newPos.col, newPos.row, newSize);
-        }
-      }
-
-      area.saveLayout();
     }
 
-    // 更新 DOM
-    this.element.classList.remove(`widget-${current}`);
-    this.element.classList.add(`widget-${newSize}`);
     this.currentSize = newSize;
 
-    // 更新内联网格定位
-    if (item && item.position) {
-      this.element.style.gridColumn = `${item.position.col} / span ${Math.min(span, cols)}`;
-      this.element.style.gridRow = `${item.position.row} / span 1`;
-      this.element.dataset.position = JSON.stringify(item.position);
-    }
-
-    Spring.animateResize(this.element);
-    this.onResize(newSize);
+    // 全区域紧凑排列：其他 widget 自动补位，消除空隙
+    area.compactAll();
   }
 
   // ===== Spring 动画生命周期 =====
