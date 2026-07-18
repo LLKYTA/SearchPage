@@ -14,21 +14,15 @@
   <link rel="stylesheet" href="./src/css/layout.css">
   <link rel="stylesheet" href="./src/css/widgets.css">
   <link rel="stylesheet" href="./src/css/dialogs.css">
+  <link rel="stylesheet" href="./src/css/wallpaper-settings.css">
 </head>
 
-<body class="bg-gradient">
+<body>
   <!-- iOS 18 风格启动动画 -->
   <div id="splash-screen" class="splash-screen">
     <div class="splash-logo">
       <div class="splash-icon">KD</div>
     </div>
-  </div>
-
-  <!-- 背景装饰 -->
-  <div class="bg-decoration">
-    <div class="bg-bubble bg-bubble-1"></div>
-    <div class="bg-bubble bg-bubble-2"></div>
-    <div class="bg-bubble bg-bubble-3"></div>
   </div>
 
   <!-- 主容器（搜索卡片 + 小组件） -->
@@ -60,9 +54,12 @@
     </div>
 
     <!-- 小组件区域 -->
-    <div class="widgets-area" data-widget-area="main-area" data-default-widgets='[
-    {"type":"clock"},{"type":"weather"},{"type":"shortcuts"},{"type":"todo"},
-    {"type":"bookmarks"},{"type":"hotboard"}]'>
+    <div class="widgets-area" data-widget-area="main-area" data-default-widgets='{"groups":[
+      {"id":"tools","title":"常用工具","icon":"fa-wrench","widgets":[{"type":"clock","size":"sm"},{"type":"weather","size":"sm"}]},
+      {"id":"tasks","title":"任务","icon":"fa-clipboard","widgets":[{"type":"todo","size":"sm"},{"type":"bookmarks","size":"md"}]},
+      {"id":"shortcuts","title":"快捷方式","icon":"fa-link","widgets":[{"type":"shortcuts","size":"sm"}]},
+      {"id":"news","title":"资讯","icon":"fa-newspaper-o","widgets":[{"type":"hotboard","size":"md"}]}
+    ]}'>
     </div>
   </div>
 
