@@ -852,4 +852,3 @@ body:not(.wallpaper-ready) {
 /* ========================================
    iOS 18 风格页面入场动画序列
    ======================================== */
-.widgets-area .widget:nth-child(8) { animation-delay: 0.64s; }
