@@ -59,6 +59,7 @@ const WidgetContextMenu = {
   _dismissTimer: null,
 
   show(event, widget, items) {
+    if (!items || items.length === 0) return;
     if (this._dismissTimer) {
       clearTimeout(this._dismissTimer);
       this._dismissTimer = null;
@@ -91,6 +92,7 @@ const WidgetContextMenu = {
         item.action();
       });
       btn.addEventListener('touchend', (e) => {
+        if (btn.dataset.touchHandled) return;
         e.stopPropagation();
         btn.dataset.touchHandled = 'true';
         this.dismiss();
@@ -555,6 +557,8 @@ class Widget {
         const fakeEvent = {
           clientX: startX,
           clientY: startY,
+          // no-op: 原生 contextmenu 由下方独立的 once listener 阻止
+          // 此处不能调用 touchstart 事件的 preventDefault（passive listener）
           preventDefault: () => {},
           target: el,
         };
