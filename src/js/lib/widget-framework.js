@@ -52,6 +52,103 @@ const Spring = {
 
 };
 
+// ========== WidgetContextMenu — 浮动上下文菜单 ==========
+const WidgetContextMenu = {
+  _activeMenu: null,
+  _activeWidget: null,
+
+  show(event, widget, items) {
+    this.dismiss();
+
+    const menu = document.createElement('div');
+    menu.className = 'widget-context-menu';
+    menu.style.position = 'fixed';
+    menu.style.zIndex = '10000';
+    menu.style.opacity = '0';
+    menu.style.transform = 'scale(0.92)';
+    menu.style.transition = 'opacity 0.2s, transform 0.25s cubic-bezier(0.32, 0.72, 0, 1)';
+
+    items.forEach(item => {
+      if (item.type === 'separator') {
+        const sep = document.createElement('div');
+        sep.className = 'context-menu-separator';
+        menu.appendChild(sep);
+        return;
+      }
+      const btn = document.createElement('button');
+      btn.className = 'context-menu-item' + (item.destructive ? ' destructive' : '');
+      btn.innerHTML = item.icon ? `<span class="context-menu-icon">${item.icon}</span>` : '';
+      btn.innerHTML += `<span class="context-menu-label">${item.label}</span>`;
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.dismiss();
+        item.action();
+      });
+      menu.appendChild(btn);
+    });
+
+    document.body.appendChild(menu);
+
+    // 定位：防止溢出视口
+    requestAnimationFrame(() => {
+      const rect = menu.getBoundingClientRect();
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      let left = event.clientX;
+      let top = event.clientY;
+
+      if (left + rect.width + 16 > vw) left = vw - rect.width - 16;
+      if (top + rect.height + 16 > vh) top = vh - rect.height - 16;
+      left = Math.max(12, left);
+      top = Math.max(12, top);
+
+      menu.style.left = left + 'px';
+      menu.style.top = top + 'px';
+      menu.style.opacity = '1';
+      menu.style.transform = 'scale(1)';
+    });
+
+    this._activeMenu = menu;
+    this._activeWidget = widget;
+
+    // 点击外部关闭
+    setTimeout(() => {
+      document.addEventListener('pointerdown', this._dismissHandler = () => this.dismiss(), { once: true });
+    }, 0);
+
+    // Escape 关闭
+    document.addEventListener('keydown', this._escHandler = (e) => {
+      if (e.key === 'Escape') this.dismiss();
+    }, { once: true });
+  },
+
+  dismiss() {
+    if (this._activeMenu) {
+      this._activeMenu.style.opacity = '0';
+      this._activeMenu.style.transform = 'scale(0.92)';
+      setTimeout(() => {
+        if (this._activeMenu) {
+          this._activeMenu.remove();
+          this._activeMenu = null;
+        }
+      }, 200);
+      this._activeWidget = null;
+    }
+    if (this._dismissHandler) {
+      document.removeEventListener('pointerdown', this._dismissHandler);
+      this._dismissHandler = null;
+    }
+    if (this._escHandler) {
+      document.removeEventListener('keydown', this._escHandler);
+      this._escHandler = null;
+    }
+  },
+
+  isVisible() {
+    return this._activeMenu !== null && this._activeMenu.parentNode !== null;
+  }
+};
+
 // ========== GridTracker — 网格占用追踪与空位查找 ==========
 class GridTracker {
   constructor(maxCols = 3) {
