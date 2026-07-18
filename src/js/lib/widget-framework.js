@@ -85,7 +85,14 @@ const WidgetContextMenu = {
       btn.innerHTML = item.icon ? `<span class="context-menu-icon">${item.icon}</span>` : '';
       btn.innerHTML += `<span class="context-menu-label">${item.label}</span>`;
       btn.addEventListener('click', (e) => {
+        if (btn.dataset.touchHandled) return;
         e.stopPropagation();
+        this.dismiss();
+        item.action();
+      });
+      btn.addEventListener('touchend', (e) => {
+        e.stopPropagation();
+        btn.dataset.touchHandled = 'true';
         this.dismiss();
         item.action();
       });
