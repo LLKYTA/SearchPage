@@ -548,13 +548,12 @@ class Widget {
         const fakeEvent = {
           clientX: startX,
           clientY: startY,
-          preventDefault: () => e.preventDefault(),
+          preventDefault: () => {},
           target: el,
         };
         // 阻止浏览器原生 contextmenu
-        el.addEventListener('contextmenu', function preventNative(e) {
+        el.addEventListener('contextmenu', (e) => {
           e.preventDefault();
-          el.removeEventListener('contextmenu', preventNative);
         }, { once: true });
         this.onContextMenu(fakeEvent);
       }, DELAY);
