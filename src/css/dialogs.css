@@ -14,7 +14,7 @@
 /* ========== 弹窗通用（iOS 18 Spring 动画） ========== */
 .modal-overlay {
     position: fixed; inset: 0; background: rgba(0,0,0,0.4);
-    backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     z-index: 100; display: none;
     align-items: center; justify-content: center; padding: 20px;
     overflow-y: auto;
@@ -26,9 +26,11 @@
 /* 通用弹窗滚动布局 */
 .modal-content {
     width: 100%; max-width: 420px;
-    background: var(--card-bg);
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(var(--glass-card-blur));
+    -webkit-backdrop-filter: blur(var(--glass-card-blur));
     border-radius: var(--radius-lg);
-    border: 1px solid var(--card-border);
+    border: 0.5px solid var(--glass-card-border);
     padding: 0;
     margin: auto;
     animation: modalSpringIn 0.5s var(--spring-bounce);
@@ -570,8 +572,10 @@
 #widget-gallery-modal.active { display: flex; }
 
 .modal-bottom-sheet {
-    background: var(--card-bg);
-    border: 1px solid var(--card-border);
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(var(--glass-card-blur));
+    -webkit-backdrop-filter: blur(var(--glass-card-blur));
+    border: 0.5px solid var(--glass-card-border);
     border-radius: var(--radius-card) var(--radius-card) 0 0;
     width: 100%;
     max-width: 600px;

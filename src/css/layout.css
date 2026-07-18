@@ -113,15 +113,12 @@ body:not(.wallpaper-ready) {
     display: flex;
     flex-direction: column;
     width: min(520px, 92vw);
-    background: rgba(255,255,255,0.78);
-    backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 0.5px solid rgba(255,255,255,0.5);
+    background: var(--glass-search-bg);
+    backdrop-filter: blur(var(--glass-search-blur));
+    -webkit-backdrop-filter: blur(var(--glass-search-blur));
+    border: 0.5px solid var(--glass-card-border);
     border-radius: 18px;
-    box-shadow:
-        0 8px 40px rgba(0,0,0,0.06),
-        0 1px 4px rgba(0,0,0,0.04),
-        inset 0 1px 0 rgba(255,255,255,0.6);
+    box-shadow: var(--shadow-glass);
     transition: border-color 0.3s var(--spring-smooth),
                 box-shadow 0.3s var(--spring-smooth),
                 border-radius 0.35s var(--spring-smooth);
@@ -131,12 +128,9 @@ body:not(.wallpaper-ready) {
 }
 
 .dark .search-card {
-    background: rgba(40,42,54,0.82);
-    border-color: rgba(255,255,255,0.08);
-    box-shadow:
-        0 8px 40px rgba(0,0,0,0.2),
-        0 1px 4px rgba(0,0,0,0.15),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+    background: var(--dark-glass-card-bg);
+    border-color: var(--dark-glass-card-border);
+    box-shadow: 0 8px 40px rgba(0,0,0,0.2);
 }
 
 .search-card {
@@ -151,15 +145,13 @@ body:not(.wallpaper-ready) {
     border-color: var(--ios-blue);
     box-shadow:
         0 8px 40px rgba(0,122,255,0.12),
-        0 0 0 3px rgba(0,122,255,0.08),
-        inset 0 1px 0 rgba(255,255,255,0.6);
+        0 0 0 3px rgba(0,122,255,0.08);
 }
 
 .dark .search-card:focus-within {
     box-shadow:
         0 8px 40px rgba(0,122,255,0.15),
-        0 0 0 3px rgba(0,122,255,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.05);
+        0 0 0 3px rgba(0,122,255,0.1);
 }
 
 /* 搜索卡片输入行（引擎切换 + 输入框 + 搜索按钮） */
