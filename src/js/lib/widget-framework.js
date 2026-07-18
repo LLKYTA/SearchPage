@@ -483,6 +483,27 @@ class Widget {
     if (this.openManager !== Widget.prototype.openManager) {
         items.push({ id: 'manage', label: '管理', icon: '✏️', action: () => this.openManager() });
     }
+
+    // 跨组移动子菜单
+    const currentGroupId = this.element?.dataset.groupId;
+    const availableGroups = WidgetFramework.WIDGET_GROUPS.filter(g => g.id !== currentGroupId);
+    if (availableGroups.length > 0) {
+        items.push({ type: 'separator' });
+        items.push({ id: 'move-header', label: '移动到...', icon: '📦', action: () => {} });
+        availableGroups.forEach(g => {
+            items.push({
+                id: `move-to-${g.id}`,
+                label: `  ${g.title}`,
+                icon: '',
+                action: () => {
+                    const areaId = this.container.closest('[data-widget-area]').dataset.widgetArea;
+                    const area = WidgetFramework.areas.get(areaId);
+                    if (area) area.moveWidgetToGroup(this, g.id);
+                }
+            });
+        });
+    }
+
     items.push({ type: 'separator' });
     items.push({ id: 'delete', label: '移除小组件', icon: '🗑️', destructive: true, action: () => {
         const areaId = this.container.closest('[data-widget-area]').dataset.widgetArea;
