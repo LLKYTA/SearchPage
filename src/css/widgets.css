@@ -17,14 +17,19 @@
 
 /* ========== 小组件通用 - iOS 18 卡片 ========== */
 .widget {
-    background: var(--card-bg);
+    background: var(--glass-card-bg);
+    backdrop-filter: blur(var(--glass-card-blur));
+    -webkit-backdrop-filter: blur(var(--glass-card-blur));
     border-radius: var(--radius-card);
-    padding: 16px 20px;
+    padding: var(--widget-padding);
     cursor: grab;
     user-select: none;
     position: relative;
-    border: 1px solid var(--card-border);
-    transition: box-shadow 0.4s var(--spring-smooth), border-color 0.4s var(--spring-smooth);
+    border: 0.5px solid var(--glass-card-border);
+    box-shadow: var(--shadow-glass);
+    transition: box-shadow 0.4s var(--spring-smooth),
+                border-color 0.4s var(--spring-smooth),
+                background 0.4s var(--spring-smooth);
     transform: translateY(0);
     animation: widgetSpringIn 0.5s var(--spring-bounce) both;
     overflow-y: auto;
@@ -58,12 +63,19 @@
 .widget:active { cursor: grabbing; }
 
 .widget:hover {
-    box-shadow: 0 8px 32px var(--shadow-color);
+    background: var(--glass-card-hover-bg);
+    box-shadow: var(--shadow-glass-hover);
     border-color: transparent;
 }
 
 .dark .widget:hover {
+    background: rgba(255, 255, 255, 0.12);
     border-color: var(--ios-blue);
+}
+
+.dark .widget {
+    background: var(--dark-glass-card-bg);
+    border-color: var(--dark-glass-card-border);
 }
 
 /* 标题栏已移除 — 内容一体化设计，参见 iOS 18 风格 */
@@ -274,7 +286,7 @@
 
 /* ========== 拖拽与排序动画（iOS 18 优化） ========== */
 .widget-drag {
-    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2) !important;
+    box-shadow: var(--shadow-glass-drag) !important;
     opacity: 0.95;
     z-index: 1000 !important;
     transform: scale(1.02) !important;
