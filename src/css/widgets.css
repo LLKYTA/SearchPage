@@ -404,9 +404,10 @@
 @media (max-width: 768px) {
     .widgets-area {
         grid-template-columns: repeat(2, 1fr);
-        gap: 12px;
+        gap: 16px;
     }
-    .widget { padding: 14px 16px; border-radius: var(--radius-lg); }
+    .widget-group-header { font-size: 12px; padding: 8px 4px 8px; }
+    .widget { padding: 18px 22px; border-radius: var(--radius-card); }
     .time-display { font-size: 28px; }
     .date-display { font-size: 12px; }
     .weather-temp { font-size: 24px; }
@@ -416,15 +417,20 @@
 }
 
 @media (max-width: 480px) {
-    .widgets-area { grid-template-columns: 1fr; gap: 8px; }
-    .shortcuts-grid, .bookmarks-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
-    .widget { padding: 12px; border-radius: var(--radius-dropdown); }
-    .time-display { font-size: 24px; }
-    .weather-temp { font-size: 22px; }
-    .weather-icon { font-size: 24px; }
+    .widgets-area { grid-template-columns: 1fr; gap: 16px; }
+    .widget-group { margin-bottom: 8px; }
+    .widget-group-header { font-size: 12px; padding: 6px 4px 8px; }
+    .shortcuts-grid, .bookmarks-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+    /* 恢复毛玻璃：删除 padding/radius 覆盖，让基类 .widget 生效 */
+    .time-display { font-size: 26px; }
+    .weather-temp { font-size: 24px; }
+    .weather-icon { font-size: 26px; }
     .hotboard-list { max-height: 260px; }
     .hotboard-item { padding: 10px 8px; }
-    .hotboard-title { font-size: 13px; }
+    .hotboard-title { font-size: 14px; }
     /* 触摸目标放大 */
     .bookmark-item { padding: 10px; min-height: 44px; }
     .shortcut-item { min-height: 44px; }
