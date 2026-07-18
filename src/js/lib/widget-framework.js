@@ -802,8 +802,8 @@ class WidgetArea {
     const grid = new GridTracker(cols);
     return widgets.map(item => {
       let size = item.size;
-      if (cols === 1) {
-        size = 'sm';
+      if (cols === 1 && size === 'lg') {
+        size = 'md';
       } else if (cols === 2 && size === 'lg') {
         size = 'md';
       }
