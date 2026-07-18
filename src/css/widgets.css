@@ -416,9 +416,20 @@
 }
 
 @media (max-width: 480px) {
-    .widgets-area { grid-template-columns: 1fr; gap: 10px; }
-    .shortcuts-grid, .bookmarks-grid { grid-template-columns: repeat(2, 1fr); }
-    .widget { padding: 12px 14px; border-radius: var(--radius-dropdown); }
+    .widgets-area { grid-template-columns: 1fr; gap: 8px; }
+    .shortcuts-grid, .bookmarks-grid { grid-template-columns: repeat(2, 1fr); gap: 8px; }
+    .widget { padding: 12px; border-radius: var(--radius-dropdown); }
+    .time-display { font-size: 24px; }
+    .weather-temp { font-size: 22px; }
+    .weather-icon { font-size: 24px; }
+    .hotboard-list { max-height: 260px; }
+    .hotboard-item { padding: 10px 8px; }
+    .hotboard-title { font-size: 13px; }
+    /* 触摸目标放大 */
+    .bookmark-item { padding: 10px; min-height: 44px; }
+    .shortcut-item { min-height: 44px; }
+    .todo-item { min-height: 36px; }
+    .todo-checkbox { width: 22px; height: 22px; }
 }
 
 /* ========== 上下文菜单（WidgetContextMenu） ========== */
