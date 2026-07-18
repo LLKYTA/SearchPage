@@ -10,6 +10,11 @@ class BookmarksWidget extends Widget {
 
     render() {
         const content = this.element.querySelector('.widget-content');
+        const bookmarks = JSON.parse(localStorage.getItem('custom-bookmarks') || '[]');
+        if (!bookmarks.length) {
+            content.innerHTML = `<div class="widget-empty-state"><i class="fa fa-plus-circle"></i><span>右键添加书签</span></div>`;
+            return;
+        }
         content.innerHTML = '<div class="bookmarks-grid"></div>';
         this._renderBookmarks();
     }

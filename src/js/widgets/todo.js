@@ -10,6 +10,11 @@ class TodoWidget extends Widget {
 
     render() {
         const content = this.element.querySelector('.widget-content');
+        const todos = JSON.parse(localStorage.getItem('todos') || '[]');
+        if (!todos.length) {
+            content.innerHTML = `<div class="widget-empty-state"><i class="fa fa-plus-circle"></i><span>右键添加待办</span></div>`;
+            return;
+        }
         content.innerHTML = '<div class="todo-list"></div>';
         this._loadTodos();
     }

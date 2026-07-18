@@ -10,6 +10,11 @@ class ShortcutsWidget extends Widget {
 
     render() {
         const content = this.element.querySelector('.widget-content');
+        const shortcuts = JSON.parse(localStorage.getItem('custom-shortcuts') || '[]');
+        if (!shortcuts.length) {
+            content.innerHTML = `<div class="widget-empty-state"><i class="fa fa-plus-circle"></i><span>右键添加快捷方式</span></div>`;
+            return;
+        }
         content.innerHTML = '<div class="shortcuts-grid"></div>';
         this._render();
     }

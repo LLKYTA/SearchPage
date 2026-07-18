@@ -415,3 +415,26 @@
     background: var(--dark-bg-secondary, #1C1C1E);
     border-color: var(--dark-border-color, #38383A);
 }
+
+/* ========== 空状态占位（防止卡片塌缩） ========== */
+.widget-empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    min-height: 80px;
+    color: var(--text-tertiary);
+    cursor: default;
+    user-select: none;
+}
+
+.widget-empty-state .fa-plus-circle {
+    font-size: 20px;
+    opacity: 0.5;
+}
+
+.widget-empty-state span {
+    font-size: 12px;
+    opacity: 0.6;
+}
