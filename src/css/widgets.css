@@ -19,7 +19,7 @@
 .widget {
     background: var(--card-bg);
     border-radius: var(--radius-card);
-    padding: 18px 20px;
+    padding: 16px 20px;
     cursor: grab;
     user-select: none;
     position: relative;
@@ -66,112 +66,14 @@
     border-color: var(--ios-blue);
 }
 
-/* ---------- 标题栏（iOS 18 简约风格） ---------- */
-.widget-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 14px;
-}
-
-.widget-icon {
-    color: var(--ios-blue);
-    font-size: 10px;
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 6px;
-    background: var(--accent-bg);
-    flex-shrink: 0;
-}
-
-.widget-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--text-secondary);
-    letter-spacing: 0.2px;
-    text-transform: uppercase;
-}
+/* 标题栏已移除 — 内容一体化设计，参见 iOS 18 风格 */
 
 .widget, .widget-content { color: var(--text-primary); }
 .widget a { color: var(--ios-blue); text-decoration: none; }
 .dark .widget a { color: #60a5fa; }
 .widget .text-secondary { color: var(--text-secondary); }
 
-/* ---------- 头部操作按钮（始终可见但半透明） ---------- */
-.widget-header-actions {
-    display: flex;
-    gap: 2px;
-    margin-left: auto;
-}
-
-.widget-size-btn,
-.widget-delete-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    font-size: 10px;
-    width: 24px;
-    height: 24px;
-    border-radius: 6px;
-    padding: 0;
-    transition: all 0.25s var(--spring-pop);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.4;
-}
-
-.widget:hover .widget-size-btn,
-.widget:hover .widget-delete-btn {
-    opacity: 0.7;
-}
-
-.widget-size-btn:hover {
-    opacity: 1 !important;
-    color: var(--ios-blue);
-    background: var(--accent-bg);
-    transform: scale(1.1);
-}
-
-.widget-delete-btn:hover {
-    opacity: 1 !important;
-    color: var(--ios-red);
-    background: rgba(255, 59, 48, 0.08);
-    transform: scale(1.1);
-}
-
-/* 头部添加按钮 */
-.widget-header-add-btn {
-    background: transparent !important;
-    border: none !important;
-    color: var(--text-tertiary);
-    cursor: pointer;
-    font-size: 11px;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    transition: all 0.2s var(--spring-pop);
-    border-radius: 6px;
-    display: flex !important;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.4 !important;
-}
-
-.widget:hover .widget-header-add-btn {
-    opacity: 0.7 !important;
-}
-
-.widget-header-add-btn:hover {
-    opacity: 1 !important;
-    color: var(--ios-blue) !important;
-    background: var(--accent-bg) !important;
-    transform: scale(1.1);
-}
+/* 操作按钮已迁移至上下文菜单 */
 
 /* ========== 小组件动画 - 尺寸切换 ========== */
 .widget-resizing {
@@ -440,12 +342,76 @@
     .weather-icon { font-size: 28px; }
     .hotboard-list { max-height: 200px; }
     .bookmarks-grid, .shortcuts-grid { grid-template-columns: repeat(2, 1fr) !important; }
-    .widget-header { margin-bottom: 10px; }
 }
 
 @media (max-width: 480px) {
     .widgets-area { grid-template-columns: 1fr; gap: 10px; }
     .shortcuts-grid, .bookmarks-grid { grid-template-columns: repeat(2, 1fr); }
     .widget { padding: 12px 14px; border-radius: var(--radius-dropdown); }
-    .widget-header { margin-bottom: 8px; }
+}
+
+/* ========== 上下文菜单（WidgetContextMenu） ========== */
+.widget-context-menu {
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 14px;
+    box-shadow: 0 12px 48px var(--shadow-color), 0 2px 8px rgba(0,0,0,0.06);
+    padding: 6px;
+    min-width: 150px;
+    transform-origin: top left;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+}
+
+.context-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 10px 12px;
+    border: none;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-primary);
+    font-size: 14px;
+    font-family: inherit;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.15s ease;
+    white-space: nowrap;
+}
+
+.context-menu-item:hover {
+    background: var(--bg-tertiary);
+}
+
+.context-menu-item.destructive {
+    color: var(--ios-red);
+}
+
+.context-menu-item.destructive:hover {
+    background: rgba(255, 59, 48, 0.1);
+}
+
+.context-menu-icon {
+    font-size: 16px;
+    width: 24px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.context-menu-label {
+    flex: 1;
+}
+
+.context-menu-separator {
+    height: 1px;
+    background: var(--border-color);
+    margin: 4px 8px;
+}
+
+/* 纯深色模式覆盖 */
+.dark .widget-context-menu {
+    background: var(--dark-bg-secondary, #1C1C1E);
+    border-color: var(--dark-border-color, #38383A);
 }
