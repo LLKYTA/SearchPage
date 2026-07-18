@@ -4,57 +4,6 @@
    底部浮动操作栏
    ======================================== */
 
-/* ========== 背景渐变与动画 ========== */
-.bg-gradient {
-    background: linear-gradient(135deg, #E0EAFF 0%, #F5E6FF 25%, #FFE6F0 50%, #FFF0E6 75%, #E6FFFA 100%);
-    background-size: 400% 400%;
-    animation: gradientShift 20s ease infinite;
-}
-
-.dark .bg-gradient {
-    background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 25%, #312E81 50%, #1E3A8A 75%, #0F172A 100%);
-    background-size: 400% 400%;
-}
-
-@keyframes gradientShift {
-    0%, 100% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-}
-
-/* ========== 装饰元素 ========== */
-.bg-decoration {
-    position: fixed;
-    inset: 0;
-    overflow: hidden;
-    pointer-events: none;
-    z-index: 0;
-}
-
-.bg-bubble {
-    position: absolute;
-    border-radius: 50%;
-    filter: blur(60px);
-    opacity: 0.3;
-    mix-blend-mode: multiply;
-    animation: float 20s ease-in-out infinite;
-}
-
-.dark .bg-bubble {
-    mix-blend-mode: soft-light;
-    opacity: 0.15;
-}
-
-.bg-bubble-1 { width: 400px; height: 400px; background: #A78BFA; top: -150px; right: -100px; animation-delay: 0s; }
-.bg-bubble-2 { width: 350px; height: 350px; background: #F472B6; top: 20%; left: -100px; animation-delay: -5s; }
-.bg-bubble-3 { width: 380px; height: 380px; background: #60A5FA; bottom: -100px; right: 10%; animation-delay: -10s; }
-
-@keyframes float {
-    0%, 100% { transform: translate(0, 0) scale(1); }
-    25% { transform: translate(30px, -30px) scale(1.05); }
-    50% { transform: translate(-20px, 20px) scale(0.95); }
-    75% { transform: translate(20px, 30px) scale(1.02); }
-}
-
 /* ========================================
    壁纸背景系统 — iOS 18 层级堆叠
    wallpaper.js 将层级注入 #wallpaper-layers
@@ -109,6 +58,28 @@
 
 .dark .wp-dark {
     background: rgba(0, 0, 0, 0.25);
+}
+
+/* ========== 壁纸就绪状态切换 ========== */
+body.wallpaper-ready #wallpaper-layers {
+    display: block;
+}
+
+/* ========== 备用背景（壁纸加载失败或未设置时） ========== */
+body:not(.wallpaper-ready) {
+    background: linear-gradient(135deg, #E0EAFF 0%, #F5E6FF 25%, #FFE6F0 50%, #FFF0E6 75%, #E6FFFA 100%);
+    background-size: 400% 400%;
+    animation: gradientShift 20s ease infinite;
+}
+
+.dark body:not(.wallpaper-ready) {
+    background: linear-gradient(135deg, #0F172A 0%, #1E1B4B 25%, #312E81 50%, #1E3A8A 75%, #0F172A 100%);
+    background-size: 400% 400%;
+}
+
+@keyframes gradientShift {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
 }
 
 /* ========== 主容器 ========== */
