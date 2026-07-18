@@ -1,0 +1,190 @@
+/* ==========================================
+   wallpaper-settings.css - 壁纸设置面板样式
+   ========================================== */
+
+/* 壁纸预览 */
+.wp-settings-preview {
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    border-radius: var(--radius-md);
+    height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    color: white;
+}
+
+.wp-settings-preview::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.wp-preview-label {
+    font-size: 11px;
+    opacity: 0.6;
+    position: relative;
+    z-index: 1;
+}
+
+.wp-preview-source {
+    font-size: 10px;
+    opacity: 0.4;
+    position: relative;
+    z-index: 1;
+}
+
+/* 预设网格 */
+.wp-preset-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding: 4px 0;
+}
+
+.wp-preset-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: var(--radius-sm);
+    transition: transform 0.2s var(--spring-pop);
+    font-family: inherit;
+}
+
+.wp-preset-item:hover {
+    transform: scale(1.05);
+}
+
+.wp-preset-item:active {
+    transform: scale(0.95);
+}
+
+.wp-preset-name {
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* 模糊滑块 */
+.wp-slider {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--bg-tertiary);
+    outline: none;
+    cursor: pointer;
+}
+
+.wp-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--ios-blue);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    cursor: pointer;
+    transition: transform 0.2s var(--spring-pop);
+}
+
+.wp-slider::-webkit-slider-thumb:hover {
+    transform: scale(1.1);
+}
+
+.wp-slider::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: white;
+    border: 2px solid var(--ios-blue);
+    cursor: pointer;
+}
+
+.wp-slider-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 36px;
+    text-align: right;
+}
+
+/* 色调选择器 */
+.wp-tint-picker {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 4px 2px;
+}
+
+.wp-tint-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: 2px solid transparent;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    transition: transform 0.2s var(--spring-pop), border-color 0.2s;
+}
+
+.wp-tint-btn:hover {
+    transform: scale(1.15);
+}
+
+.wp-tint-btn.active {
+    border-color: var(--ios-blue);
+    transform: scale(1.1);
+}
+
+.wp-tint-swatch {
+    display: block;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    border: 1px solid rgba(128, 128, 128, 0.2);
+}
+
+/* 上传按钮 */
+.wp-upload-btn {
+    width: 100%;
+    padding: 12px;
+    border: 1px dashed var(--text-tertiary);
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    transition: all 0.2s var(--spring-smooth);
+}
+
+.wp-upload-btn:hover {
+    border-color: var(--ios-blue);
+    color: var(--ios-blue);
+    background: var(--accent-bg);
+}
+
+.wp-upload-btn:active {
+    transform: scale(0.97);
+}
+
+/* 响应式 */
+@media (max-width: 480px) {
+    .wp-preset-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
