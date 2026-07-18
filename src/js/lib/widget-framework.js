@@ -539,6 +539,7 @@ class WidgetArea {
     this.layout = { groups: [] };
     this._sortableInstances = [];
     this._pendingRemove = false;
+    this._removingIndex = -1;
     this._lastCols = 3;
     this._resizeHandler = null;
     this._groupElements = {};
@@ -820,13 +821,16 @@ class WidgetArea {
     const el = widgetInstance.element;
     if (el) {
       this._pendingRemove = true;
+      this._removingIndex = idx;
       const anim = widgetInstance.animateOut();
-      anim.finished.then(() => {
-        this._doRemove(idx);
-      }).catch(() => {
-        this._doRemove(idx);
-      });
-      setTimeout(() => this._doRemove(idx), 500);
+      const doRemove = () => {
+        if (this._removingIndex === -1) return; // 已处理
+        const i = this._removingIndex;
+        this._removingIndex = -1;
+        this._doRemove(i);
+      };
+      anim.finished.then(doRemove).catch(doRemove);
+      setTimeout(doRemove, 500);
     } else {
       this._doRemove(idx);
     }
@@ -834,6 +838,8 @@ class WidgetArea {
 
   _doRemove(widgetIdx) {
     if (!this._pendingRemove) return;
+    if (this._removingIndex === -1) return; // 已处理
+    this._removingIndex = -1;
     this._pendingRemove = false;
 
     if (widgetIdx < 0 || widgetIdx >= this.widgets.length) return;
