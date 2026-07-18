@@ -32,7 +32,8 @@ const WallpaperSystem = {
 
   init() {
     this.loadConfig();
-    this._refreshIfNeeded(); // 内部会调用 apply()
+    this.apply();              // 始终渲染壁纸层（会从 config 读取）
+    this._refreshIfNeeded();   // 可选：异步刷新 Bing 壁纸
     // 监听暗色模式变化，更新覆盖层
     const observer = new MutationObserver(() => {
       this.updateDarkOverlay();

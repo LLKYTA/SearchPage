@@ -861,6 +861,7 @@ class WidgetArea {
     if (widgetInstance) widgetInstance.destroy();
     this.saveLayout();
     this.render();
+    this._pendingRemove = false;
   }
 
   /** 紧凑排列：消除空行间隙 */
