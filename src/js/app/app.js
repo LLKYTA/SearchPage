@@ -139,7 +139,7 @@ WidgetFramework.register('time-progress', TimeProgressWidget);
 WidgetFramework.register('daily-word', DailyWordWidget);
 
 // ========== UI 组件实例 ==========
-let themeSegment, bgSegment;
+let themeSegment;
 
 document.addEventListener('DOMContentLoaded', () => {
     WidgetFramework.init();
@@ -481,17 +481,6 @@ function initUISegments() {
         onChange: (value) => setTheme(value)
     });
 
-    // 背景风格分段器
-    bgSegment = new UISegment({
-        el: document.getElementById('bg-segment'),
-        options: [
-            { value: 'gradient', label: '渐变' },
-            { value: 'pure',     label: '纯色' },
-            { value: 'custom',   label: '自定义' }
-        ],
-        initialValue: localStorage.getItem('background') || 'gradient',
-        onChange: (value) => setBackground(value)
-    });
 }
 
 function initUIModals() {
