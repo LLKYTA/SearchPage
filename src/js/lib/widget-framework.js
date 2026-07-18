@@ -56,8 +56,13 @@ const Spring = {
 const WidgetContextMenu = {
   _activeMenu: null,
   _activeWidget: null,
+  _dismissTimer: null,
 
   show(event, widget, items) {
+    if (this._dismissTimer) {
+      clearTimeout(this._dismissTimer);
+      this._dismissTimer = null;
+    }
     this.dismiss();
 
     const menu = document.createElement('div');
@@ -123,14 +128,18 @@ const WidgetContextMenu = {
   },
 
   dismiss() {
+    if (this._dismissTimer) {
+      clearTimeout(this._dismissTimer);
+      this._dismissTimer = null;
+    }
     if (this._activeMenu) {
-      this._activeMenu.style.opacity = '0';
-      this._activeMenu.style.transform = 'scale(0.92)';
-      setTimeout(() => {
-        if (this._activeMenu) {
-          this._activeMenu.remove();
-          this._activeMenu = null;
-        }
+      const menu = this._activeMenu;
+      this._activeMenu = null;
+      menu.style.opacity = '0';
+      menu.style.transform = 'scale(0.92)';
+      this._dismissTimer = setTimeout(() => {
+        if (menu.parentNode) menu.remove();
+        this._dismissTimer = null;
       }, 200);
       this._activeWidget = null;
     }
@@ -821,9 +830,9 @@ class WidgetArea {
       handle: '.widget-content',
       draggable: '.widget',
 
-      delay: 400,
+      delay: 600,
       delayOnTouchOnly: true,
-      touchStartThreshold: 3,
+      touchStartThreshold: 5,
 
       filter: '',
       preventOnFilter: false,
