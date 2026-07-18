@@ -37,7 +37,7 @@
     <div class="search-hero">
       <div class="search-card glass" id="searchCard">
         <div class="search-card-row">
-          <button class="engine-pill" id="engine-switch" onclick="toggleEngineDropdown()">
+          <button class="engine-pill" id="engine-switch" onclick="event.stopPropagation(); (function(){const d=document.getElementById('engine-dropdown'); if(d) d.classList.toggle('open');})();">
             <i class="fa fa-edge" id="engine-inline-icon"></i>
             <span class="engine-name" id="engine-inline-name">Bing</span>
             <i class="fa fa-chevron-down engine-chevron"></i>

@@ -641,8 +641,10 @@ function initGallerySwipe() {
 }
 
 // ========== 引擎下拉菜单 ==========
-function toggleEngineDropdown() {
+function toggleEngineDropdown(e) {
+    if (e && e.stopPropagation) e.stopPropagation();
     const dropdown = document.getElementById('engine-dropdown');
+    if (!dropdown) return;
     dropdown.classList.toggle('open');
     // 引擎下拉打开时关闭搜索覆盖层
     if (dropdown.classList.contains('open')) {

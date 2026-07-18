@@ -289,6 +289,17 @@ class UIDropdown {
     }
 
     _bindEvents() {
+        this._menuPlaceholder = document.createComment('UIDropdown menu placeholder');
+        this._menuMountedToBody = false;
+
+        // 如果已有全局事件监听器，则先移除旧监听器，避免重复绑定
+        if (this._outsideHandler) {
+            document.removeEventListener('click', this._outsideHandler);
+        }
+        if (this._keyHandler) {
+            document.removeEventListener('keydown', this._keyHandler);
+        }
+
         // 按钮切换
         this.btn.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -303,7 +314,7 @@ class UIDropdown {
 
         // 外部点击关闭
         this._outsideHandler = (e) => {
-            if (!this.el.contains(e.target) && this.isOpen) {
+            if (!this.el.contains(e.target) && !this.menu.contains(e.target) && this.isOpen) {
                 this.close();
             }
         };
@@ -362,12 +373,66 @@ class UIDropdown {
         this.isOpen = true;
         this.menu.classList.add('open');
         this.btn.classList.add('active');
+        this._updateMenuPosition();
     }
 
     close() {
         this.isOpen = false;
         this.menu.classList.remove('open');
         this.btn.classList.remove('active');
+        if (this._menuMountedToBody) {
+            this.el.appendChild(this.menu);
+            this._menuMountedToBody = false;
+        }
+        this.menu.style.position = '';
+        this.menu.style.top = '';
+        this.menu.style.left = '';
+        this.menu.style.right = '';
+        this.menu.style.minWidth = '';
+        this.menu.style.transform = '';
+        this.menu.style.zIndex = '';
+    }
+
+    _updateMenuPosition() {
+        if (!this.menu || !this.btn) return;
+        if (!this._menuMountedToBody) {
+            this.el.appendChild(this._menuPlaceholder);
+            document.body.appendChild(this.menu);
+            this._menuMountedToBody = true;
+        }
+
+        const rect = this.btn.getBoundingClientRect();
+        this.menu.style.position = 'fixed';
+        this.menu.style.minWidth = `${rect.width}px`;
+        this.menu.style.right = 'auto';
+        this.menu.style.transform = 'none';
+        this.menu.style.zIndex = '1100';
+
+        // 先放到默认位置，再测量高度，以支持弹出位置翻转
+        let top = rect.bottom + 6;
+        let left = rect.left;
+        this.menu.style.top = `${top}px`;
+        this.menu.style.left = `${left}px`;
+
+        const menuRect = this.menu.getBoundingClientRect();
+        const viewportHeight = window.innerHeight;
+        const viewportWidth = window.innerWidth;
+        const margin = 8;
+
+        // 如果下方空间不足，则展示在按钮上方
+        if (menuRect.bottom > viewportHeight - margin) {
+            top = Math.max(rect.top - menuRect.height - 6, margin);
+            this.menu.style.top = `${top}px`;
+        }
+
+        // 控制横向边界，避免菜单超出可视区域
+        if (menuRect.right > viewportWidth - margin) {
+            left = Math.max(viewportWidth - menuRect.width - margin, margin);
+            this.menu.style.left = `${left}px`;
+        }
+        if (left < margin) {
+            this.menu.style.left = `${margin}px`;
+        }
     }
 
     /** 更新菜单项（不改当前值） */
@@ -378,7 +443,16 @@ class UIDropdown {
         if (!stillExists) {
             this.currentValue = items.length > 0 ? items[0].value : '';
         }
+
+        // 如果菜单当前已挂载到 body，则先恢复到原位置，避免丢失 DOM 引用
+        if (this._menuMountedToBody && this.menu) {
+            this.el.appendChild(this.menu);
+            this._menuMountedToBody = false;
+        }
+
         this._build();
+        this._bindEvents();
+
         if (stillExists) {
             this.el.querySelectorAll('.ui-dropdown-item').forEach(el => {
                 el.classList.toggle('active', el.dataset.value === this.currentValue);
