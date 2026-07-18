@@ -388,35 +388,9 @@ class Widget {
     const div = document.createElement('div');
     div.className = `widget widget-${this.currentSize}`;
     div.dataset.widgetType = this.constructor.type;
-    div.innerHTML = `
-      <div class="widget-header">
-        <i class="fa ${this.constructor.icon} widget-icon"></i>
-        <span class="widget-title">${this.constructor.displayName}</span>
-        <div class="widget-header-actions">
-          <button class="widget-size-btn" title="切换尺寸"><i class="fa fa-arrows-alt"></i></button>
-          <button class="widget-delete-btn" title="移除"><i class="fa fa-times"></i></button>
-        </div>
-      </div>
-      <div class="widget-content"></div>
-    `;
+    div.innerHTML = `<div class="widget-content"></div>`;
     this.element = div;
-    this._bindHeaderActions();
     return div;
-  }
-
-  _bindHeaderActions() {
-    const delBtn = this.element.querySelector('.widget-delete-btn');
-    delBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const areaId = this.container.closest('[data-widget-area]').dataset.widgetArea;
-      WidgetFramework.areas.get(areaId)?.removeWidget(this);
-    });
-
-    const sizeBtn = this.element.querySelector('.widget-size-btn');
-    sizeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.cycleSize();
-    });
   }
 
   cycleSize() {
@@ -487,33 +461,41 @@ class Widget {
   onUpdate() {}
 
   /**
-   * 在 widget header 添加一个"+"按钮，统一管理入口
-   * @param {string} [title='管理'] - 按钮 tooltip
+   * 返回上下文菜单项数组。
+   * 子类可覆盖此方法追加自定义菜单项。
+   * @returns {Array<{id:string, label:string, icon?:string, destructive?:boolean, action:Function}>}
    */
-  _addHeaderAddBtn(title = '管理') {
-    const header = this.element.querySelector('.widget-header');
-    if (!header) return;
-    let actions = header.querySelector('.widget-header-actions');
-    if (!actions) {
-      actions = document.createElement('div');
-      actions.className = 'widget-header-actions';
-      header.appendChild(actions);
+  getContextMenuItems() {
+    const items = [];
+    // 尺寸切换
+    items.push({ id: 'size', label: '切换尺寸', icon: '🔃', action: () => this.cycleSize() });
+    // 如果子类覆盖了 openManager，展示管理入口
+    if (this.openManager !== Widget.prototype.openManager) {
+        items.push({ id: 'manage', label: '管理', icon: '✏️', action: () => this.openManager() });
     }
-    if (actions.querySelector('.widget-header-add-btn')) return;
-    const btn = document.createElement('button');
-    btn.className = 'widget-header-add-btn';
-    btn.title = title;
-    btn.innerHTML = '<i class="fa fa-plus"></i>';
-    btn.addEventListener('mouseenter', () => btn.style.color = 'var(--ios-blue)');
-    btn.addEventListener('mouseleave', () => btn.style.color = 'var(--text-secondary)');
-    btn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      this.openManager();
-    });
-    actions.prepend(btn);
+    items.push({ type: 'separator' });
+    items.push({ id: 'delete', label: '移除小组件', icon: '🗑️', destructive: true, action: () => {
+        const areaId = this.container.closest('[data-widget-area]').dataset.widgetArea;
+        WidgetFramework.areas.get(areaId)?.removeWidget(this);
+    }});
+    return items;
   }
 
-  destroy() { this.element?.remove(); }
+  /**
+   * 响应上下文菜单事件（contextmenu / 长按）
+   * @param {PointerEvent|MouseEvent} event
+   */
+  onContextMenu(event) {
+    event.preventDefault();
+    WidgetContextMenu.show(event, this, this.getContextMenuItems());
+  }
+
+  destroy() {
+    if (WidgetContextMenu._activeWidget === this) {
+        WidgetContextMenu.dismiss();
+    }
+    this.element?.remove();
+  }
   openManager() {}
 }
 
