@@ -177,7 +177,13 @@ function initSearch() {
     document.getElementById('search-btn').addEventListener('click', performSearch);
 
     // 初始化搜索建议和最近搜索
-    initSearchSuggestions();
+    // 初始化搜索建议 — 用独立的 SearchSuggestions 类替换
+    const suggestInput = document.getElementById('search-input');
+    const suggestOverlay = document.getElementById('searchSuggestions');
+    if (suggestInput && suggestOverlay) {
+        window.__searchSuggestions = new SearchSuggestions(suggestInput, suggestOverlay);
+        window.__searchSuggestions.bind();
+    }
     initRecentSearches();
 
     // 搜索框自动获得焦点（桌面端），类似 iOS 18 的快速搜索
@@ -258,107 +264,6 @@ document.addEventListener('click', function(e) {
         closeSearchOverlay();
     }
 });
-
-// ========== 搜索建议 ==========
-const SUGGESTION_CACHE = {};
-let suggestTimer = null;
-
-/**
- * 获取搜索建议
- * @param {string} engineId - 搜索引擎 ID
- * @param {string} query - 搜索词
- * @returns {Promise<string[]>} 建议列表
- */
-async function getSuggestions(engineId, query) {
-    if (!query || query.length < 2) return [];
-    const cacheKey = engineId + ':' + query;
-    if (SUGGESTION_CACHE[cacheKey]) return SUGGESTION_CACHE[cacheKey];
-
-    try {
-        let url;
-        if (engineId === 'baidu') {
-            // Baidu 建议 API（需要 script tag JSONP 方式）
-            url = `https://suggestion.baidu.com/s?wd=${encodeURIComponent(query)}&cb=`;
-            const resp = await fetch(url);
-            if (!resp.ok) return [];
-            const text = await resp.text();
-            // Baidu 返回格式: window.baidu.sug({q:'...',p:false,s:['a','b',...]})
-            const match = text.match(/s:\s*(\[[^\]]+\])/);
-            if (match) {
-                const items = JSON.parse(match[1]);
-                SUGGESTION_CACHE[cacheKey] = items;
-                return items;
-            }
-            return [];
-        } else if (engineId === 'google') {
-            url = `https://suggestqueries.google.com/complete/search?client=firefox&q=${encodeURIComponent(query)}`;
-            const resp = await fetch(url);
-            if (!resp.ok) return [];
-            const data = await resp.json();
-            const items = data[1] || [];
-            SUGGESTION_CACHE[cacheKey] = items;
-            return items;
-        }
-        // 其他引擎暂不支持建议
-        return [];
-    } catch (e) {
-        console.warn('获取搜索建议失败:', e);
-        return [];
-    }
-}
-
-function showSuggestions(items, query) {
-    const container = document.getElementById('searchSuggestions');
-    const recents = document.getElementById('searchRecents');
-    if (!items || !items.length) {
-        container.style.display = 'none';
-        return;
-    }
-    recents.style.display = 'none';
-    container.style.display = 'block';
-    openSearchOverlay();
-
-    container.innerHTML = items.map(item => {
-        const hl = item.replace(new RegExp(escapeRegExp(query), 'gi'),
-            m => `<span class="suggestion-hl">${escapeHtml(m)}</span>`);
-        return `<button class="suggestion-item" onclick="fillSuggestion('${escapeHtml(item)}')">
-            <i class="fa fa-search"></i>
-            <span class="suggestion-query">${hl}</span>
-        </button>`;
-    }).join('');
-}
-
-/** 点击建议项 */
-window.fillSuggestion = function(query) {
-    const input = document.getElementById('search-input');
-    input.value = query;
-    closeSearchOverlay();
-    performSearch();
-};
-
-function initSearchSuggestions() {
-    const input = document.getElementById('search-input');
-    input.addEventListener('input', function() {
-        const query = this.value.trim();
-        clearTimeout(suggestTimer);
-        // 自动填充或引擎切换时不要触发
-        if (this._filling) {
-            this._filling = false;
-            return;
-        }
-        if (query.length < 2) {
-            closeSearchOverlay();
-            document.getElementById('searchSuggestions').style.display = 'none';
-            return;
-        }
-        suggestTimer = setTimeout(async () => {
-            const suggestionsEnabled = localStorage.getItem('search-suggestions-enabled') !== 'false';
-            if (!suggestionsEnabled) return;
-            const items = await getSuggestions(CONFIG.currentEngine, query);
-            showSuggestions(items, query);
-        }, 200);
-    });
-}
 
 // ========== 最近搜索 ==========
 
@@ -465,11 +370,6 @@ function initRecentSearches() {
             showRecentSearches();
         }
     });
-}
-
-// ========== 工具函数 ==========
-function escapeRegExp(string) {
-    return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
 // ========== 初始化 UI 组件（框架） ==========
