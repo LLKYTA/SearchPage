@@ -50,10 +50,12 @@ class SearchSuggestions {
     async #fetch(engineId, query) {
         if (!query || query.length < this.#options.minLength) return [];
 
-        const adapter = SearchSuggestions.adapters[engineId];
+        // 当前引擎无适配器时，回退到百度建议作为通用兜底
+        const targetEngine = SearchSuggestions.adapters[engineId] ? engineId : 'baidu';
+        const adapter = SearchSuggestions.adapters[targetEngine];
         if (!adapter) return [];
 
-        const key = `${engineId}:${query}`;
+        const key = `${targetEngine}:${query}`;
         const cached = this.#cache.get(key);
         if (cached && Date.now() - cached.timestamp < this.#options.cacheTTL) {
             return cached.items;
