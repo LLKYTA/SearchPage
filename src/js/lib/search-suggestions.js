@@ -303,9 +303,9 @@ if (typeof window.escapeRegExp !== 'function') {
 
 // ========== 引擎适配器注册 ==========
 
-// 百度 — 兼容 JSONP 格式
+// 百度 — JSONP 格式
 SearchSuggestions.registerAdapter('baidu', async (query, signal) => {
-    const url = `https://suggestion.baidu.com/s?wd=${encodeURIComponent(query)}&cb=`;
+    const url = `https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=${encodeURIComponent(query)}&cb=callback`;
     const resp = await fetch(url, { signal });
     if (!resp.ok) return [];
     const text = await resp.text();
