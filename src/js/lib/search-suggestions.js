@@ -32,6 +32,7 @@ class SearchSuggestions {
     #abortController = null;
     #activeIndex = -1;
     #debounceTimer = null;
+    #hideTimer = null;
     #isBound = false;
     #boundKeydownHandler = null;
 
@@ -50,10 +51,12 @@ class SearchSuggestions {
     async #fetch(engineId, query) {
         if (!query || query.length < this.#options.minLength) return [];
 
-        const adapter = SearchSuggestions.adapters[engineId];
+        // 当前引擎无适配器时，回退到百度建议作为通用兜底
+        const targetEngine = SearchSuggestions.adapters[engineId] ? engineId : 'baidu';
+        const adapter = SearchSuggestions.adapters[targetEngine];
         if (!adapter) return [];
 
-        const key = `${engineId}:${query}`;
+        const key = `${targetEngine}:${query}`;
         const cached = this.#cache.get(key);
         if (cached && Date.now() - cached.timestamp < this.#options.cacheTTL) {
             return cached.items;
@@ -77,6 +80,7 @@ class SearchSuggestions {
 
     /** 显示加载中状态 */
     #showLoading() {
+        clearTimeout(this.#hideTimer);
         this.#overlayEl.innerHTML = `
             <div class="search-card-expand-loading">
                 <i class="fa fa-spinner fa-spin"></i>
@@ -88,6 +92,7 @@ class SearchSuggestions {
 
     /** 显示错误状态（带重试按钮） */
     #showError(msg) {
+        clearTimeout(this.#hideTimer);
         this.#overlayEl.innerHTML = `
             <div class="search-card-expand-empty">
                 <span style="color:var(--text-tertiary);font-size:12px;">
@@ -118,12 +123,12 @@ class SearchSuggestions {
             return;
         }
         const escapedQuery = escapeHtml(query);
-        this.#overlayEl.innerHTML = items.map(item => {
+        this.#overlayEl.innerHTML = items.map((item, i) => {
             const hl = escapeHtml(item).replace(
                 new RegExp(escapeRegExp(query), 'gi'),
                 m => `<span class="suggestion-hl">${escapeHtml(m)}</span>`
             );
-            return `<button class="suggestion-item" data-query="${escapeHtml(item)}">
+            return `<button class="suggestion-item" style="--i: ${i}" data-query="${escapeHtml(item)}">
                 <i class="fa fa-search"></i>
                 <span class="suggestion-query">${hl}</span>
             </button>`;
@@ -141,9 +146,13 @@ class SearchSuggestions {
     /** 关闭并隐藏建议面板 */
     hide() {
         this.#activeIndex = -1;
-        this.#overlayEl.style.display = 'none';
         const overlay = this.#overlayEl.closest('.search-card-expand');
         if (overlay) overlay.classList.remove('open');
+        // 延迟设置 display: none 让出场动画（0.15s）先播放
+        clearTimeout(this.#hideTimer);
+        this.#hideTimer = setTimeout(() => {
+            this.#overlayEl.style.display = 'none';
+        }, 160);
     }
 
     /** 选中建议项 → 填入输入框 → 执行搜索 */
@@ -277,6 +286,7 @@ class SearchSuggestions {
         if (!this.#isBound) return;
         this.#isBound = false;
         clearTimeout(this.#debounceTimer);
+        clearTimeout(this.#hideTimer);
         this.#inputEl.removeEventListener('input', this.#onInput);
         this.#inputEl.removeEventListener('keydown', this.#boundKeydownHandler);
         if (this.#abortController) this.#abortController.abort();
@@ -301,9 +311,9 @@ if (typeof window.escapeRegExp !== 'function') {
 
 // ========== 引擎适配器注册 ==========
 
-// 百度 — 兼容 JSONP 格式
+// 百度 — JSONP 格式
 SearchSuggestions.registerAdapter('baidu', async (query, signal) => {
-    const url = `https://suggestion.baidu.com/s?wd=${encodeURIComponent(query)}&cb=`;
+    const url = `https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=${encodeURIComponent(query)}&cb=callback&ie=utf-8`;
     const resp = await fetch(url, { signal });
     if (!resp.ok) return [];
     const text = await resp.text();

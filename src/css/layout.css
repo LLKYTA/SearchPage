@@ -174,9 +174,14 @@ body:not(.wallpaper-ready) {
     box-shadow: 0 12px 48px var(--shadow-color), 0 2px 8px rgba(0,0,0,0.06);
     opacity: 0;
     pointer-events: none;
-    transition: opacity 0.3s var(--spring-smooth),
-                transform 0.35s var(--spring-slide);
-    transform: translateY(-8px) scale(0.96);
+
+    /* ═══ 出场（快，干脆） ═══ */
+    transition:
+        opacity 0.15s ease,
+        transform 0.15s ease;
+    transform: translateY(-4px) scale(0.97);
+    transform-origin: top center;
+
     z-index: 200;
     max-height: 400px;
     overflow-y: auto;
@@ -184,8 +189,12 @@ body:not(.wallpaper-ready) {
 }
 
 .search-card-expand.open {
-    opacity: 1;
+    /* ═══ 入场（弹簧，有弹性） ═══ */
+    transition:
+        opacity 0.4s var(--spring-bounce),
+        transform 0.45s var(--spring-bounce);
     transform: translateY(0) scale(1);
+    opacity: 1;
     pointer-events: auto;
     padding: 6px 4px;
 }
@@ -677,7 +686,8 @@ body:not(.wallpaper-ready) {
     padding: 9px 12px;
     border-radius: var(--radius-sm);
     cursor: pointer;
-    transition: background 0.15s var(--spring-smooth);
+    transition: background 0.15s var(--spring-smooth),
+                transform 0.2s var(--spring-bounce);
     border: none;
     background: transparent;
     width: 100%;
@@ -685,6 +695,10 @@ body:not(.wallpaper-ready) {
     text-align: left;
     font-size: 13px;
     color: var(--text-primary);
+
+    /* iOS 18 逐项递进入场 */
+    animation: suggestionItemIn 0.4s var(--spring-slide) both;
+    animation-delay: calc(var(--i, 0) * 35ms);
 }
 
 .search-card-expand .suggestion-item:hover {
@@ -692,12 +706,25 @@ body:not(.wallpaper-ready) {
 }
 
 .search-card-expand .suggestion-item.active {
-    background: var(--bg-tertiary);
+    background: var(--accent-bg);
     outline: none;
 }
 
 .search-card-expand .suggestion-item:active {
-    transform: scale(0.98);
+    transform: scale(0.97);
+    background: var(--accent-bg);
+}
+
+/* iOS 18 逐项递进关键帧 */
+@keyframes suggestionItemIn {
+    from {
+        opacity: 0;
+        transform: translateY(-6px) scale(0.96);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
 }
 
 .search-card-expand .suggestion-item .fa-search {
