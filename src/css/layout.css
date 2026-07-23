@@ -691,6 +691,11 @@ body:not(.wallpaper-ready) {
     background: var(--bg-tertiary);
 }
 
+.search-card-expand .suggestion-item.active {
+    background: var(--bg-tertiary);
+    outline: none;
+}
+
 .search-card-expand .suggestion-item:active {
     transform: scale(0.98);
 }
