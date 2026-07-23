@@ -177,7 +177,6 @@ function initSearch() {
     document.getElementById('search-btn').addEventListener('click', performSearch);
 
     // 初始化搜索建议和最近搜索
-    // 初始化搜索建议 — 用独立的 SearchSuggestions 类替换
     const suggestInput = document.getElementById('search-input');
     const suggestOverlay = document.getElementById('searchSuggestions');
     if (suggestInput && suggestOverlay) {
