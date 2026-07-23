@@ -187,9 +187,14 @@ class SearchSuggestions {
         this.#showLoading();
         this.#debounceTimer = setTimeout(async () => {
             try {
+                const currentQuery = this.#inputEl.value.trim();
+                // 如果输入已在 debounce 期间变化，丢弃过期结果
+                if (currentQuery !== query) return;
                 const engineId = typeof CONFIG !== 'undefined' ? CONFIG.currentEngine : 'bing';
-                const items = await this.#fetch(engineId, query);
-                this.#showItems(items, query);
+                const items = await this.#fetch(engineId, currentQuery);
+                // fetch 完成后再次检查输入是否已变化
+                if (this.#inputEl.value.trim() !== currentQuery) return;
+                this.#showItems(items, currentQuery);
             } catch (e) {
                 if (e.name !== 'AbortError') {
                     this.#showError('获取建议失败，点击重试');
@@ -235,6 +240,7 @@ class SearchSuggestions {
                     break;
 
                 case 'Escape':
+                    clearTimeout(this.#debounceTimer);
                     this.hide();
                     this.#inputEl.blur();
                     break;
@@ -270,6 +276,7 @@ class SearchSuggestions {
     destroy() {
         if (!this.#isBound) return;
         this.#isBound = false;
+        clearTimeout(this.#debounceTimer);
         this.#inputEl.removeEventListener('input', this.#onInput);
         this.#inputEl.removeEventListener('keydown', this.#boundKeydownHandler);
         if (this.#abortController) this.#abortController.abort();
