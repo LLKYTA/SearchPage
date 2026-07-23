@@ -309,16 +309,85 @@ if (typeof window.escapeRegExp !== 'function') {
     };
 }
 
+// ========== JSONP 工具函数（用于绕过 CORS） ==========
+let jsonpId = 0;
+const JSONP_PREFIX = '_sug_jsonp_';
+
+/**
+ * JSONP 请求
+ * @param {string} url - 请求 URL（需包含 cb=callbackName 占位）
+ * @param {string} callbackParam - 回调参数名，如 'cb'
+ * @param {AbortSignal} [signal] - AbortController signal
+ * @returns {Promise<any>} 解析为 JSONP 返回的数据
+ */
+function jsonpFetch(url, callbackParam, signal) {
+    return new Promise((resolve, reject) => {
+        const cbName = JSONP_PREFIX + (++jsonpId);
+        const fullUrl = url.replace(/cb=([^&]*)/, `${callbackParam}=${cbName}`);
+
+        // 清理函数
+        function cleanup() {
+            delete window[cbName];
+            if (script.parentNode) script.parentNode.removeChild(script);
+        }
+
+        // 注册全局回调
+        window[cbName] = function(data) {
+            cleanup();
+            resolve(data);
+        };
+
+        // 创建 script 标签
+        const script = document.createElement('script');
+        script.src = fullUrl;
+        script.async = true;
+        script.onerror = function() {
+            cleanup();
+            reject(new Error('JSONP 请求失败'));
+        };
+
+        // AbortSignal 支持
+        if (signal) {
+            if (signal.aborted) {
+                cleanup();
+                const err = new Error('Aborted');
+                err.name = 'AbortError';
+                reject(err);
+                return;
+            }
+            signal.addEventListener('abort', function() {
+                cleanup();
+                const err = new Error('Aborted');
+                err.name = 'AbortError';
+                reject(err);
+            }, { once: true });
+        }
+
+        document.head.appendChild(script);
+
+        // 超时兜底
+        setTimeout(() => {
+            if (window[cbName]) {
+                cleanup();
+                reject(new Error('JSONP 请求超时'));
+            }
+        }, 8000);
+    });
+}
+
 // ========== 引擎适配器注册 ==========
 
-// 百度 — JSONP 格式
+// 百度 — JSONP 方式绕过 CORS
 SearchSuggestions.registerAdapter('baidu', async (query, signal) => {
     const url = `https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=${encodeURIComponent(query)}&cb=callback&ie=utf-8`;
-    const resp = await fetch(url, { signal });
-    if (!resp.ok) return [];
-    const text = await resp.text();
-    const match = text.match(/s:\s*(\[[^\]]+\])/);
-    return match ? JSON.parse(match[1]) : [];
+    try {
+        const data = await jsonpFetch(url, 'cb', signal);
+        return data && data.s ? data.s : [];
+    } catch (e) {
+        if (e.name === 'AbortError') throw e;
+        console.warn('百度建议 JSONP 请求失败:', e);
+        return [];
+    }
 });
 
 // Google — 使用 suggestqueries 接口
