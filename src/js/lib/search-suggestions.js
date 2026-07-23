@@ -305,7 +305,7 @@ if (typeof window.escapeRegExp !== 'function') {
 
 // 百度 — JSONP 格式
 SearchSuggestions.registerAdapter('baidu', async (query, signal) => {
-    const url = `https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=${encodeURIComponent(query)}&cb=callback`;
+    const url = `https://sp0.baidu.com/5a1Fazu8AA54nxGko9WTAnF6hhy/su?wd=${encodeURIComponent(query)}&cb=callback&ie=utf-8`;
     const resp = await fetch(url, { signal });
     if (!resp.ok) return [];
     const text = await resp.text();
